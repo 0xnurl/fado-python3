@@ -139,7 +139,7 @@ class Lexer(object):
         fun = rule[1]
         st1 = []
         for s in st:
-            if not isinstance(s, StringType):
+            if not isinstance(s, str):
                 st1.append(s)
             else:
                 s1 = s
@@ -168,7 +168,7 @@ class Lexer(object):
         Unknown parts will be of the form ("@UNK", string ) """
         st1 = []
         for s in st:
-            if isinstance(s, StringType):
+            if isinstance(s, str):
                 st1.append(("@UNK", s))
             else:
                 st1.append(s)
@@ -179,7 +179,7 @@ class Lexer(object):
         st = input()
         if not st:
             raise IOError
-        if isinstance(st, StringType):
+        if isinstance(st, str):
             s = self.scan(st)
             return s
 
@@ -357,7 +357,7 @@ class CFGrammar(object):
         for n in range(len(self.rules)):
             lhs = self.rules[n][0]
             rhs = self.rules[n][1]
-            s = s + "%s | %s -> %s \n" % (n, lhs, string.join(rhs, " "))
+            s = s + "%s | %s -> %s \n" % (n, lhs, " ".join(rhs))
         return "Grammar Rules:\n\n%s" % s
 
     def makeFFN(self):
@@ -418,9 +418,9 @@ class CFGrammar(object):
                 e = 1
                 break
         if e == 0:
-            self.nullable[string.join(s)] = 1
+            self.nullable[" ".join(s)] = 1
         else:
-            self.nullable[string.join(s)] = 0
+            self.nullable[" ".join(s)] = 0
         return first
 
     def FIRST_ONE(self):
@@ -521,7 +521,7 @@ class CFGrammar(object):
                         pass
                     for k in range(len(r) - 1):
                         j = k + 1
-                        if r[k] in self.nonterminals and self.nullable[string.join(r[j:])]:
+                        if r[k] in self.nonterminals and self.nullable[" ".join(r[j:])]:
                             if self.follow[r[k]].s_extend(self.follow[s]):
                                 e = 1
                             break
@@ -551,7 +551,7 @@ class CFGrammar(object):
                 for j in range(len(r)):
                     if r[j + 1:]:
                         f = self.FIRST(r[j + 1:])
-                        ns = self.nullable[string.join(r[j + 1:])]
+                        ns = self.nullable[" ".join(r[j + 1:])]
                     else:
                         f = []
                         ns = 1
@@ -572,7 +572,7 @@ class CFGrammar(object):
                 r = self.rules[i][1]
                 for j in range(len(r)):
                     f = self.FIRST(r[j + 1:])
-                    ns = self.nullable[string.join(r[j + 1:])]
+                    ns = self.nullable[" ".join(r[j + 1:])]
                     if r[j] in self.nonterminals:
                         if r[j] not in self.close_nt:
                             self.TRAVERSE(r[j], d + 1)
@@ -905,8 +905,7 @@ class SLRtable(LRtable):
                 r, p = item
                 lhs = self.gr.rules[r][0]
                 rhs = self.gr.rules[r][1]
-                s = s + "\t %s -> %s . %s \n" % (lhs,
-                                                 string.join(rhs[:p], " "), string.join(rhs[p:], " "))
+                s = s + "\t %s -> %s . %s \n" % (lhs, " ".join(rhs[:p]), " ".join(rhs[p:]))
             j += 1
         return s
 
@@ -988,8 +987,7 @@ class LR1table(LRtable):
                 r, p, t = item
                 lhs = self.gr.rules[r][0]
                 rhs = self.gr.rules[r][1]
-                s = s + "\t %s -> %s . %s , %s\n" % (lhs,
-                                                     string.join(rhs[:p], " "), string.join(rhs[p:], " "), t)
+                s = s + "\t %s -> %s . %s , %s\n" % (lhs," ".join(rhs[:p]), " ".join(rhs[p:]), t)
             j += 1
         print(s)
         return s
@@ -1083,8 +1081,7 @@ class LALRtable1(LRtable):
                 r, p = item
                 lhs = self.gr.rules[r][0]
                 rhs = self.gr.rules[r][1]
-                s = s + "\t %s -> %s . %s, %s \n" % (lhs,
-                                                     string.join(rhs[:p], " "), string.join(rhs[p:], " "), c[i][item])
+                s = s + "\t %s -> %s . %s, %s \n" % (lhs, " ".join(rhs[:p]), " ".join(rhs[p:]), c[i][item])
         print(s)
         return s
 
@@ -1327,7 +1324,7 @@ class LALRtable(LALRtable1):
         l, i = item
         try:
             f = self.gr.FIRST(self.gr.rules[l][1][i + 1:])
-            ns = self.gr.nullable[string.join(self.gr.rules[l][1][i + 1:])]
+            ns = self.gr.nullable[" ".join(self.gr.rules[l][1][i + 1:])]
         except IndexError:
             f = []
             ns = 1
@@ -1754,7 +1751,7 @@ def grules(rules_list, rulesym="->", rhssep=None):
     gr = []
     sep = re.compile(rulesym)
     for r in rules_list:
-        if type(r) is StringType:
+        if type(r) is str:
             rule = r
         else:
             rule = r[0]
@@ -1774,7 +1771,7 @@ def grules(rules_list, rulesym="->", rhssep=None):
                     rhs = []
                 else:
                     rhs = string.split(rest, rhssep)
-        if type(r) is StringType:
+        if type(r) is str:
             gr.append((lhs, rhs, DefaultSemRule))
         elif len(r) == 3:
             gr.append((lhs, rhs, r[1], r[2]))
@@ -1809,7 +1806,7 @@ class Yappy(LRparser):
         operators = None
         if "operators" in self.lex.__dict__:
             operators = self.lex.operators
-        if type(grammar) is StringType:
+        if type(grammar) is str:
             grammar = self.parse_grammar(grammar, {'locals': locals()}, args)
         if 'usrdir' in args and os.path.isdir(args['usrdir']):
             table = string.rstrip(args['usrdir']) + '/' + table
@@ -1885,7 +1882,7 @@ def Reduction(fun, sargs, context={}):
     """
     if callable(fun):
         return fun(*[sargs, context])
-    elif type(fun) is StringType:
+    elif type(fun) is str:
         a = expandSemRule("sargs[", fun)
         l = context.get('locals', {})
         l.update(locals())
