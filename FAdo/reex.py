@@ -30,7 +30,14 @@ Regular expression classes and manipulation
    Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA."""
 from __future__ import print_function
 from __future__ import absolute_import
+from __future__ import unicode_literals
+from __future__ import division
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
+from builtins import *
+from builtins import object
 from collections import deque
 
 from .yappy_parser import *
@@ -1246,7 +1253,7 @@ class disj(connective):
         arg1_lf = self.arg1.linearForm()
         arg2_lf = self.arg2.linearForm()
         lf = {}
-        for head in set(arg1_lf.keys() + arg2_lf.keys()):
+        for head in set(list(arg1_lf.keys()) + list(arg2_lf.keys())):
             tails = arg1_lf.get(head, set()) | arg2_lf.get(head, set())
             if tails != set():
                 lf[head] = tails

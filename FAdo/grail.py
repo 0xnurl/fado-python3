@@ -23,9 +23,17 @@ fa.py
    You should have received a copy of the GNU General Public License along with this program; if not,
    write to the Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA."""
 from __future__ import absolute_import
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
 
 #__package__="FAdo"
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import range
+from builtins import *
+from builtins import object
 import os
 import os.path
 import subprocess
@@ -117,9 +125,9 @@ class ParserGrail(Yappy):
         self.states.add(lst[0])
         self.states.add(lst[2])
         self.symbols.add(lst[1])
-        if lst[0] not in self.transitions.keys():
+        if lst[0] not in list(self.transitions.keys()):
             self.transitions[lst[0]] = {}
-        if lst[1] not in self.transitions[lst[0]].keys():
+        if lst[1] not in list(self.transitions[lst[0]].keys()):
             self.transitions[lst[0]][lst[1]] = set()
         self.transitions[lst[0]][lst[1]].add(lst[2])
 
@@ -138,7 +146,7 @@ class ParserGrail(Yappy):
                 if not isDeterministic:
                     break
         if isDeterministic:
-            if "l" in self.eq.keys():
+            if "l" in list(self.eq.keys()):
                 fa = DCFA()
                 fa.setLength = self.eq["l"]
             else:
@@ -189,7 +197,7 @@ def FAToGrail(f, fa):
         f.write("(START) |- %s\n" % s)
     for s in range(len(fa.States)):
         if s in fa.delta:
-            for a in fa.delta[s].keys():
+            for a in list(fa.delta[s].keys()):
                 if isinstance(fa.delta[s][a], set):
                     for s1 in fa.delta[s][a]:
                         f.write("%s %s %s\n" % (s, a, s1))

@@ -23,7 +23,15 @@ FAdo IO.
    with this program; if not, write to the Free Software Foundation, Inc.,
    675 Mass Ave, Cambridge, MA 02139, USA."""
 from __future__ import absolute_import
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
+from builtins import range
+from builtins import *
 from .yappy_parser import Yappy, grules
 
 from .common import Epsilon, DFAerror, TRError
@@ -534,9 +542,9 @@ def saveToFile(FileName, fa, mode="a"):
             for sf in aut.Initial:
                 f.write("{0:>s} ".format(statePP(aut.States[sf])))
         f.write("\n")
-        for s in xrange(len(aut.States)):
+        for s in range(len(aut.States)):
             if s in aut.delta:
-                for a in aut.delta[s].keys():
+                for a in list(aut.delta[s].keys()):
                     if isinstance(aut.delta[s][a], set):
                         for s1 in aut.delta[s][a]:
                             f.write(
@@ -585,20 +593,20 @@ def _exportToTeX(FileName, fa):
         foo = {0: fa.Initial, fa.Initial: 0}
         fa.reorder(foo)
     f.write("$$\\begin{array}{r|")
-    for i in xrange(len(fa.Sigma)):
+    for i in range(len(fa.Sigma)):
         f.write("|c")
     f.write("}\n")
     for c in fa.Sigma:
         f.write("&{0:>s}".format(str(c)))
     f.write(" \\\\\hline\n")
-    for s in xrange(len(fa.States)):
+    for s in range(len(fa.States)):
         if s in fa.delta:
             if fa.Initial == s:
                 f.write("\\rightarrow")
             if s in fa.Final:
                 f.write("\\star")
             f.write("{0:>s}".format(str(s)))
-            for a in fa.delta[s].keys():
+            for a in list(fa.delta[s].keys()):
                 if isinstance(fa.delta[s][a], set):
                     f.write("&\{")
                     for s1 in fa.delta[s][a]:

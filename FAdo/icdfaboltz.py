@@ -28,7 +28,13 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA."""
 from __future__ import print_function
 from __future__ import absolute_import
+from __future__ import unicode_literals
+from __future__ import division
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import range
+from builtins import *
 from .boltzmann import *
 from functools import reduce
 
@@ -163,17 +169,17 @@ def create_nr(k, n, t=0):
     """ t not treated"""
     nr[(k, n)] = {}
     for i in range((n - 1) * k - 1, n - 3, -1):
-        r = reduce(union, [singleton(j) for j in xrange(n)])
+        r = reduce(union, [singleton(j) for j in range(n)])
         nr[(k, n)][(n - 1, i)] = prod(singleton(n - 1),
                                       reduce(prod, [r for j in range(n * k - 1 - i)]))
 
         #(n+t)**(k*n-1-i)
     for m in range(n - 2, 0, -1):
         for j in range(m * k - 1, m - 2, -1):
-            r0 = reduce(union, [singleton(i) for i in xrange(m)])
+            r0 = reduce(union, [singleton(i) for i in range(m)])
             uu = union(nr[(k, n)][(m + 1, j + 1)], reduce(union,
                                                           [prod(reduce(prod, [r0 for l in range(i)]),
-                                                                nr[(k, n)][(m + 1, j + i + 1)]) for i in xrange(1, k)]))
+                                                                nr[(k, n)][(m + 1, j + i + 1)]) for i in range(1, k)]))
 
             nr[(k, n)][(m, j)] = prod(singleton(m), uu)
 
@@ -207,7 +213,7 @@ def test_23(m, x):
     r = union(prod(union(prod(a, b), prod(b, ab)), prod(union(prod(ab, c), prod(c, abc)), prod(abc, abc))),
               prod(b, prod(c, prod(abc, prod(abc, prod(abc, abc))))))
     print(r)
-    for i in xrange(m):
+    for i in range(m):
         print(r.sampler(x))
 
 
@@ -215,7 +221,7 @@ def test_(k, n, m, x):
     a = gen_icdfas(k, n)
     #f=a.nfaPosition().toDFA().minimal()
     #print len(f.States)
-    for i in xrange(m):
+    for i in range(m):
         print(a.sampler(x))
 
 ###Use: test_(k,n,m,x=0.5)

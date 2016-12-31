@@ -26,7 +26,17 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA."""
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
+from builtins import range
+from builtins import *
+from past.utils import old_div
 import random
 import math
 
@@ -100,7 +110,7 @@ class seq(star):
         star.__init__(self, *args)
 
     def generating(self, x):
-        return self.gen.setdefault(x, 1.0 / (1 - self.arg.generating_s(x)))
+        return self.gen.setdefault(x, old_div(1.0, (1 - self.arg.generating_s(x))))
 
     def generating_s(self, x):
         return str(1) + "/(" + str(1) + "-" + str(self.arg.generating_s(x)) + ")"
@@ -117,7 +127,7 @@ class seq(star):
 
     def sampler(self, x):
         k = rnd_geometric(self.arg.generating(x))
-        return [self.arg.sampler(x) for i in xrange(k + 1)]
+        return [self.arg.sampler(x) for i in range(k + 1)]
 
 
     def string(self):
@@ -176,7 +186,7 @@ def rnd_geometric0(p):
     if p == 1:
         return 1
     else:
-        return int(math.log(u) / math.log(1 - p)) + 1
+        return int(old_div(math.log(u), math.log(1 - p))) + 1
 
 
 def rnd_poisson(l, t=0):
@@ -202,4 +212,4 @@ def reject(g, x, n, e=0):
 
 
 def qui(k):
-    return k * (1 - 1 / (math.exp(k)) + (k / math.exp(2 * k)))
+    return k * (1 - old_div(1, (math.exp(k))) + (old_div(k, math.exp(2 * k))))

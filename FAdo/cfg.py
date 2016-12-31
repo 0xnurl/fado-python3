@@ -24,9 +24,19 @@ Basic context-free grammars manipulation for building uniform random generetors
    with this program; if not, write to the Free Software Foundation, Inc.,
    675 Mass Ave, Cambridge, MA 02139, USA."""
 from __future__ import absolute_import
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
 
 #__package__ = "FAdo"
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
+from builtins import chr
+from builtins import range
+from builtins import *
+from builtins import object
 import re
 import string
 from types import StringType
@@ -66,7 +76,7 @@ class CFGrammar(object):
         self.Nullable = {}
         self.tr = {}
         self.ntr = {}
-        for i in xrange(len(self.Rules)):
+        for i in range(len(self.Rules)):
             if self.Rules[i][0] not in self.ntr:
                 self.ntr[self.Rules[i][0]] = {i}
             else:
@@ -77,7 +87,7 @@ class CFGrammar(object):
 
             :return: a string representing the grammar rules"""
         s = ""
-        for n in xrange(len(self.Rules)):
+        for n in range(len(self.Rules)):
             lhs = self.Rules[n][0]
             rhs = self.Rules[n][1]
             if type(rhs) is not StringType and len(rhs) > 1:
@@ -105,7 +115,7 @@ class CFGrammar(object):
     def terminalrules(self):
         self.tr = {}
         for a in self.Terminals:
-            for i in xrange(len(self.Rules)):
+            for i in range(len(self.Rules)):
                 if self.Rules[i][1] == a:
                     if a not in self.tr:
                         self.tr[a] = {i}
@@ -114,7 +124,7 @@ class CFGrammar(object):
 
     def nonterminalrules(self):
         self.ntr = {}
-        for i in xrange(len(self.Rules)):
+        for i in range(len(self.Rules)):
             if self.Rules[i][0] not in self.ntr:
                 self.ntr[self.Rules[i][0]] = {i}
             else:
@@ -209,17 +219,17 @@ class CNF(CFGrammar):
         self.nttr = {}
         # terminal a is replaced by A@_a in all rules > 2
         for a in self.Terminals:
-            for i in xrange(len(self.Rules)):
+            for i in range(len(self.Rules)):
                 if type(self.Rules[i][1]) is not StringType and len(self.Rules[i][1]) >= 2 and a in self.Rules[i][1]:
                     if a not in self.nttr:
                         self.nttr[a] = self.get_ntr_tr(a)
                     rr = list(self.Rules[i][1])
-                    for k in xrange(len(rr)):
+                    for k in range(len(rr)):
                         if rr[k] == a:
                             rr[k] = self.nttr[a]
                     self.Rules[i] = (self.Rules[i][0], tuple(rr))
         n = len(self.Rules)
-        for i in xrange(n):
+        for i in range(n):
             if type(self.Rules[i][1]) is not StringType and len(self.Rules[i][1]) > 2:
                 self.iter_rule(self.Rules[i][0], self.Rules[i][1], i)
 
@@ -278,7 +288,7 @@ class cfgGenerator(object):
                             break
             uk = randint(1, self.density_r[ic][n])
             rk = 1
-            for k in xrange(1, n):
+            for k in range(1, n):
                 if (k in self.density[g.Rules[ic][1][0]] and self.density[g.Rules[ic][1][0]][k] > 0 and
                             n - k in self.density[g.Rules[ic][1][1]] and self.density[g.Rules[ic][1][1]][
                         n - k] > 0):
@@ -304,7 +314,7 @@ class cfgGenerator(object):
         for t in g.tr:
             for i in g.tr[t]:
                 self.density[g.Rules[i][0]][1] += 1
-        for l in xrange(2, n + 1):
+        for l in range(2, n + 1):
             for nt in g.ntr:
                 r = 0
                 for i in g.ntr[nt]:
@@ -313,7 +323,7 @@ class cfgGenerator(object):
                             self.density_r[i] = {}
                         self.density_r[i][l] = sum(
                             [self.density[g.Rules[i][1][0]][k] * self.density[g.Rules[i][1][1]][l - k] for k in
-                             xrange(1, l) if
+                             range(1, l) if
                              k in self.density[g.Rules[i][1][0]] and l - k in self.density[g.Rules[i][1][1]]])
                         r += self.density_r[i][l]
                 if r:
@@ -424,11 +434,11 @@ def smallAlphabet(k, sigma_base="a"):
     if k >= 52:
         raise common.CFGterminalError(k)
     lim = min(26, k)
-    for i in xrange(lim):
+    for i in range(lim):
         Sigma.append(chr(ord(sigma_base) + i))
     if k >= 26:
         sigma_base = 'A'
-        for i in xrange(k - lim):
+        for i in range(k - lim):
             Sigma.append(chr(ord(sigma_base) + i))
     return Sigma
 

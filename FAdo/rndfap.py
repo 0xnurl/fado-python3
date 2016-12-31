@@ -27,7 +27,16 @@ ICDFA Random generation binding
   along with this program; if not, write to the Free Software
   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA."""
 from __future__ import absolute_import
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import range
+from builtins import *
+from past.utils import old_div
+from builtins import object
 import random
 from . import common
 from . import fa
@@ -101,7 +110,7 @@ class ICDFArgen(object):
         else:
             return r - self.pn
 
-    def next(self):
+    def __next__(self):
         """ Generate an ICDFA
         """
         g = -1
@@ -150,7 +159,7 @@ class ICDFArndIncomplete(ICDFArgen):
         elif bias <= 0 or bias >= 1:
             raise common.IllegalBias()
         else:
-            m = int((bias * n) / (1 - bias))
+            m = int(old_div((bias * n), (1 - bias)))
             super(ICDFArndIncomplete, self).__init__(n, k, True, m)
         self.n, self.k, self.bias = n, k, bias
 

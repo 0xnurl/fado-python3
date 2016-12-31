@@ -28,7 +28,18 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 """
 from __future__ import print_function
+from __future__ import unicode_literals
+from __future__ import division
+from __future__ import absolute_import
 
+from past.builtins import cmp
+from future import standard_library
+standard_library.install_aliases()
+from builtins import input
+from builtins import str
+from builtins import range
+from builtins import *
+from builtins import object
 from types import *
 import re
 import sys
@@ -165,7 +176,7 @@ class Lexer(object):
 
     def readscan(self):
         """Scans a string read from stdin """
-        st = raw_input()
+        st = input()
         if not st:
             raise IOError
         if isinstance(st, StringType):
@@ -567,7 +578,7 @@ class CFGrammar(object):
                             self.TRAVERSE(r[j], d + 1)
                         if r[j] in self.nd and self.nd[r[j]] != -1:
                             self.nd[s] = min(self.nd[s], self.nd[r[j]])
-                        for k in self.close_nt[r[j]].keys():
+                        for k in list(self.close_nt[r[j]].keys()):
                             if k not in self.close_nt[s]:
                                 self.close_nt[s][k] = Set([[]])
                             else:
@@ -615,7 +626,7 @@ class CFGrammar(object):
                     if r[j] in self.nonterminals:
                         if r[j] not in self.derive_nt:
                             self.DERIVE_ONE_NT(r[j])
-                        for k in self.derive_nt[r[j]].keys():
+                        for k in list(self.derive_nt[r[j]].keys()):
                             if k not in self.derive_nt[s]:
                                 self.derive_nt[s][k] = Set([])
                             for p in self.derive_nt[r[j]][k]:
@@ -700,7 +711,7 @@ class LRtable(object):
     def make_action_goto(self):
         """ make C{action[i,X]} and C{goto[i,X]}
         All pairs C{(i,s)}  not in action and goto dictionaries are 'error' """
-        c = self.items()
+        c = list(self.items())
         if _DEBUG:
             print(self.print_items(c))
         self.ACTION = {}
@@ -1014,7 +1025,7 @@ class LALRtable1(LRtable):
         """ Make C{action[i,X]} and C{goto[i,X]}
         all pairs C{(i,s)}  not in action and goto dictionaries are 'error' """
         self.gr.DERIVE_NT()
-        c = self.items()
+        c = list(self.items())
         if _DEBUG:
             print(self.print_items(c))
         self.ACTION = {}
@@ -1022,7 +1033,7 @@ class LALRtable1(LRtable):
         #shelve not working with osets
         #self.Log.items = c
         for i in range(len(c)):
-            for item in c[i].keys():
+            for item in list(c[i].keys()):
                 a = self.NextToDot(item)
                 if a in self.gr.terminals:
                     state = self.goto(c[i], a)
@@ -1068,7 +1079,7 @@ class LALRtable1(LRtable):
         j = 0
         for i in range(len(c)):
             s = s + "I_%d: \n" % i
-            for item in c[i].keys():
+            for item in list(c[i].keys()):
                 r, p = item
                 lhs = self.gr.rules[r][0]
                 rhs = self.gr.rules[r][1]
@@ -1082,7 +1093,7 @@ class LALRtable1(LRtable):
         is the closure of the set of all items C{(A -> sX.r,a)} such that
         C{(A -> s.Xr,a)} in C{I}"""
         valid = {}
-        for (n, i) in items.keys():
+        for (n, i) in list(items.keys()):
             if self.NextToDot((n, i)) == s:
                 if (n, i + 1) not in valid:
                     valid[(n, i + 1)] = Set([])
@@ -1102,7 +1113,7 @@ class LALRtable1(LRtable):
         e = 1
         while e:
             e = 0
-            for i in items.keys():
+            for i in list(items.keys()):
                 s = self.NextToDot(i)
                 if s in self.gr.nonterminals and s in self.gr.ntr:
                     l = self.AfterDot(i, items)
@@ -1116,7 +1127,7 @@ class LALRtable1(LRtable):
     def get_union(self, c, j):
         """ """
         for i in c:
-            if i.keys() == j.keys():
+            if list(i.keys()) == list(j.keys()):
                 return c.index(i)
         return -1
 
@@ -1125,9 +1136,9 @@ class LALRtable1(LRtable):
         if j == {} or j in c: return 0
         e = 2
         for i in c:
-            if i.keys() == j.keys():
+            if list(i.keys()) == list(j.keys()):
                 e = 0
-                for k in j.keys():
+                for k in list(j.keys()):
                     if i[k].s_extend(j[k]) == 1:
                         e = 1
                 break
@@ -1172,7 +1183,7 @@ class LALRtable(LALRtable1):
         """ collection of LR(0) items """
         self.gr.DERIVE_T()
         self.gr.TransClose()
-        c = self.items()
+        c = list(self.items())
         if _DEBUG:
             print(self.print_items(c))
         """ make action[i,X] and goto[i,X]
@@ -1182,7 +1193,7 @@ class LALRtable(LALRtable1):
         #shelve not working with osets
         #self.Log.items = c
         for i in range(len(c)):
-            for item in c[i].keys():
+            for item in list(c[i].keys()):
                 C = self.NextToDot(item)
                 if C in self.gr.nonterminals:
                     if C in self.gr.derive_ter:
@@ -1191,7 +1202,7 @@ class LALRtable(LALRtable1):
                                 j = self.goto_ref[(i, a)]
                                 self.add_action(i, a, 'shift', j)
                     if C in self.gr.close_nt:
-                        for A in self.gr.close_nt[C].keys():
+                        for A in list(self.gr.close_nt[C].keys()):
                             """Error: ignores end string s in C->*As"""
                             for p in self.gr.close_nt[C][A]:
                                 r = self.AfterDotTer(item, c[i], p)
@@ -1249,13 +1260,13 @@ class LALRtable(LALRtable1):
         for k in c:
             nk = c.index(k)
             lh[nk] = {}  #Set([])
-            for (n, i) in k.keys():
+            for (n, i) in list(k.keys()):
                 lh[nk][(n, i)] = Set([])
                 j = {}
                 j[(n, i)] = Set([(self.gr.dummy)])
                 j = self.closure(j)
                 for s in symbols:
-                    for (m1, j1) in j.keys():
+                    for (m1, j1) in list(j.keys()):
                         if self.NextToDot((m1, j1)) == s:
                             for a in j[(m1, j1)]:
                                 if a == self.gr.dummy:
@@ -1270,7 +1281,7 @@ class LALRtable(LALRtable1):
             e = 0
             for k in c:
                 nk = c.index(k)
-                for (n, i) in k.keys():
+                for (n, i) in list(k.keys()):
                     for (m, n1, i1) in lh[nk][(n, i)]:
                         if c[m][(n1, i1)].s_extend(k[(n, i)]) == 1:
                             e = 1
@@ -1283,13 +1294,13 @@ class LALRtable(LALRtable1):
             grammar symbol is the closure of the set of all items (A
             -> sX.r,a) such that (A -> s.Xr,a) is in I"""
         valid = {}
-        for (n, i) in items.keys():
+        for (n, i) in list(items.keys()):
             x = self.NextToDot((n, i))
             if x == s:
                 if (n, i + 1) not in valid:
                     valid[(n, i + 1)] = Set([])
             if x in self.gr.close_nt:
-                for a in self.gr.close_nt[x].keys():
+                for a in list(self.gr.close_nt[x].keys()):
                     if a in self.gr.ntr:
                         for k in self.gr.ntr[a]:
                             if self.gr.rules[k][1] != [] and self.gr.rules[k][1][0] == s:
@@ -1456,7 +1467,7 @@ class LRparser(object):
         """@return: the LR parsing table showing for each state the
         action and goto function """
 
-        l = (map(lambda x: x[0], self.ACTION.keys()))
+        l = ([x[0] for x in list(self.ACTION.keys())])
         l.sort()
         a1 = "\nState\n"
         if len(self.terminals) < 20:
@@ -1489,7 +1500,7 @@ class LRparser(object):
                 a1 = "%s%s" % (a1, a3)
             ac = a1
 
-        l = (map(lambda x: x[0], self.GOTO.keys()))
+        l = ([x[0] for x in list(self.GOTO.keys())])
         l.sort()
         a1 = "\nState\n"
         if len(self.nonterminals) < 20:
@@ -1534,7 +1545,7 @@ class LRparser(object):
             s = self.stack.top()[0]
             a = self.tokens[self.ip][0]
             if _DEBUG:
-                print("Input: %s\nState: %s" % (map(lambda x: x[0], self.tokens[self.ip:]), s))
+                print("Input: %s\nState: %s" % ([x[0] for x in self.tokens[self.ip:]], s))
                 print("Stack: %s" % self.stack)
             try:
                 if self.ACTION[s, a][0] == 'shift':
@@ -1989,7 +2000,7 @@ class Yappy_grammar(Yappy):
             else:
                 return (lhs, l[0], eval(l[1], globals(), context['locals']))
 
-        return map(lambda l: grule(self, l), arg[2])
+        return [grule(self, l) for l in arg[2]]
 
     def GRule(self, args, context):
         if 'rules' in context:

@@ -24,6 +24,16 @@ Deterministic and non-deterministic automata manipulation, conversion and evalua
    675 Mass Ave, Cambridge, MA 02139, USA."""
 from __future__ import print_function
 from __future__ import absolute_import
+from __future__ import division
+from __future__ import unicode_literals
+from future import standard_library
+standard_library.install_aliases()
+from builtins import map
+from builtins import str
+from builtins import range
+from builtins import *
+from past.utils import old_div
+from builtins import object
 from copy import copy
 from collections import deque
 
@@ -287,10 +297,10 @@ class FA(Drawable):
         if sti >= len(self.States):
             raise DFAstateUnknown(sti)
         else:
-            if sti in self.delta.keys():
+            if sti in list(self.delta.keys()):
                 del self.delta[sti]
-            for j in self.delta.keys():
-                for sym in self.delta[j].keys():
+            for j in list(self.delta.keys()):
+                for sym in list(self.delta[j].keys()):
                     self._deleteRefInDelta(j, sym, sti)
             if sti in self.Final:
                 self.Final.remove(sti)
@@ -299,7 +309,7 @@ class FA(Drawable):
                 if sti < s:
                     self.Final.remove(s)
                     self.Final.add(s - 1)
-            for j in xrange(sti + 1, len(self.States)):
+            for j in range(sti + 1, len(self.States)):
                 if j in self.delta:
                     self.delta[j - 1] = self.delta[j]
                     del self.delta[j]
@@ -330,7 +340,7 @@ class FA(Drawable):
         n = len(ss)
         n0 = 1
         while True:
-            for x in itertools.product(range(n), repeat=n0):
+            for x in itertools.product(list(range(n)), repeat=n0):
                 yield _translate(x, ss, stringo)
             n0 += 1
 
@@ -516,12 +526,12 @@ class FA(Drawable):
         .. attention::
            the object is modified in place"""
         if nameList is None:
-            self.States = range(len(self.States))
+            self.States = list(range(len(self.States)))
         else:
             if len(nameList) < len(self.States):
                 raise DFAerror
             else:
-                for i in xrange(len(self.States)):
+                for i in range(len(self.States)):
                     self.renameState(i, nameList[i])
         return self
 
@@ -546,7 +556,7 @@ class FA(Drawable):
 
         .. attention::
            in place transformation"""
-        for i in xrange(len(self.States)):
+        for i in range(len(self.States)):
             if self.States[i] == "":
                 self.States[i] = str(i)
         return self
@@ -740,7 +750,7 @@ class OFA(FA):
         I = [i for i in forceIterable(self.Initial)]
         F = [i for i in self.Final]
         dt = []
-        for i in xrange(self.__len__()):
+        for i in range(self.__len__()):
             for c in self.delta.get(i, []):
                 if c == Epsilon:
                     ci = -1
@@ -788,7 +798,7 @@ class OFA(FA):
         for s, _ in enumerate(self.States):
             if s not in self.delta:
                 self.delta[s] = {}
-            ni = self.delta[s].keys()
+            ni = list(self.delta[s].keys())
             if len(ni) != ss:
                 for c in self.Sigma:
                     if c not in ni:
@@ -809,7 +819,7 @@ class OFA(FA):
         .. attention::
            in place transformation"""
         useful = self.usefulStates()
-        del_states = [s for s in xrange(len(self.States)) if s not in useful]
+        del_states = [s for s in range(len(self.States)) if s not in useful]
         if del_states:
             self.deleteStates(del_states)
         return self
@@ -872,7 +882,7 @@ class OFA(FA):
             gfa.reorder(foo)
         else:
             n = 1
-        lr = range(len(gfa.States) - n)
+        lr = list(range(len(gfa.States) - n))
         gfa.eliminateAll(lr)
         gfa.completeDelta()
         if n == 1:
@@ -900,7 +910,7 @@ class OFA(FA):
         new = self.dup()
         new.trim()
         gfa = new.toGFA()
-        for order in permutations(range(len(gfa.States))):
+        for order in permutations(list(range(len(gfa.States)))):
             return self.re_stateElimination(copy(list(order))).alphabeticLength(), order
 
     def _isAcyclic(self, s, visited, strict):
@@ -934,7 +944,7 @@ class OFA(FA):
         :returns: True if the FA is acyclic
         :rtype: bool"""
         visited = {}
-        for s in xrange(len(self.States)):
+        for s in range(len(self.States)):
             acyclic = self._isAcyclic(s, visited, strict)
             if not acyclic:
                 return False
@@ -960,7 +970,7 @@ class OFA(FA):
            self loops are taken in consideration"""
         visited = []
         L = []
-        for s in xrange(len(self.States)):
+        for s in range(len(self.States)):
             self._topoSort(s, visited, L)
         return L
 
@@ -972,7 +982,7 @@ class OFA(FA):
         # DFS to obtain {v:(e, s)} -> convert from {v:(e, s)} to {(e, s):v} -> eliminate all {(1, 1):v}
         gfa = self.toGFA()
         io = {}
-        for i in xrange(len(self.States)):
+        for i in range(len(self.States)):
             io[i] = [0, 0]
         gfa.DFS(io)
         new = {}
@@ -987,7 +997,7 @@ class OFA(FA):
         while new[(1, 1)]:
             v = new[(1, 1)].pop()
             i = list(gfa.predecessors[v])[0]
-            o = gfa.delta[v].items()[0][0]
+            o = list(gfa.delta[v].items())[0][0]
             if o in gfa.delta[i]:
                 gfa.delta[i][o] = reex.disj(reex.concat(gfa.delta[i][v], gfa.delta[v][o], copy(self.Sigma)),
                                             gfa.delta[i][o])
@@ -1049,7 +1059,7 @@ class OFA(FA):
         gfa = self.toGFA()
         gfa.lab = {}
         gfa.out_index = {}
-        for i in xrange(len(gfa.States)):
+        for i in range(len(gfa.States)):
             if i not in gfa.delta:
                 gfa.out_index[i] = 0
             else:
@@ -1086,11 +1096,11 @@ class OFA(FA):
             return reex.emptyset(copy(self.Sigma))
         gfa.normalize()
         weights = {}
-        for st in xrange(len(gfa.States)):
+        for st in range(len(gfa.States)):
             if st != gfa.Initial and st not in gfa.Final:
                 weights[st] = gfa.weight(st)
-        for i in xrange(len(gfa.States) - 2):
-            m = [(v, u) for (u, v) in weights.items()]
+        for i in range(len(gfa.States) - 2):
+            m = [(v, u) for (u, v) in list(weights.items())]
             m = min(m)
             m = m[1]
             # After 'm' is eliminated it's adjacencies might
@@ -1145,11 +1155,11 @@ class OFA(FA):
         else:
             n = 1
         weights = {}
-        for st in xrange(len(gfa.States)):
+        for st in range(len(gfa.States)):
             if st != gfa.Initial and st not in gfa.Final:
                 weights[st] = gfa.weight(st)
-        for i in xrange(len(gfa.States) - n):
-            m = [(v, u) for (u, v) in weights.items()]
+        for i in range(len(gfa.States) - n):
+            m = [(v, u) for (u, v) in list(weights.items())]
             m = min(m)
             m = m[1]
             succs = set([])
@@ -1191,13 +1201,13 @@ class OFA(FA):
         new.trim()
         gfa = new.toGFA()
         if order is None:
-            order = range(len(gfa.States))
+            order = list(range(len(gfa.States)))
         if not len(gfa.Final):
             return reex.emptyset(copy(self.Sigma))
         gfa.normalize()
         while order:
             st = order.pop(0)
-            for i in xrange(len(order)):
+            for i in range(len(order)):
                 if order[i] > st:
                     order[i] -= 1
             gfa.eliminateState(st)
@@ -1238,11 +1248,11 @@ class OFA(FA):
         else:
             n = 1
         weights = {}
-        for st in xrange(len(gfa.States)):
+        for st in range(len(gfa.States)):
             if st != gfa.Initial and st not in gfa.Final:
                 weights[st] = gfa.weightWithCycles(st, cycles)
-        for i in xrange(len(gfa.States) - n):
-            m = [(v, u) for (u, v) in weights.items()]
+        for i in range(len(gfa.States) - n):
+            m = [(v, u) for (u, v) in list(weights.items())]
             m = min(m)
             m = m[1]
             succs = set([])
@@ -1306,11 +1316,11 @@ class OFA(FA):
         else:
             n = 1
         weights = {}
-        for st in xrange(len(gfa.States)):
+        for st in range(len(gfa.States)):
             if st != gfa.Initial and st not in gfa.Final:
                 weights[st] = gfa.weightWithCycles(st, cycles)
-        for i in xrange(len(gfa.States) - n):
-            m = [(v, u) for (u, v) in weights.items()]
+        for i in range(len(gfa.States) - n):
+            m = [(v, u) for (u, v) in list(weights.items())]
             m = min(m)
             m = m[1]
             succs = set([])
@@ -1371,10 +1381,10 @@ class OFA(FA):
                 gfa.reorder(foo)
             else:
                 n = 1
-            order = range(len(gfa.States) - n)
+            order = list(range(len(gfa.States) - n))
         while order:
             st = order.pop(0)
-            for i in xrange(len(order)):
+            for i in range(len(order)):
                 if order[i] > st:
                     order[i] -= 1
             gfa.eliminateState(st)
@@ -1537,7 +1547,7 @@ class OFA(FA):
            performs in place alteration of the automata
 
         .. versionadded:: 0.9.6"""
-        if st in self.delta.keys():
+        if st in list(self.delta.keys()):
             del (self.delta[st])
         return self
 
@@ -1746,7 +1756,7 @@ class NFA(OFA):
         c = NFA()
         NSigma = d1.Sigma.union(d2.Sigma)
         c.setSigma(NSigma)
-        c.States = [(i, j) for i in xrange(len(d1.States)) for j in xrange(len(d2.States))]
+        c.States = [(i, j) for i in range(len(d1.States)) for j in range(len(d2.States))]
         c.addInitial(c.stateIndex((list(d1.Initial)[0], list(d2.Initial)[0])))
         for st in c.States:
             si = c.stateIndex(st)
@@ -1905,7 +1915,7 @@ class NFA(OFA):
         self.States = new_states
         self.delta = new_delta
         self.Final = new_final
-        self.Initial = set(map(lambda x: rename_map.get(x, x), self.Initial))
+        self.Initial = set([rename_map.get(x, x) for x in self.Initial])
 
     def addTransition(self, sti1, sym, sti2):
         """Adds a new transition. Transition is from ``sti1`` to ``sti2`` consuming symbol ``sym``. ``sti2`` is a
@@ -1964,7 +1974,7 @@ class NFA(OFA):
         self.delta[sti1][sym].discard(sti2)
         if not self.delta[sti1][sym]:
             del self.delta[sti1][sym]
-            if all(map(lambda x: sym not in x, self.delta.itervalues())):
+            if all([sym not in x for x in iter(self.delta.values())]):
                 self.Sigma.discard(sym)
             if not self.delta[sti1]:
                 del self.delta[sti1]
@@ -1990,8 +2000,8 @@ class NFA(OFA):
 
         .. note::
            dictionary does not have to be complete"""
-        if len(dicti.keys()) != len(self.States):
-            for i in xrange(len(self.States)):
+        if len(list(dicti.keys())) != len(self.States):
+            for i in range(len(self.States)):
                 if i not in dicti:
                     dicti[i] = i
         delta = {}
@@ -2002,13 +2012,13 @@ class NFA(OFA):
                 for st in self.delta[s][c]:
                     delta[dicti[s]][c].add(dicti[st])
         self.delta = delta
-        self.setInitial(map(lambda x: dicti[x], self.Initial))
+        self.setInitial([dicti[x] for x in self.Initial])
         Final = set()
         for i in self.Final:
             Final.add(dicti[i])
         self.Final = Final
-        states = range(len(self.States))
-        for i in xrange(len(self.States)):
+        states = list(range(len(self.States)))
+        for i in range(len(self.States)):
             states[dicti[i]] = self.States[i]
         self.States = states
 
@@ -2016,7 +2026,7 @@ class NFA(OFA):
         """Whether this NFA has epsilon-transitions
 
         :rtype: bool"""
-        return any(map(lambda x: Epsilon in x, self.delta.itervalues()))
+        return any([Epsilon in x for x in iter(self.delta.values())])
 
     def epsilonClosure(self, st):
         """Returns the set of states epsilon-connected to from given state or set of states.
@@ -2051,7 +2061,7 @@ class NFA(OFA):
         not_final = st not in self.Final
         for target in targets:
             if target in self.delta:
-                for symbol, states in self.delta[target].items():
+                for symbol, states in list(self.delta[target].items()):
                     if symbol is Epsilon:
                         continue
                     for state in states:
@@ -2164,11 +2174,11 @@ class NFA(OFA):
 
         .. note::
            State names are not preserved."""
-        for s in xrange(len(self.States)):
+        for s in range(len(self.States)):
             self.States[s] = (0, self.States[s])
         for c in fa.Sigma:
             self.addSigma(c)
-        for s in xrange(len(fa.States)):
+        for s in range(len(fa.States)):
             self.addState((1, s))
         for s in fa.delta:
             for c in fa.delta[s]:
@@ -2196,7 +2206,7 @@ class NFA(OFA):
         i = 0
         while True:
             try:
-                foo = self.delta[lst[i]].keys()
+                foo = list(self.delta[lst[i]].keys())
             except KeyError:
                 foo = []
             for c in foo:
@@ -2220,7 +2230,7 @@ class NFA(OFA):
         i = 0
         while True:
             try:
-                foo = self.delta[lst[i]].keys()
+                foo = list(self.delta[lst[i]].keys())
             except KeyError:
                 foo = []
             for c in foo:
@@ -2257,7 +2267,7 @@ class NFA(OFA):
         old = self.dup()
         old.trim()
         s = len(old.States)
-        for i in xrange(s):
+        for i in range(s):
             new.addState(str(i))
         for i in old.delta:
             for c in old.delta[i]:
@@ -2404,7 +2414,7 @@ class NFA(OFA):
             if j is None:
                 return set()
             try:
-                ks = a.delta[j].keys()
+                ks = list(a.delta[j].keys())
             except KeyError:
                 return set()
             return set(ks)
@@ -2473,7 +2483,7 @@ class NFA(OFA):
         :type dest: int"""
         if dest in self.delta[src][sym]:
             self.delta[src][sym].remove(dest)
-        for k in xrange(dest + 1, len(self.States)):
+        for k in range(dest + 1, len(self.States)):
             if k in self.delta[dest][sym]:
                 self.delta[src][sym].remove(k)
                 self.delta[src][sym].add(k - 1)
@@ -2616,7 +2626,7 @@ class NFA(OFA):
 
         .. attention::
            in-place modification"""
-        for s in xrange(len(self.States)):
+        for s in range(len(self.States)):
             if Epsilon in self.delta.get(s, []):
                 for s1 in self.epsilonClosure(self.delta[s][Epsilon]):
                     if s1 in self.Final:
@@ -2641,8 +2651,8 @@ class NFA(OFA):
         .. seealso:: Ilie&Yu, 2003"""
         n_states = len(self.States)
         undecided_pairs = set([frozenset((i, j))
-                               for i in xrange(n_states)
-                               for j in xrange(i + 1, n_states)])
+                               for i in range(n_states)
+                               for j in range(i + 1, n_states)])
         marked = set()
         for pair in undecided_pairs:
             a, b = pair
@@ -2703,8 +2713,8 @@ class NFA(OFA):
         :rtype: list of tuples"""
         n_states = len(self.States)
         marked = set()
-        for i in xrange(n_states):
-            for j in xrange(i + 1, n_states):
+        for i in range(n_states):
+            for j in range(i + 1, n_states):
                 if (i in self.Final) != (j in self.Final):
                     marked.add((i, j))
 
@@ -2727,8 +2737,8 @@ class NFA(OFA):
         while changed_marked:
             # noinspection PyUnusedLocal
             changed_marked = False
-            for i in xrange(n_states):
-                for j in xrange(i + 1, n_states):
+            for i in range(n_states):
+                for j in range(i + 1, n_states):
                     if (i, j) in marked:
                         continue
                     if i not in self.delta and j not in self.delta:
@@ -2742,8 +2752,8 @@ class NFA(OFA):
                         changed_marked = True
                         continue
         return [(i, j)
-                for i in xrange(n_states)
-                for j in xrange(i + 1, n_states)
+                for i in range(n_states)
+                for j in range(i + 1, n_states)
                 if (i, j) not in marked]
 
     def equivReduced(self, equiv_classes):
@@ -2795,7 +2805,7 @@ class NFA(OFA):
         if not autobisimulation:
             return self.dup()
         equiv_classes = UnionFind(auto_create=True)
-        for i in xrange(len(self.States)):
+        for i in range(len(self.States)):
             equiv_classes.make_set(i)
         for i, j in autobisimulation:
             equiv_classes.union(i, j)
@@ -2812,7 +2822,7 @@ class NFA(OFA):
         if not autobisimulation:
             return self.dup()
         equiv_classes = UnionFind(auto_create=True)
-        for i in xrange(len(self.States)):
+        for i in range(len(self.States)):
             equiv_classes.make_set(i)
         for i, j in autobisimulation:
             equiv_classes.union(i, j)
@@ -2885,7 +2895,7 @@ class NFA(OFA):
         """Number of transitions of a NFA
 
         :rtype: int"""
-        return sum([sum(map(len, self.delta[t].itervalues()))
+        return sum([sum(map(len, iter(self.delta[t].values())))
                     for t in self.delta])
 
     def toGFA(self):
@@ -2901,7 +2911,7 @@ class NFA(OFA):
         gfa.States = fa.States[:]
         gfa.setFinal(fa.Final)
         gfa.predecessors = {}
-        for i in xrange(len(gfa.States)):
+        for i in range(len(gfa.States)):
             gfa.predecessors[i] = set([])
         for s in fa.delta:
             for c in fa.delta[s]:
@@ -2919,7 +2929,7 @@ class NFA(OFA):
         :returns: children states
         :rtype: Set of int"""
         l = set([])
-        if state not in self.delta.keys():
+        if state not in list(self.delta.keys()):
             return l
         for c in self.Sigma:
             if c in self.delta[state]:
@@ -2944,7 +2954,7 @@ class NFA(OFA):
                 l.append((n1, n2))
             if n1.__str__() == n2.__str__():
                 a3.addFinal(a3.stateIndex((n1, n2)))
-        a3.deleteStates(map(a3.stateIndex, l))
+        a3.deleteStates(list(map(a3.stateIndex, l)))
         return a3
 
     def _starTransitions(self):
@@ -3190,7 +3200,7 @@ class NFAr(NFA):
             else:
                 nfa = self.dup()
                 nfa.elimEpsilon()
-        return all([len(m) == 1 for m in nfa.deltaReverse.itervalues()])
+        return all([len(m) == 1 for m in nfa.deltaReverse.values()])
 
     def elimEpsilonO(self):
         """Eliminate epsilon-transitions from this automaton, with reduction of states through elimination of
@@ -3415,7 +3425,7 @@ class DFA(OFA):
         for state in del_states:
             if self.initialP(state):
                 self.Initial = None
-        for state in xrange(len(self.States)):
+        for state in range(len(self.States)):
             if state not in del_states:
                 rename_map[state] = len(new_states)
                 new_states.append(self.States[state])
@@ -3425,7 +3435,7 @@ class DFA(OFA):
                 new_final.add(state_renamed)
             if state not in old_delta:
                 continue
-            for symbol, target in old_delta[state].iteritems():
+            for symbol, target in old_delta[state].items():
                 if target in rename_map:
                     self.addTransition(state_renamed, symbol, rename_map[target])
         self.States = new_states
@@ -3473,7 +3483,7 @@ class DFA(OFA):
         if self.delta[sti1][sym] is not sti2:
             return
         del self.delta[sti1][sym]
-        if all(map(lambda x: sym not in x, self.delta.itervalues())):
+        if all([sym not in x for x in iter(self.delta.values())]):
             self.Sigma.discard(sym)
         if not self.delta[sti1]:
             del self.delta[sti1]
@@ -3486,7 +3496,7 @@ class DFA(OFA):
 
         :rtype: int"""
         in_deg = 0
-        for s in xrange(len(self.States)):
+        for s in range(len(self.States)):
             for a in self.Sigma:
                 try:
                     if self.delta[s][a] == st:
@@ -3573,7 +3583,7 @@ class DFA(OFA):
         foo.trim()
         if foo.emptyP():
             return foo
-        foo.setFinal(range(len(foo.States)))
+        foo.setFinal(list(range(len(foo.States))))
         return foo
 
     def suff(self):
@@ -4076,7 +4086,7 @@ class DFA(OFA):
         i = 0
         while True:
             try:
-                foo = self.delta[lst[i]].keys()
+                foo = list(self.delta[lst[i]].keys())
             except KeyError:
                 foo = []
             for c in foo:
@@ -4138,14 +4148,14 @@ class DFA(OFA):
             new.setInitial(s)
             return new
         equiv = set()
-        for i in [x for x in xrange(len(self.States)) if x in scc]:
-            for j in [x for x in xrange(i) if x in scc]:
+        for i in [x for x in range(len(self.States)) if x in scc]:
+            for j in [x for x in range(i) if x in scc]:
                 if ((i in self.Final and j in self.Final) or
                         (i not in self.Final and j not in self.Final)):
                     equiv.add((i, j))
         if not self.completeP():
             Complete = False
-            for i in [x for x in xrange(len(self.States))
+            for i in [x for x in range(len(self.States))
                       if (x in scc and x not in self.Final)]:
                 equiv.add((None, i))
         else:
@@ -4173,11 +4183,11 @@ class DFA(OFA):
             r = _deref(nStatEquiv, j)
             nStatEquiv[i] = r
             nNames[r] = nNames.get(r, [r]) + [i]
-        removed = nStatEquiv.keys()
-        for i in [x for x in xrange(len(self.States)) if x not in removed]:
+        removed = list(nStatEquiv.keys())
+        for i in [x for x in range(len(self.States)) if x not in removed]:
             new.addState(i)
         if Complete:
-            for i in [x for x in xrange(len(self.States)) if x not in removed]:
+            for i in [x for x in range(len(self.States)) if x not in removed]:
                 for c in self.Sigma:
                     xi = new.stateIndex(i)
                     j = self.delta[i][c]
@@ -4188,7 +4198,7 @@ class DFA(OFA):
                 trashIdx = new.addState()
                 for c in self.Sigma:
                     new.addTransition(trashIdx, c, trashIdx)
-            for i in [x for x in xrange(len(self.States)) if x not in removed]:
+            for i in [x for x in range(len(self.States)) if x not in removed]:
                 xi = new.stateIndex(i)
                 for c in self.Sigma:
                     # noinspection PyNoneFunctionAssignment
@@ -4203,7 +4213,7 @@ class DFA(OFA):
                 xi = new.stateIndex(nStatEquiv.get(i, i))
                 new.addFinal(xi)
         new.setInitial(nStatEquiv.get(self.Initial, self.Initial))
-        new.renameStates([nNames.get(x, x) for x in xrange(len(new.States) - 1)] + ["Dead"])
+        new.renameStates([nNames.get(x, x) for x in range(len(new.States) - 1)] + ["Dead"])
         return new
 
     def minimalNCompleteP(self):
@@ -4236,7 +4246,7 @@ class DFA(OFA):
         self.trim()
         deadS = None
         complete = True
-        for s in xrange(len(self.States)):
+        for s in range(len(self.States)):
             if s not in self.delta:
                 complete = False
                 if s not in self.Final:
@@ -4257,7 +4267,7 @@ class DFA(OFA):
         if not complete:
             if deadS is None:
                 deadS = self.addState("dead")
-            for s in xrange(len(self.States)):
+            for s in range(len(self.States)):
                 for d in self.Sigma:
                     if s not in self.delta or d not in self.delta[s]:
                         self.addTransition(s, d, deadS)
@@ -4277,14 +4287,14 @@ class DFA(OFA):
         n_states = len(duped.States)
         duped._mooreMarked = {}
         duped._moorePairList = {}
-        for p in xrange(n_states):
-            for q in xrange(n_states):
+        for p in range(n_states):
+            for q in range(n_states):
                 duped._moorePairList[(p, q)] = []
                 duped._mooreMarked[(p, q)] = False
                 if (p in duped.Final) ^ (q in duped.Final):
                     duped._mooreMarked[(p, q)] = True
-        for p in xrange(n_states):
-            for q in xrange(n_states):
+        for p in range(n_states):
+            for q in range(n_states):
                 if not ((p in duped.Final) ^ (q in duped.Final)):
                     exists_marked = False
                     for a in duped.Sigma:
@@ -4331,28 +4341,28 @@ class DFA(OFA):
         :rtype:list"""
         uf = UnionFind(auto_create=True)
         # eqstates = []
-        for p in xrange(len(self.States)):
-            for q in xrange(p + 1, len(self.States)):
+        for p in range(len(self.States)):
+            for q in range(p + 1, len(self.States)):
                 if not self._mooreMarked[(p, q)]:
                     A = uf.find(p)
                     B = uf.find(q)
                     uf.union(A, B)
         classes = {}
-        for p in xrange(len(self.States)):
+        for p in range(len(self.States)):
             lider = uf.find(p)
             if lider in classes:
                 classes[lider].append(p)
             else:
                 classes[lider] = [p]
-        return classes.values()
+        return list(classes.values())
 
     def _compute_delta_inv(self):
         """Adds a delta_inv feature. Used by minimalHopcroft."""
         self.delta_inv = {}
-        for s in xrange(len(self.States)):
+        for s in range(len(self.States)):
             self.delta_inv[s] = dict([(a, []) for a in self.Sigma])
-        for s1, to in self.delta.items():
-            for a, s2 in to.items():
+        for s1, to in list(self.delta.items()):
+            for a, s2 in list(to.items()):
                 self.delta_inv[s2][a].append(s1)
 
     def _undelta(self, states, x):
@@ -4390,7 +4400,7 @@ class DFA(OFA):
         duped = self.dup()
         duped.complete()
         duped._compute_delta_inv()
-        duped.states = frozenset(xrange(len(duped.States)))
+        duped.states = frozenset(range(len(duped.States)))
         final = frozenset(duped.Final)
         not_final = duped.states - final
         L = set([])
@@ -4438,7 +4448,7 @@ class DFA(OFA):
         :rtype: bool"""
         all_pairs = set()
         for i in self.States:
-            for j in xrange(i + 1, len(self.States)):
+            for j in range(i + 1, len(self.States)):
                 all_pairs.add((i, j))
         not_final = set(self.States) - self.Final
         neq = set()
@@ -4474,8 +4484,8 @@ class DFA(OFA):
         .. attention::
            The automaton must be complete."""
         pairs = set()
-        for i in xrange(len(self.States)):
-            for j in xrange(i + 1, len(self.States)):
+        for i in range(len(self.States)):
+            for j in range(i + 1, len(self.States)):
                 pairs.add((i, j))
         while pairs:
             equiv = True
@@ -4514,12 +4524,12 @@ class DFA(OFA):
         duped.minimalIncr_neq = set()
         n_states = len(duped.States)
         for p in duped.Final:
-            for q in xrange(n_states):
+            for q in range(n_states):
                 if q not in duped.Final:
                     duped.minimalIncr_neq.add(_normalizePair(p, q))
         duped.minimalIncr_uf = UnionFind(auto_create=True)
-        for p in xrange(n_states):
-            for q in xrange(p + 1, n_states):
+        for p in range(n_states):
+            for q in range(p + 1, n_states):
                 if (p, q) in duped.minimalIncr_neq:
                     continue
                 if duped.minimalIncr_uf.find(p) == duped.minimalIncr_uf.find(q):
@@ -4537,13 +4547,13 @@ class DFA(OFA):
                 else:
                     duped.minimalIncr_neq |= duped.path
         classes = {}
-        for p in xrange(n_states):
+        for p in range(n_states):
             lider = duped.minimalIncr_uf.find(p)
             if lider in classes:
                 classes[lider].append(p)
             else:
                 classes[lider] = [p]
-        duped.joinStates(classes.values())
+        duped.joinStates(list(classes.values()))
         return duped
 
     # noinspection PyUnresolvedReferences
@@ -4608,8 +4618,8 @@ class DFA(OFA):
         duped.Dist = set()
         nstates = len(self.States)
         max_depth = max(0, nstates - 2)
-        for p in xrange(nstates):
-            for q in xrange(p + 1, nstates):
+        for p in range(nstates):
+            for q in range(p + 1, nstates):
                 if duped.Equiv.find(p) == duped.Equiv.find(q):
                     continue
                 if (p, q) in duped.Dist:
@@ -4631,7 +4641,7 @@ class DFA(OFA):
                 classes[lider].append(p)
             else:
                 classes[lider] = [p]
-        duped.joinStates(classes.values())
+        duped.joinStates(list(classes.values()))
         return duped
 
     # noinspection PyUnresolvedReferences
@@ -4687,8 +4697,8 @@ class DFA(OFA):
         """Prints table of compatibility (in the context of the minimalization algorithm).
 
         :param data: data to print"""
-        for s in xrange(len(self.States)):
-            for s1 in xrange(0, s):
+        for s in range(len(self.States)):
+            for s1 in range(0, s):
                 if s1 in data[s]:
                     print("_ ", end=' ')
                 else:
@@ -4715,7 +4725,7 @@ class DFA(OFA):
         for sl in lst:
             for s in sl[1:]:
                 try:
-                    foo = self.delta[s].keys()
+                    foo = list(self.delta[s].keys())
                     for c in foo:
                         if c not in self.delta[subst[s]]:
                             if self.delta[s][c] in subst:
@@ -4764,7 +4774,7 @@ class DFA(OFA):
         new.States = self.States[:]
         new.Initial = self.Initial
         new.Final = self.Final.copy()
-        for s in self.delta.keys():
+        for s in list(self.delta.keys()):
             new.delta[s] = {}
             for c in self.delta[s]:
                 new.delta[s][c] = self.delta[s][c]
@@ -4978,8 +4988,8 @@ class DFA(OFA):
         .. attention::
            It is up to the caller to remove the disconnected state. This can be achieved with ```trim()``."""
         if f is not t:
-            for state, to in self.delta.items():
-                for a, s in to.items():
+            for state, to in list(self.delta.items()):
+                for a, s in list(to.items()):
                     if f == s:
                         self.delta[state][a] = t
             if self.initialP(f):
@@ -5078,7 +5088,7 @@ class DFA(OFA):
         fa.eliminateDeadName()
         fa.complete()
         fa.setFinal([])
-        for s in xrange(len(fa.States)):
+        for s in range(len(fa.States)):
             if s not in self.Final:
                 fa.addFinal(s)
         return fa
@@ -5087,7 +5097,7 @@ class DFA(OFA):
         if type(other) != type(self):
             raise FAdoGeneralError("Incompatible objects")
         fa = self.product(other, complete)
-        for i in xrange(len(fa.States)):
+        for i in range(len(fa.States)):
             (i1, i2) = fa.States[i]
             if i1 in self.Final or i2 in other.Final:
                 fa.addFinal(i)
@@ -5108,7 +5118,7 @@ class DFA(OFA):
         if not isinstance(other, DFA):
             raise FAdoGeneralError("Incompatible objects")
         fa = self.product(other, complete)
-        for i in xrange(len(fa.States)):
+        for i in range(len(fa.States)):
             (i1, i2) = fa.States[i]
             if i1 in self.Final and i2 in other.Final:
                 fa.addFinal(i)
@@ -5543,8 +5553,8 @@ class DFA(OFA):
 
         :param dicti
         :type dicti: dictionary"""
-        if len(dicti.keys()) != len(self.States):
-            for i in xrange(len(self.States)):
+        if len(list(dicti.keys())) != len(self.States):
+            for i in range(len(self.States)):
                 if i not in dicti:
                     dicti[i] = i
         delta = {}
@@ -5558,8 +5568,8 @@ class DFA(OFA):
         for i in self.Final:
             Final.add(dicti[i])
         self.Final = Final
-        states = range(len(self.States))
-        for i in xrange(len(self.States)):
+        states = list(range(len(self.States)))
+        for i in range(len(self.States)):
             states[dicti[i]] = self.States[i]
         self.States = states
 
@@ -5705,7 +5715,7 @@ class DFA(OFA):
         i = 0
         while True:
             try:
-                foo = self.delta[lst[i]].keys()
+                foo = list(self.delta[lst[i]].keys())
             except KeyError:
                 foo = []
             for c in foo:
@@ -5760,7 +5770,7 @@ class DFA(OFA):
         gfa.setInitial(self.Initial)
         gfa.setFinal(self.Final)
         gfa.predecessors = {}
-        for i in xrange(len(gfa.States)):
+        for i in range(len(gfa.States)):
             gfa.predecessors[i] = set([])
         for s in self.delta:
             for c in self.delta[s]:
@@ -5802,14 +5812,14 @@ class DFA(OFA):
         n = len(aut)
         mon = SSemiGroup()
         if monoid:
-            a = tuple((x for x in xrange(n)))
+            a = tuple((x for x in range(n)))
             mon.elements.append(a)
             mon.words.append((None, None))
             mon.gen.append(0)
             mon.Monoid = True
         tmp = ([], [])
         for k in aut.Sigma:
-            a = tuple((aut.delta[s][k] for s in xrange(n)))
+            a = tuple((aut.delta[s][k] for s in range(n)))
             tmp = mon.add(a, None, k, tmp)
         if len(tmp[0]):
             mon.addGen(tmp)
@@ -5839,7 +5849,7 @@ class DFA(OFA):
             g1 = sm.gen[-1] + 1
             for (sym, t1) in enumerate(sm.elements[1:natomic + 1]):
                 for (pr, t2) in enumerate(sm.elements[g0:g1]):
-                    t12 = tuple((t2[t1[i]] for i in xrange(len(t1))))
+                    t12 = tuple((t2[t1[i]] for i in range(len(t1))))
                     ll = sm.add(t12, pr + g0, sm.words[sym + shift][1], ll)
             if len(ll[0]):
                 sm.addGen(ll)
@@ -5964,8 +5974,8 @@ class GFA(OFA):
 
         .. note::
            dictionary does not have to be complete"""
-        if len(dictio.keys()) != len(self.States):
-            for i in xrange(len(self.States)):
+        if len(list(dictio.keys())) != len(self.States):
+            for i in range(len(self.States)):
                 if i not in dictio:
                     dictio[i] = i
         delta = {}
@@ -5988,8 +5998,8 @@ class GFA(OFA):
         for i in self.Final:
             Final.add(dictio[i])
         self.Final = Final
-        states = range(len(self.States))
-        for i in xrange(len(self.States)):
+        states = list(range(len(self.States)))
+        for i in range(len(self.States)):
             states[dictio[i]] = self.States[i]
         self.States = states
 
@@ -6119,7 +6129,7 @@ class GFA(OFA):
 
         :param io:"""
         visited = []
-        for s in xrange(len(self.States)):
+        for s in range(len(self.States)):
             self.dfs_visit(s, visited, io)
 
     def dfs_visit(self, s, visited, io):
@@ -6181,7 +6191,7 @@ class GFA(OFA):
         """ deletes a state from the GFA
         :param sti:"""
         newOrder = {}
-        for i in xrange(sti, len(self.States) - 1):
+        for i in range(sti, len(self.States) - 1):
             newOrder[i + 1] = i
         newOrder[sti] = len(self.States) - 1
         self.reorder(newOrder)
@@ -6531,7 +6541,7 @@ class EnumDFA(EnumL):
         :type n: integer
 
         .. note:: Makinen algorithm for DFAs"""
-        for i in xrange(len(self.aut)):
+        for i in range(len(self.aut)):
             if i not in self.tmin:
                 self.tmin[i] = {}
             for sym in self.Sigma:
@@ -6539,7 +6549,7 @@ class EnumDFA(EnumL):
                     self.tmin.setdefault(i, {})[1] = sym
                     break
         for j in range(2, n + 1):
-            for i in xrange(len(self.aut)):
+            for i in range(len(self.aut)):
                 m = None
                 if i in self.aut.delta:
                     for sym in self.Sigma:
@@ -6559,7 +6569,7 @@ class EnumDFA(EnumL):
         :param w: word"""
         n = len(w)
         self.initStack()
-        for i in xrange(1, n):
+        for i in range(1, n):
             s = set({})
             for j in self.stack[0]:
                 if j in self.aut.delta and w[i - 1] in self.aut.delta[j] and \
@@ -6579,7 +6589,7 @@ class EnumDFA(EnumL):
         :type w: str
         :rtype: str"""
         n = len(w)
-        for i in xrange(n, 0, -1):
+        for i in range(n, 0, -1):
             s = self.stack[0]
             b = self.Sigma[-1]
             flag = 0
@@ -6624,7 +6634,7 @@ class EnumNFA(EnumL):
         :type n: integer
 
         .. note: Makinen algorithm for NFAs"""
-        for i in xrange(len(self.aut)):
+        for i in range(len(self.aut)):
             self.tmin[i] = {}
             for sym in self.Sigma:
                 if i in self.aut.delta and sym in self.aut.delta[i]:
@@ -6632,7 +6642,7 @@ class EnumNFA(EnumL):
                         self.tmin.setdefault(i, {})[1] = sym
                         break
         for j in range(2, n + 1):
-            for i in xrange(len(self.aut)):
+            for i in range(len(self.aut)):
                 m = None
                 if i in self.aut.delta:
                     for sym in self.Sigma:
@@ -6651,7 +6661,7 @@ class EnumNFA(EnumL):
         :param w: word"""
         n = len(w)
         self.initStack()
-        for i in xrange(1, n):
+        for i in range(1, n):
             s = set([])
             for j in self.stack[0]:
                 if j in self.aut.delta and w[i - 1] in self.aut.delta[j]:
@@ -6668,7 +6678,7 @@ class EnumNFA(EnumL):
         :param w: word
         :type w: str"""
         n = len(w)
-        for i in xrange(n, 0, -1):
+        for i in range(n, 0, -1):
             if len(self.stack) == 0:
                 return None
             s = self.stack[0]
@@ -6743,7 +6753,7 @@ def stringToDFA(s, f, n, k):
     .. versionchanged:: 0.9.8 symbols are converted to str"""
     fa = DFA()
     fa.setSigma([])
-    fa.States = range(n)
+    fa.States = list(range(n))
     j = 0
     i = 0
     while i < len(f):
@@ -6752,9 +6762,9 @@ def stringToDFA(s, f, n, k):
         j += 1
         i += 1
     fa.setInitial(0)
-    for i in xrange(n * k):
+    for i in range(n * k):
         if s[i] != -1:
-            fa.addTransition(i / k, str(i % k), s[i])
+            fa.addTransition(old_div(i, k), str(i % k), s[i])
     return fa
 
 
@@ -6801,7 +6811,7 @@ def _deref(mp, val):
 
 def _dictGetKeyFromValue(elm, dic):
     try:
-        key = [i for i, j in dic.items() if elm in j][0]
+        key = [i for i, j in list(dic.items()) if elm in j][0]
     except IndexError:
         key = None
     return key
@@ -6873,7 +6883,7 @@ def saveToString(aut, sep="&"):
         for sf in aut.Initial:
             buff += ("{0:>s} ".format(statePP(aut.States[sf])))
     buff += sep
-    for s in xrange(len(aut.States)):
+    for s in range(len(aut.States)):
         if s in aut.delta:
             for a in aut.delta[s]:
                 if isinstance(aut.delta[s][a], set):

@@ -28,7 +28,15 @@ Extended regular expression classes and its manipulation
    with this program; if not, write to the Free Software Foundation, Inc.,
    675 Mass Ave, Cambridge, MA 02139, USA."""
 from __future__ import absolute_import
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
+from builtins import range
+from builtins import *
 import copy
 
 from .yappy_parser import *
@@ -332,7 +340,7 @@ class xre(reex.regexp):
             state, idx = stack.pop()
             state.setSigma(sigma)
             lf = state.linearForm()
-            for head in lf.keys():
+            for head in list(lf.keys()):
                 for st in lf[head]:
                     if st in aut.States:
                         i = aut.stateIndex(st)
@@ -879,7 +887,7 @@ class xdisj(xconnective):
             reg.Sigma = sigma
             l = reg.linearForm()
             tails = set()
-            for head in (lf.keys() + l.keys()):
+            for head in (list(lf.keys()) + list(l.keys())):
                 tails = lf.get(head, set()) | l.get(head, set())
                 if tails:
                     lf[head] = tails
@@ -890,7 +898,7 @@ class xdisj(xconnective):
         :return: """
         lf = self._linearForm()
         lfc = {}
-        for head in (lf.keys()):
+        for head in (list(lf.keys())):
             pdc = set()
             for di in lf[head]:
                 pdc.add(di._not())
@@ -1114,10 +1122,10 @@ class xconcat(xconnective):
             lf1 = arg1.linearForm()
             if arg1.ewp():
                 lf2 = self.tail().linearForm()
-            for head in lf1.keys():
+            for head in list(lf1.keys()):
                 lf[head] = self._concat(lf1[head], self.tail())
             if lf2:
-                for head in (lf.keys() + lf2.keys()):
+                for head in (list(lf.keys()) + list(lf2.keys())):
                     tails = lf.get(head, set()) | lf2.get(head, set())
                     if tails:
                         lf[head] = tails
@@ -1128,7 +1136,7 @@ class xconcat(xconnective):
         :return: """
         lf = self._linearForm()
         lfc = {}
-        for head in (lf.keys()):
+        for head in (list(lf.keys())):
             pdc = set()
             for di in lf[head]:
                 pdc.add(di._not())
@@ -1279,7 +1287,7 @@ class xconj(xconnective):
             ri = arg.pop()
             ri.Sigma = sigma
             l = ri.linearForm()
-            heads = lf.keys()
+            heads = list(lf.keys())
             for head in heads:
                 tails = self._intersection(l.get(head, set()), lf.get(head, set()))
                 if tails == set():
@@ -1295,7 +1303,7 @@ class xconj(xconnective):
         for ri in self.val:
             ri.setSigma(self.Sigma)
             lfi = ri.linearForm()
-            for head in (lfi.keys()):
+            for head in (list(lfi.keys())):
                 pdi = lfi[head]
                 pdc = set()
                 if pdi:
@@ -1458,7 +1466,7 @@ class xstar(xre):
         reg = self.val
         reg.Sigma = copy.deepcopy(self.Sigma)
         lf1 = self.val.linearForm()
-        for head in lf1.keys():
+        for head in list(lf1.keys()):
             lf[head] = self._concat(lf1[head], self)
         return lf
 
@@ -1467,7 +1475,7 @@ class xstar(xre):
         :return:"""
         lf = self._linearForm()
         lfc = {}
-        for head in (lf.keys()):
+        for head in (list(lf.keys())):
             pdc = set()
             for di in lf[head]:
                 pdc.add(di._not())

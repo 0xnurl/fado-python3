@@ -25,9 +25,17 @@
    along with this program; if not, write to the Free Software
    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA."""
 from __future__ import print_function
+from __future__ import unicode_literals
+from __future__ import division
+from __future__ import absolute_import
 
 
-class UnionFind:
+from future import standard_library
+standard_library.install_aliases()
+from builtins import range
+from builtins import *
+from builtins import object
+class UnionFind(object):
     """ Classical Union/Finf data structure """
     def __init__(self, auto_create=False):
         self.p = {}
@@ -75,12 +83,12 @@ class UnionFind:
         """Return the set with all
         :param x: value
         :rtype: list"""
-        return [j for j in self.p.keys() if self.find(j) == x]
+        return [j for j in list(self.p.keys()) if self.find(j) == x]
 
     def get_sets(self):
         """ Return the sets we have (list of sets)"""
         d = {}
-        for i in self.p.keys():
+        for i in list(self.p.keys()):
             foo = self.find(i)
             if foo in d:
                 d[foo].append(i)
@@ -92,22 +100,22 @@ if __name__ == "__main__":
     N = 10
     s = UnionFind()
 
-    for i in xrange(N):
+    for i in range(N):
         s.make_set(i)
 
-    for i in xrange(N):
+    for i in range(N):
         print("%d \in %d" % (i, s.find(i)))
     print("\njoining even numbers...")
-    for i in xrange(0, N-2, 2):
+    for i in range(0, N-2, 2):
         s.union(i, i+2)
     print("result:")
-    for i in xrange(N):
+    for i in range(N):
         print("%d \in %d" % (i, s.find(i)))
     print("\njoining odd numbers...")
-    for i in xrange(1, N-1, 2):
+    for i in range(1, N-1, 2):
         s.union(i, i+2)
     print("result:")
-    for i in xrange(N):
+    for i in range(N):
         print("%d \in %d" % (i, s.find(i)))
     print("elements which do not exist:")
     for i in [24, 25]:
@@ -116,7 +124,7 @@ if __name__ == "__main__":
     for i in [24, 25]:
         print("%d \in %s" % (i, s.find(i, True)))
     print("membership:")
-    for i in xrange(1, N+2):
+    for i in range(1, N+2):
         print("set to which %d belongs: %s" % (i, s.get_set(i)))
     print()
     print()

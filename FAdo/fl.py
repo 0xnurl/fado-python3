@@ -25,7 +25,17 @@ Finite languages manipulation
    along with this program; if not, write to the Free Software
    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA."""
 from __future__ import absolute_import
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
+from builtins import range
+from builtins import *
+from past.utils import old_div
+from builtins import object
 from . import fa
 from copy import copy
 from .common import *
@@ -301,7 +311,7 @@ class AFA(object):
         def _dealS(st1):
             if st1 not in torder:
                 torder.append(st1)
-                if st1 in self.delta.keys():
+                if st1 in list(self.delta.keys()):
                     for k in self.delta[st1]:
                         for dest in forceIterable(self.delta[st1][k]):
                             if dest not in torder and dest != self.Dead:
@@ -362,10 +372,10 @@ class AFA(object):
         :rtype: tuple"""
         (deltaC, rdelta) = self._getRdelta()
         rank, deltai = {}, {}
-        for s in xrange(len(self.States)):
+        for s in range(len(self.States)):
             deltai.setdefault(deltaC[s], set([])).add(s)
         i = -1
-        notDone = copy(range(len(self.States)))
+        notDone = copy(list(range(len(self.States))))
         deltaC[self.Dead] = 0
         deltai[1].remove(self.Dead)
         deltai[0] = {self.Dead}
@@ -439,7 +449,7 @@ class ADFA(fa.DFA, AFA):
                 self.Dead = foo
         for st in range(len(self.States)):
             for k in self.Sigma:
-                if k not in self.delta.get(st, {}).keys():
+                if k not in list(self.delta.get(st, {}).keys()):
                     self.addTransition(st, k, self.Dead)
         return self
 
@@ -520,7 +530,7 @@ class ADFA(fa.DFA, AFA):
         (rank, rdelta) = new.evalRank()
         toBeDeleted = []
         maxr = len(rank) - 2
-        for r in xrange(maxr + 1):
+        for r in range(maxr + 1):
             ls = _getListDelta(rank[r])
             (d0, s0) = ls[0]
             j = 1
@@ -611,7 +621,7 @@ class ADFA(fa.DFA, AFA):
         if not self.completeP():
             new.complete()
         rank = new.directRank()
-        irank = dict((v, [k for (k, xx) in filter(lambda key_value: key_value[1] == v, rank.items())])
+        irank = dict((v, [k for (k, xx) in [key_value for key_value in list(rank.items()) if key_value[1] == v]])
                      for v in set(rank.values()))
         l = rank[new.Initial]
         lvl = new.level()
@@ -657,7 +667,7 @@ class ADFA(fa.DFA, AFA):
         new = ANFA()
         new.setSigma(copy(self.Sigma))
         new.States = copy(self.States)
-        for s in xrange(len(self.States)):
+        for s in range(len(self.States)):
             for k in self.delta.get(s, {}):
                 new.addTransition(s, k, self.delta[s][k])
         new.addInitial(self.Initial)
@@ -712,7 +722,7 @@ class RndWGen(object):
             else:
                 r -= j
 
-    def next(self):
+    def __next__(self):
         """Next word
 
         :return: a new random word"""
@@ -833,7 +843,7 @@ def genRndTrieBalanced(maxL, Sigma, safe=True):
 
     def _genEnsurance(m, alphabet):
         l = len(alphabet)
-        fair = m / l
+        fair = old_div(m, l)
         if m % l == 0:
             odd = 0
         else:
@@ -914,7 +924,7 @@ def genRndTrieUnbalanced(maxL, Sigma, ratio, safe=True):
 
     def _genEnsurance(m, alphabet):
         chief = uSet(alphabet)
-        fair = m / (ratio + 1)
+        fair = old_div(m, (ratio + 1))
         pool = list(copy(alphabet))
         c = {}
         sl = []
@@ -990,7 +1000,7 @@ def genRandomTrie(maxL, Sigma, safe=True):
     def _genEnsurance(m, alphabet):
         l = len(alphabet)
         sl = list(alphabet)
-        return [sl[random.randint(0, l - 1)] for _ in xrange(m)]
+        return [sl[random.randint(0, l - 1)] for _ in range(m)]
 
     # noinspection PyUnboundLocalVariable
     def _descend(s1, ens, safe1, m):
@@ -1046,7 +1056,7 @@ def genRndTriePrefix(maxL, Sigma, ClosedP=False, safe=True):
     def _genEnsurance(m, alphabet):
         l = len(alphabet)
         sl = list(alphabet)
-        return [sl[random.randint(0, l - 1)] for _ in xrange(m)]
+        return [sl[random.randint(0, l - 1)] for _ in range(m)]
 
     def _descend(s1, ens, saf, m):
         sons = ClosedP

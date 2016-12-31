@@ -34,7 +34,16 @@ ICDFA Random generation binding
   along with this program; if not, write to the Free Software
   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA."""
 from __future__ import absolute_import
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import next
+from builtins import *
+from past.utils import old_div
+from builtins import object
 import generator
 from . import fa
 from .common import *
@@ -45,7 +54,7 @@ class ICDFArgen(object):
 
     .. seealso:: Marco Almeida, Nelma Moreira, and Rogério Reis. Enumeration and generation with a string automata
        representation. Theoretical Computer Science, 387(2):93-102, 2007"""
-    def next(self):
+    def __next__(self):
         """Get the next generated DFA
 
         :returns: a random generated ICDFA
@@ -92,7 +101,7 @@ class ICDFArndIncomplete(ICDFArgen):
         elif bias <= 0 or bias >= 1:
             raise IllegalBias()
         else:
-            m = int((bias * n) / (1 - bias))
+            m = int(old_div((bias * n), (1 - bias)))
             self.gen = generator.icdfaRndGen(n, k, 1, m)
         self.n, self.k, self.bias = n, k, bias
 

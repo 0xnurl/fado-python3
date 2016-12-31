@@ -54,7 +54,13 @@ this language to interface with it.
 """
 from __future__ import print_function
 from __future__ import absolute_import
+from __future__ import unicode_literals
+from __future__ import division
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import object
 import sys
 
 from .fa import *
@@ -227,7 +233,7 @@ class ParserVerso(Yappy):
   def infoShow(self,lst,context=None):
     """Show general info on Verso"""
     s = "["
-    for c in self.info.keys():
+    for c in list(self.info.keys()):
       s += "('"+ c + "',["
       for name,desc in self.info[c][1]:
         s += "('" + name + "','" + desc + "'),"

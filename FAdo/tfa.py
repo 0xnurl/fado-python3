@@ -23,6 +23,14 @@ Deterministic and non-deterministic two-way automata manipulation, conversion an
    with this program; if not, write to the Free Software Foundation, Inc.,
    675 Mass Ave, Cambridge, MA 02139, USA."""
 from __future__ import absolute_import
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
+from builtins import *
+from builtins import object
 from . import fa
 from abc import abstractmethod
 from .common import *

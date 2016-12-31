@@ -32,7 +32,15 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA."""
 from __future__ import absolute_import
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import range
+from builtins import *
+from past.utils import old_div
 from . import fa
 from .comboperations import *
 
@@ -106,7 +114,7 @@ def toDFAWC2MF(m=5):
         raise TestsError("number of states must be greater than 2")
     f = NFA()
     f.setSigma(["a", "b"])
-    f.States = range(m)
+    f.States = list(range(m))
     f.setInitial([0])
     f.addFinal(0)
     f.addTransition(0, "a", 1)
@@ -132,7 +140,7 @@ def toDFAWC2(m=5):
         raise TestsError("number of states must be greater than 2")
     f = NFA()
     f.setSigma(["a", "b"])
-    f.States = range(m)
+    f.States = list(range(m))
     f.setInitial([0])
     f.addFinal(m - 1)
     f.addTransition(0, "a", 1)
@@ -159,7 +167,7 @@ def toDFAWC3(m=5):
         raise TestsError("number of states must be greater than 2")
     f = NFA()
     f.setSigma(["a", "b", "c"])
-    f.States = range(m)
+    f.States = list(range(m))
     f.setInitial([0])
     f.addFinal(0)
     f.addTransition(0, "a", 1)
@@ -221,7 +229,7 @@ def starWC(m=5):
         # for m=2, L=\{w\in\{a,b\}*| |w|a odd \}
     f = DFA()
     f.setSigma(["a", "b"])
-    f.States = range(m)
+    f.States = list(range(m))
     f.setInitial(0)
     f.addFinal(m - 1)
     f.addTransition(0, "a", 1)
@@ -247,7 +255,7 @@ def starWCM(m=5):
         raise TestsError("number of states must be greater than 2")
     f = DFA()
     f.setSigma(["a", "b"])
-    f.States = range(m)
+    f.States = list(range(m))
     f.setInitial(0)
     f.addFinal(m - 1)
     f.addTransition(m - 1, "a", 0)
@@ -290,7 +298,7 @@ def concatWCM(m=4, n=4):
         raise TestsError("number of states must be both greater than 1")
     d1, d2 = DFA(), DFA()
     d1.setSigma(["a", "b"])
-    d1.States = range(m)
+    d1.States = list(range(m))
     d1.setInitial(0)
     d1.addFinal(m - 1)
     d1.addTransition(m - 1, "b", 0)
@@ -299,7 +307,7 @@ def concatWCM(m=4, n=4):
         d1.addTransition(i, "a", i)
         d1.addTransition(i, "b", i + 1)
     d2.setSigma(["a", "b"])
-    d2.States = range(n)
+    d2.States = list(range(n))
     d2.setInitial(0)
     d2.addFinal(n - 1)
     d2.addTransition(n - 1, "a", n - 1)
@@ -328,7 +336,7 @@ def concatWC(m=6, n=6):
         raise TestsError("number of states must both  greater than 1")
     d1, d2 = DFA(), DFA()
     d1.setSigma(["a", "b", "c"])
-    d1.States = range(m)
+    d1.States = list(range(m))
     d1.setInitial(0)
     d1.addFinal(m - 1)
     for i in range(m):
@@ -336,7 +344,7 @@ def concatWC(m=6, n=6):
         d1.addTransition(i, "b", 0)
         d1.addTransition(i, "c", i)
     d2.setSigma(["a", "b", "c"])
-    d2.States = range(n)
+    d2.States = list(range(n))
     d2.setInitial(0)
     d2.addFinal(n - 1)
     for i in range(n):
@@ -362,14 +370,14 @@ def interWC(m=6, n=5):
         raise TestsError("number of states must be both greater than 1")
     d1, d2 = DFA(), DFA()
     d1.setSigma(["a", "b"])
-    d1.States = range(m)
+    d1.States = list(range(m))
     d1.setInitial(0)
     d1.addFinal(0)
     for i in range(m):
         d1.addTransition(i, "a", (i + 1) % m)
         d1.addTransition(i, "b", i)
     d2.setSigma(["a", "b"])
-    d2.States = range(m)
+    d2.States = list(range(m))
     d2.setInitial(0)
     d2.addFinal(0)
     for i in range(n):
@@ -394,7 +402,7 @@ def disjWC(m=6, n=5):
         raise TestsError("number of states must be both greater than 1")
     d1, d2 = DFA(), DFA()
     d1.setSigma(["a", "b"])
-    d1.States = range(m)
+    d1.States = list(range(m))
     d1.setInitial(0)
     d1.addTransition(0, "a", 1)
     d1.addTransition(0, "b", 0)
@@ -403,7 +411,7 @@ def disjWC(m=6, n=5):
         d1.addTransition(i, "b", i)
         d1.addFinal(i)
     d2.setSigma(["a", "b"])
-    d2.States = range(m)
+    d2.States = list(range(m))
     d2.setInitial(0)
     d2.addTransition(0, "b", 1)
     d2.addTransition(0, "a", 0)
@@ -428,7 +436,7 @@ def reversalMB(m=8):
         raise TestsError("number of states must be greater than 2")
     d = DFA()
     d.setSigma(["a", "b"])
-    d.States = range(m)
+    d.States = list(range(m))
     d.setInitial(0)
     for i in range(m):
         if i == m - 1:
@@ -458,7 +466,7 @@ def reversalWC3L(m=5):
         raise TestsError("number of states must be greater than 2")
     f = DFA()
     f.setSigma(["a", "b", "c"])
-    f.States = range(m)
+    f.States = list(range(m))
     f.setInitial(0)
     f.addFinal(0)
     f.addTransition(0, "b", 1)
@@ -487,7 +495,7 @@ def reversalternaryWC(m=5):
     d.setSigma(["a", "b", "c"])
     d.setInitial(0)
     d.addFinal(0)
-    d.States = range(m)
+    d.States = list(range(m))
     d.addTransition(0, "a", m - 1)
     d.addTransition(0, "c", 0)
     d.addTransition(0, "b", 0)
@@ -514,7 +522,7 @@ def reversalbinaryWC(m=5):
         raise TestsError("number of states must be greater than 1")
     d = DFA()
     d.setSigma(["a", "b"])
-    d.States = range(m)
+    d.States = list(range(m))
     d.setInitial(0)
     d.addFinal(m - 1)
     d.addTransition(0, "a", 1)
@@ -556,7 +564,7 @@ def shuffleWC(m=3, n=3):
     if n < 2 or m < 2:
         raise TestsError("number of states must be both greater than 1")
     d1, d2 = DFA(), DFA()
-    d1.States = range(m)
+    d1.States = list(range(m))
     d1.setSigma(["a", "b", "c", "d", "f"])
     d1.setInitial(0)
     d1.addFinal(0)
@@ -567,7 +575,7 @@ def shuffleWC(m=3, n=3):
         d1.addTransition(i, "d", i)
         if i != 0:
             d1.addTransition(i, "f", i)
-    d2.States = range(n)
+    d2.States = list(range(n))
     d2.setSigma(["a", "b", "c", "d", "f"])
     d2.setInitial(0)
     d2.addFinal(0)
@@ -596,7 +604,7 @@ def starDisjWC(m=6, n=5):
     if n < 2 or m < 2:
         raise TestsError("number of states must be both greater than 1")
     d1, d2 = DFA(), DFA()
-    d1.States = range(m)
+    d1.States = list(range(m))
     d1.setSigma(["a", "b", "c"])
     d1.setInitial(0)
     d1.addFinal(0)
@@ -606,7 +614,7 @@ def starDisjWC(m=6, n=5):
         if i != 0:
             d1.addTransition(i, "c", i)
     d1.addTransition(0, "c", 1)
-    d2.States = range(n)
+    d2.States = list(range(n))
     d2.setSigma(["a", "b", "c"])
     d2.setInitial(0)
     d2.addFinal(0)
@@ -634,7 +642,7 @@ def starInterBC(m=3, n=3):
         raise TestsError("number of states must be both greater than 1")
     d1, d2 = DFA(), DFA()
     d1.setSigma(["a", "b", "c", "d", "e"])
-    d1.States = range(m)
+    d1.States = list(range(m))
     d1.setInitial(0)
     d1.addFinal(m - 1)
     for i in range(m):
@@ -644,7 +652,7 @@ def starInterBC(m=3, n=3):
         d1.addTransition(i, "d", i)
         d1.addTransition(i, "e", i)
     d2.setSigma(["a", "b", "c", "d", "e"])
-    d2.States = range(n)
+    d2.States = list(range(n))
     d2.setInitial(0)
     d2.addFinal(n - 1)
     for i in range(n):
@@ -679,7 +687,7 @@ def disjWStarWC(m=6, n=5):
         raise TestsError("number of states must be greater than 2")
     f1 = DFA()
     f1.setSigma(["a", "b", "c"])
-    f1.States = range(m)
+    f1.States = list(range(m))
     f1.setInitial(0)
     f1.addFinal(m - 1)
     f1.addTransition(0, "a", 1)
@@ -691,7 +699,7 @@ def disjWStarWC(m=6, n=5):
         f1.addTransition(i, "c", i)
     f2 = DFA()
     f2.setSigma(["a", "b", "c"])
-    f2.States = range(n)
+    f2.States = list(range(n))
     f2.setInitial(0)
     f2.addFinal(n - 1)
     for i in range(n):
@@ -723,14 +731,14 @@ def unionWCTk2(m=6, n=6):
         raise TestsError("number of states must both  greater than 1")
     d1, d2 = DFA(), DFA()
     d1.setSigma(["a", "b"])
-    d1.States = range(m)
+    d1.States = list(range(m))
     d1.setInitial(0)
     d1.addFinal(0)
     d1.addTransition(m - 1, "a", 0)
     for i in range(0, m - 1):
         d1.addTransition(i, "b", i + 1)
     d2.setSigma(["a", "b"])
-    d2.States = range(n)
+    d2.States = list(range(n))
     d2.setInitial(0)
     d2.addFinal(n - 1)
     d2.addTransition(n - 1, "b", n - 1)
@@ -753,14 +761,14 @@ def unionWCT2(n=6):
         raise TestsError("number of states must both  greater than 1")
     d1, d2 = DFA(), DFA()
     d1.setSigma(["a", "b", "c"])
-    d1.States = range(m)
+    d1.States = list(range(m))
     d1.setInitial(0)
     d1.addFinal(0)
     d1.addTransition(0, "b", 0)
     d1.addTransition(0, "c", 0)
 
     d2.setSigma(["a", "b", "c"])
-    d2.States = range(n)
+    d2.States = list(range(n))
     d2.setInitial(0)
     d2.addFinal(n - 1)
     d2.addTransition(0, "a", 0)
@@ -786,7 +794,7 @@ def unionWCT(m=6, n=6):
         raise TestsError("number of states must both  greater than 1")
     d1, d2 = DFA(), DFA()
     d1.setSigma(["a", "b", "c"])
-    d1.States = range(m)
+    d1.States = list(range(m))
     d1.setInitial(0)
     d1.addFinal(m - 1)
     d1.addTransition(0, "a", 1)
@@ -796,7 +804,7 @@ def unionWCT(m=6, n=6):
         d1.addTransition(i, "b", 0)
         d1.addTransition(i, "c", i)
     d2.setSigma(["a", "b", "c"])
-    d2.States = range(n)
+    d2.States = list(range(n))
     d2.setInitial(0)
     d2.addFinal(n - 1)
     d2.addTransition(0, "a", 0)
@@ -822,14 +830,14 @@ def concatWCT2(n=6):
         raise TestsError("number of states must both  greater than 1")
     d1, d2 = DFA(), DFA()
     d1.setSigma(["a", "b", "c"])
-    d1.States = range(m)
+    d1.States = list(range(m))
     d1.setInitial(0)
     d1.addFinal(0)
     d1.addTransition(0, "b", 0)
     d1.addTransition(0, "c", 0)
 
     d2.setSigma(["a", "b", "c"])
-    d2.States = range(n)
+    d2.States = list(range(n))
     d2.setInitial(0)
     d2.addFinal(n - 1)
     d2.addTransition(0, "a", 0)
@@ -853,7 +861,7 @@ def concatWCT3(m=6):
         raise TestsError("number of states must both  greater than 1")
     d1, d2 = DFA(), DFA()
     d1.setSigma(["a", "b", "c"])
-    d1.States = range(m)
+    d1.States = list(range(m))
     d1.setInitial(0)
     d1.addFinal(m - 1)
     d1.addTransition(0, "a", 0)
@@ -866,7 +874,7 @@ def concatWCT3(m=6):
         d1.addTransition(i, "c", (i + 1) % m)
         d1.addTransition(i, "a", i)
     d2.setSigma(["a", "b", "c"])
-    d2.States = range(n)
+    d2.States = list(range(n))
     d2.setInitial(0)
     d2.addFinal(0)
     d2.addTransition(0, "c", 0)
@@ -889,7 +897,7 @@ def concatWCT(m=6, n=6):
         raise TestsError("number of states must both  greater than 1")
     d1, d2 = DFA(), DFA()
     d1.setSigma(["a", "b", "c"])
-    d1.States = range(m)
+    d1.States = list(range(m))
     d1.setInitial(0)
     d1.addFinal(m - 1)
     d1.addTransition(0, "a", 1)
@@ -899,7 +907,7 @@ def concatWCT(m=6, n=6):
         d1.addTransition(i, "b", 0)
         d1.addTransition(i, "c", i)
     d2.setSigma(["a", "b", "c"])
-    d2.States = range(n)
+    d2.States = list(range(n))
     d2.setInitial(0)
     d2.addFinal(n - 1)
     d2.addTransition(0, "a", 0)
@@ -924,7 +932,7 @@ def starWCT(m=5):
         raise TestsError("number of states must be greater than 2")
     f = DFA()
     f.setSigma(["a", "b"])
-    f.States = range(m)
+    f.States = list(range(m))
     f.setInitial(0)
     f.addFinal(m - 1)
     f.addTransition(0, "a", 1)
@@ -945,7 +953,7 @@ def starWCT1(m=5):
         raise TestsError("number of states must be greater than 2")
     f = DFA()
     f.setSigma(["a", "b"])
-    f.States = range(m)
+    f.States = list(range(m))
     f.setInitial(0)
     f.addFinal(m - 1)
     f.addTransition(0, "b", 0)
@@ -970,7 +978,7 @@ def universal(n, l=["a", "b", "c"], Finals=None, dialect=False, d=None):
     :rtype: DFA
     """
     u = DFA()
-    u.States = range(n)
+    u.States = list(range(n))
     u.setSigma(l)
     u.setInitial(0)
     u.addFinal(n - 1)
@@ -993,7 +1001,7 @@ def nCr(n, r):
         return 0
     else:
         f = math.factorial
-        return f(n) / (f(r) * f(n - r))
+        return old_div(f(n), (f(r) * f(n - r)))
 
 
 def boundarySC(n, k):
@@ -1012,17 +1020,17 @@ def dcMilano1(n):
     :rtype: NFA"""
     new = fa.NFA()
     st = []
-    for _ in xrange(3 * n):
+    for _ in range(3 * n):
         s = new.addState()
         st.append(s)
     new.setInitial([st[n - 1]])
-    for s in xrange(n):
+    for s in range(n):
         new.addTransition(st[n - 1], 'c', st[s])
-    for s in xrange(3):
-        for r in xrange(n - 1):
+    for s in range(3):
+        for r in range(n - 1):
             new.addTransition(st[(n * s) + r], 'a', st[(n * s) + r + 1])
         new.addTransition(st[(n * s) + n - 1], 'a', st[0])
-    for s in xrange(n):
+    for s in range(n):
         new.addTransition(st[s], 'b', st[s + n])
         new.addTransition(st[s + n], 'b', st[s + 2 * n])
         new.addTransition(st[s + 2 * n], 'b', st[s])
@@ -1040,16 +1048,16 @@ def dcMilano2(n):
     :rtype: NFA"""
     new = fa.NFA()
     st = []
-    for _ in xrange(3 * n):
+    for _ in range(3 * n):
         s = new.addState()
         st.append(s)
-    for s in xrange(n):
+    for s in range(n):
         new.addInitial(st[s])
-    for s in xrange(3):
-        for r in xrange(n - 1):
+    for s in range(3):
+        for r in range(n - 1):
             new.addTransition(st[(n * s) + r], 'a', st[(n * s) + r + 1])
         new.addTransition(st[(n * s) + n - 1], 'a', st[0])
-    for s in xrange(n):
+    for s in range(n):
         new.addTransition(st[s], 'b', st[s + n])
         new.addTransition(st[s + n], 'b', st[s + 2 * n])
         new.addTransition(st[s + 2 * n], 'b', st[s])
@@ -1073,7 +1081,7 @@ def suffWCe(m=3):
         raise TestsError("number of states must be greater than 2")
     f = DFA()
     f.setSigma(["a", "b"])
-    f.States = range(m)
+    f.States = list(range(m))
     f.setInitial(0)
     f.addFinal(0)
     f.addTransition(0, "a", 1)
@@ -1097,7 +1105,7 @@ def suffWCd(m=3):
         raise TestsError("number of states must be greater than 2")
     f = DFA()
     f.setSigma(["a", "b"])
-    f.States = range(m)
+    f.States = list(range(m))
     f.setInitial(0)
     f.addFinal(0)
     f.addTransition(0, "a", 1)
@@ -1119,7 +1127,7 @@ def suffWCsynt(m=3):
      raise TestsError("number of states must be greater than 2")
   f = DFA()
   f.setSigma(["a", "b", "c", "d", "e"])
-  f.States = range(m)
+  f.States = list(range(m))
   f.setInitial(0)
   f.addFinal(m-1)
   f.addTransition(0, "a", 0)
@@ -1162,7 +1170,7 @@ def booleanWCSymGrp(m=3):
      raise TestsError("number of states must be greater than 2")
   f = DFA()
   f.setSigma(["a", "b"])
-  f.States = range(m)
+  f.States = list(range(m))
   f.setInitial(0)
   f.addFinal(0)
   f.addFinal(1)

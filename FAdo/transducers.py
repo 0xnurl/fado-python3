@@ -25,7 +25,16 @@ Transducer manipulation.
    with this program; if not, write to the Free Software Foundation, Inc.,
    675 Mass Ave, Cambridge, MA 02139, USA."""
 from __future__ import absolute_import
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
+from builtins import zip
+from builtins import range
+from builtins import *
 import copy
 from exceptions import *
 
@@ -69,11 +78,11 @@ def isLimitExceed(NFA0Delta, NFA1Delta):
     :param dict NFA1Delta: NFA1's transition Delta
     :rtype: bool"""
     N = 0
-    for s in NFA0Delta.keys():
+    for s in list(NFA0Delta.keys()):
         for s1 in NFA0Delta[s]:
             N += len(NFA0Delta[s][s1])
     M = 0
-    for s in NFA1Delta.keys():
+    for s in list(NFA1Delta.keys()):
         for s1 in NFA1Delta[s]:
             M += len(NFA1Delta[s][s1])
     if N * N * M > 1000000:
@@ -192,13 +201,13 @@ class GFT(Transducer):
                                 cst = mst
                             new.addTransition(cst, wi[-1:], Epsilon, lst)
                         else:
-                            z = zip(wi, wo)
+                            z = list(zip(wi, wo))
                             n = len(wi)
                             m = len(wo)
                             if n > m:
-                                z += zip(wi[m:], [Epsilon] * (n - m))
+                                z += list(zip(wi[m:], [Epsilon] * (n - m)))
                             elif m > n:
-                                z += zip([Epsilon] * (m - n), wo[n:])
+                                z += list(zip([Epsilon] * (m - n), wo[n:]))
                             n = len(z)
                             for (symi, symo) in z[:n - 1]:
                                 mst = new.addState()
@@ -317,8 +326,8 @@ class SFT(GFT):
             raise DFAstateUnknown(sti)
         if sti in self.delta:
             del self.delta[sti]
-        for j in self.delta.keys():
-            for sym in self.delta[j].keys():
+        for j in list(self.delta.keys()):
+            for sym in list(self.delta[j].keys()):
                 self._deleteRefInDelta(j, sym, sti)
         if sti in self.Final:
             self.Final.remove(sti)
@@ -327,7 +336,7 @@ class SFT(GFT):
             if sti < s:
                 self.Final.remove(s)
                 self.Final.add(s - 1)
-        for j in xrange(sti + 1, len(self.States)):
+        for j in range(sti + 1, len(self.States)):
             if j in self.delta:
                 self.delta[j - 1] = self.delta[j]
                 del self.delta[j]
@@ -347,7 +356,7 @@ class SFT(GFT):
         new.setSigma(self.Sigma)
         new.setOutput(self.Output)
         new.States = copy.deepcopy(self.States)
-        for s in self.delta.keys():
+        for s in list(self.delta.keys()):
             if s in self.Initial:
                 new.addInitial(s)
             if self.finalP(s):
@@ -569,7 +578,7 @@ class SFT(GFT):
         aut.States = copy.copy(self.States)
         aut.setInitial(self.Initial)
         aut.setFinal(self.Final)
-        for s in self.delta.keys():
+        for s in list(self.delta.keys()):
             aut.delta[s] = {}
             for c in self.delta[s]:
                 aut.delta[s][c] = set([x for (_, x) in self.delta[s][c]])

@@ -25,7 +25,16 @@
    with this program; if not, write to the Free Software Foundation, Inc.,
    675 Mass Ave, Cambridge, MA 02139, USA."""
 from __future__ import print_function
+from __future__ import unicode_literals
+from __future__ import division
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
+from builtins import range
+from builtins import *
+from builtins import object
 import os
 import random
 from copy import deepcopy
@@ -324,7 +333,7 @@ TYPE_ESET = "eset"
 
 
 def debug(string, level=0):
-    print("%s%s" % ("".join(["\t" for _ in xrange(level)]), string))
+    print("%s%s" % ("".join(["\t" for _ in range(level)]), string))
 
 
 class SPLabel(object):
@@ -525,7 +534,7 @@ def binomial(n,k):
     :param int n: n
     :param int k: k
     :rtype: int"""
-    return reduce(lambda acc, m: acc * (n - k + m) / m, range(1, k + 1), 1)
+    return reduce(lambda acc, m: acc * (n - k + m) / m, list(range(1, k + 1)), 1)
 
 
 def delFromList(l, l1):
