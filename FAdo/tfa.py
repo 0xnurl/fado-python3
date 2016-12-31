@@ -22,9 +22,10 @@ Deterministic and non-deterministic two-way automata manipulation, conversion an
    You should have received a copy of the GNU General Public License along
    with this program; if not, write to the Free Software Foundation, Inc.,
    675 Mass Ave, Cambridge, MA 02139, USA."""
-import fa
+from __future__ import absolute_import
+from . import fa
 from abc import abstractmethod
-from common import *
+from .common import *
 
 
 class WordEval(object):

@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 """** Families of Languages **
 """
+from __future__ import absolute_import
 
-from fa import *
+from .fa import *
 
-from common import TestsError
+from .common import TestsError
 
 def evenParity(n=3, sigma=["a", "b"]):
     """

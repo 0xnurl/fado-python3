@@ -24,9 +24,10 @@ Deterministic and non-deterministic automata manipulation, conversion and evalua
 
    You should have received a copy of the GNU General Public License along with this program; if not,
    write to the Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA."""
+from __future__ import absolute_import
 
-from fa import *
-from common import *
+from .fa import *
+from .common import *
 
 
 def starConcat(fa1, fa2, strict=False):

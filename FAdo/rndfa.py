@@ -33,10 +33,11 @@ ICDFA Random generation binding
   You should have received a copy of the GNU General Public License
   along with this program; if not, write to the Free Software
   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA."""
+from __future__ import absolute_import
 
 import generator
-import fa
-from common import *
+from . import fa
+from .common import *
 
 
 class ICDFArgen(object):
@@ -49,7 +50,7 @@ class ICDFArgen(object):
 
         :returns: a random generated ICDFA
         :rtype: DFA"""
-        a = self.gen.next()
+        a = next(self.gen)
         return fa.stringToDFA(a[0], a[1], self.n, self.k)
 
 

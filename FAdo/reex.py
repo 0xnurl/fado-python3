@@ -28,13 +28,15 @@ Regular expression classes and manipulation
 
    You should have received a copy of the GNU General Public Licensealong with this program; if not, write to the
    Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA."""
+from __future__ import print_function
+from __future__ import absolute_import
 
 from collections import deque
 
-from yappy_parser import *
+from .yappy_parser import *
 
-from common import *
-import fa
+from .common import *
+from . import fa
 import copy
 
 
@@ -1774,7 +1776,8 @@ class position(regexp):
 
     .. inheritance-diagram:: position"""
 
-    def __init__(self, (sym, pos), sigma=None):
+    def __init__(self, xxx_todo_changeme, sigma=None):
+        (sym, pos) = xxx_todo_changeme
         self.val = (sym, pos)
         self.Sigma = sigma
 
@@ -1861,7 +1864,7 @@ class ParseReg1(Yappy):
         return star(lst[0], sigma)
 
     def DoPrint(self, lst, context=None):
-        print lst[0]
+        print(lst[0])
         return lst[0]
 
 

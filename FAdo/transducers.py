@@ -24,14 +24,15 @@ Transducer manipulation.
    You should have received a copy of the GNU General Public License along
    with this program; if not, write to the Free Software Foundation, Inc.,
    675 Mass Ave, Cambridge, MA 02139, USA."""
+from __future__ import absolute_import
 
 import copy
 from exceptions import *
 
-import fa
-import common
-from common import *
-import fl
+from . import fa
+from . import common
+from .common import *
+from . import fl
 
 
 class ZERO(Exception):
@@ -39,7 +40,8 @@ class ZERO(Exception):
     pass
 
 
-def _concat((a, b)):
+def _concat(xxx_todo_changeme2):
+    (a, b) = xxx_todo_changeme2
     if a == Epsilon:
         return b
     elif b == Epsilon:
@@ -878,7 +880,7 @@ class SFT(GFT):
 
         :param tuple wp: pair of words
         :rtype: bool"""
-        import fl
+        from . import fl
         (win, wout) = wp
         inT = self.inIntersection(fl.FL([win]).trieFA().toNFA())
         return not inT.outIntersection(fl.FL([wout]).trieFA().toNFA()).emptyP()
@@ -937,7 +939,9 @@ class SFT(GFT):
                 else:
                     return ""
 
-        def _newSValue((v1, v2), (r1, r2)):
+        def _newSValue(xxx_todo_changeme, xxx_todo_changeme1):
+            (v1, v2) = xxx_todo_changeme
+            (r1, r2) = xxx_todo_changeme1
             a, b = concatN((v1, v2), (r1, r2))
             s = _suffix(a, b)
             if s == Epsilon:

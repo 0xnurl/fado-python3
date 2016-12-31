@@ -23,6 +23,7 @@ Basic context-free grammars manipulation for building uniform random generetors
    You should have received a copy of the GNU General Public License along
    with this program; if not, write to the Free Software Foundation, Inc.,
    675 Mass Ave, Cambridge, MA 02139, USA."""
+from __future__ import absolute_import
 
 #__package__ = "FAdo"
 
@@ -30,7 +31,7 @@ import re
 import string
 from types import StringType
 from random import randint
-import common
+from . import common
 
 
 class CFGrammar(object):

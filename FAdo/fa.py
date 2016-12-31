@@ -22,13 +22,15 @@ Deterministic and non-deterministic automata manipulation, conversion and evalua
    You should have received a copy of the GNU General Public License along
    with this program; if not, write to the Free Software Foundation, Inc.,
    675 Mass Ave, Cambridge, MA 02139, USA."""
+from __future__ import print_function
+from __future__ import absolute_import
 from copy import copy
 from collections import deque
 
-import reex
-from common import *
-from unionFind import UnionFind
-import graphs
+from . import reex
+from .common import *
+from .unionFind import UnionFind
+from . import graphs
 
 
 class SemiDFA(Drawable):
@@ -3838,7 +3840,7 @@ class DFA(OFA):
 
         .. attention::
             If the DFA is not minimal, the method loops forever"""
-        import fl
+        from . import fl
 
         sz = len(self.States)
         if sz == 1:
@@ -3950,7 +3952,7 @@ class DFA(OFA):
                 return Epsilon
             return d
 
-        import fl
+        from . import fl
 
         m = self.minimal()
         rev = m.reversal().toDFA()
@@ -4688,10 +4690,10 @@ class DFA(OFA):
         for s in xrange(len(self.States)):
             for s1 in xrange(0, s):
                 if s1 in data[s]:
-                    print "_ ",
+                    print("_ ", end=' ')
                 else:
-                    print "X ",
-            print s
+                    print("X ", end=' ')
+            print(s)
 
     def joinStates(self, lst):
         """Merge a list of states.
@@ -4992,7 +4994,7 @@ class DFA(OFA):
         :raises notAcyclic: if this is not an acyclic DFA
 
         .. versionadded:: 1.2"""
-        import fl
+        from . import fl
 
         if not self.acyclicP():
             raise notAcyclic()

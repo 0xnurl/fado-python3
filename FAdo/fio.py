@@ -22,12 +22,13 @@ FAdo IO.
    You should have received a copy of the GNU General Public License along
    with this program; if not, write to the Free Software Foundation, Inc.,
    675 Mass Ave, Cambridge, MA 02139, USA."""
+from __future__ import absolute_import
 
-from yappy_parser import Yappy, grules
+from .yappy_parser import Yappy, grules
 
-from common import Epsilon, DFAerror, TRError
-from fa import DFA, NFA, statePP
-from transducers import SFT, GFT, Transducer
+from .common import Epsilon, DFAerror, TRError
+from .fa import DFA, NFA, statePP
+from .transducers import SFT, GFT, Transducer
 
 
 class ParserFAdo(Yappy):

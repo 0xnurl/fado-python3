@@ -26,10 +26,11 @@ ICDFA Random generation binding
   You should have received a copy of the GNU General Public License
   along with this program; if not, write to the Free Software
   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA."""
+from __future__ import absolute_import
 
 import random
-import common
-import fa
+from . import common
+from . import fa
 
 
 class ICDFArgen(object):

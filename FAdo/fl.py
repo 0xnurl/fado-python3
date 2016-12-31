@@ -24,10 +24,11 @@ Finite languages manipulation
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA."""
+from __future__ import absolute_import
 
-import fa
+from . import fa
 from copy import copy
-from common import *
+from .common import *
 import random
 
 
@@ -610,7 +611,7 @@ class ADFA(fa.DFA, AFA):
         if not self.completeP():
             new.complete()
         rank = new.directRank()
-        irank = dict((v, [k for (k, xx) in filter(lambda (key, value): value == v, rank.items())])
+        irank = dict((v, [k for (k, xx) in filter(lambda key_value: key_value[1] == v, rank.items())])
                      for v in set(rank.values()))
         l = rank[new.Initial]
         lvl = new.level()

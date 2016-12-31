@@ -24,6 +24,7 @@
    You should have received a copy of the GNU General Public License along
    with this program; if not, write to the Free Software Foundation, Inc.,
    675 Mass Ave, Cambridge, MA 02139, USA."""
+from __future__ import print_function
 
 import os
 import random
@@ -32,6 +33,7 @@ from abc import abstractmethod
 import functools
 import tempfile
 import subprocess
+from functools import reduce
 
 FAdoVersion = "1.2"
 
@@ -322,7 +324,7 @@ TYPE_ESET = "eset"
 
 
 def debug(string, level=0):
-    print "%s%s" % ("".join(["\t" for _ in xrange(level)]), string)
+    print("%s%s" % ("".join(["\t" for _ in xrange(level)]), string))
 
 
 class SPLabel(object):
@@ -599,7 +601,7 @@ class Drawable(object):
         callstr = "dot -Tpdf %s -o %s" % (fnameGV, fnamePDF)
         result = subprocess.call(callstr, shell=True)
         if result:
-            print "Need graphviz to visualize objects"
+            print("Need graphviz to visualize objects")
             return
         #os.system("dot -Tpdf %s -o %s" % (fnameGV, fnamePDF))
         if os.name == 'nt':
@@ -631,7 +633,7 @@ class Drawable(object):
         callstr = "dot -Tpng %s -o %s" % (fnameGV, fnamePNG)
         result = subprocess.call(callstr, shell=True)
         if result:
-            print "Need graphviz to visualize objects"
+            print("Need graphviz to visualize objects")
             return
         return fnamePNG
 

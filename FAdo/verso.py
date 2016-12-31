@@ -52,16 +52,18 @@ this language to interface with it.
 
   3. and so on...
 """
+from __future__ import print_function
+from __future__ import absolute_import
 
 import sys
 
-from fa import *
-from common import *
-from yappy_parser import grules
-from yappy_parser import Yappy
+from .fa import *
+from .common import *
+from .yappy_parser import grules
+from .yappy_parser import Yappy
 
 #from yappy.parser import LR1table
-from fio import ParserFAdo
+from .fio import ParserFAdo
 
 
 class ParserVerso(Yappy):
@@ -294,7 +296,7 @@ class interaction(object):
 
   def out(self,output=""):
     if DEBUG:
-      print output
+      print(output)
     else:
       self.outCh.write(output)
       self.outCh.write("\n")

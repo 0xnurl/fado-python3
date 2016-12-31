@@ -24,10 +24,11 @@ Basic Graph object support and manipulation
    You should have received a copy of the GNU General Public License along
    with this program; if not, write to the Free Software Foundation, Inc.,
    675 Mass Ave, Cambridge, MA 02139, USA."""
+from __future__ import absolute_import
 
 import copy
 
-import common
+from . import common
 
 
 class Graph(common.Drawable):

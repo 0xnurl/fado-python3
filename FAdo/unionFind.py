@@ -24,6 +24,7 @@
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA."""
+from __future__ import print_function
 
 
 class UnionFind:
@@ -81,7 +82,7 @@ class UnionFind:
         d = {}
         for i in self.p.keys():
             foo = self.find(i)
-            if d.has_key(foo):
+            if foo in d:
                 d[foo].append(i)
             else:
                 d[foo] = [i]
@@ -95,28 +96,28 @@ if __name__ == "__main__":
         s.make_set(i)
 
     for i in xrange(N):
-        print "%d \in %d" % (i, s.find(i))
-    print "\njoining even numbers..."
+        print("%d \in %d" % (i, s.find(i)))
+    print("\njoining even numbers...")
     for i in xrange(0, N-2, 2):
         s.union(i, i+2)
-    print "result:"
+    print("result:")
     for i in xrange(N):
-        print "%d \in %d" % (i, s.find(i))
-    print "\njoining odd numbers..."
+        print("%d \in %d" % (i, s.find(i)))
+    print("\njoining odd numbers...")
     for i in xrange(1, N-1, 2):
         s.union(i, i+2)
-    print "result:"
+    print("result:")
     for i in xrange(N):
-        print "%d \in %d" % (i, s.find(i))
-    print "elements which do not exist:"
+        print("%d \in %d" % (i, s.find(i)))
+    print("elements which do not exist:")
     for i in [24, 25]:
-        print "%d \in %s" % (i, s.find(i))
-    print "elements which do not exist (creating):"
+        print("%d \in %s" % (i, s.find(i)))
+    print("elements which do not exist (creating):")
     for i in [24, 25]:
-        print "%d \in %s" % (i, s.find(i, True))
-    print "membership:"
+        print("%d \in %s" % (i, s.find(i, True)))
+    print("membership:")
     for i in xrange(1, N+2):
-        print "set to which %d belongs: %s" % (i, s.get_set(i))
-    print
-    print
-    print s.sets()
+        print("set to which %d belongs: %s" % (i, s.get_set(i)))
+    print()
+    print()
+    print(s.sets())

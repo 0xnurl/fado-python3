@@ -26,8 +26,11 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA."""
+from __future__ import print_function
+from __future__ import absolute_import
 
-from boltzmann import *
+from .boltzmann import *
+from functools import reduce
 
 debug = 0
 
@@ -83,12 +86,12 @@ def genficdfas(n, k):
         nf = 1
         flags = []
         setFlags(n, k)
-        print flags
+        print(flags)
         while not islast(n, k):
             shiftFlags(n - 2)
             nf += 1
-            print flags
-        print nf
+            print(flags)
+        print(nf)
 
     def genficdfa(n, _):
         """
@@ -117,7 +120,7 @@ def genficdfas(n, k):
                 else:
                     g = singleton(j)
         if debug:
-            print g
+            print(g)
         return g
 
     nf = 1
@@ -126,16 +129,16 @@ def genficdfas(n, k):
     setFlags(n, k)
     flags = flags + [n * k]
     if debug:
-        print flags
+        print(flags)
     ic = genficdfa(n, k)
     while not islast(n, k):
         shiftFlags(n - 2)
         if debug:
-            print flags
+            print(flags)
         ic = union(ic, genficdfa(n, k))
         nf += 1
     if debug:
-        print nf
+        print(nf)
     return ic
 
 
@@ -203,9 +206,9 @@ def test_23(m, x):
     abc = union(a, union(b, c))
     r = union(prod(union(prod(a, b), prod(b, ab)), prod(union(prod(ab, c), prod(c, abc)), prod(abc, abc))),
               prod(b, prod(c, prod(abc, prod(abc, prod(abc, abc))))))
-    print r
+    print(r)
     for i in xrange(m):
-        print r.sampler(x)
+        print(r.sampler(x))
 
 
 def test_(k, n, m, x):
@@ -213,6 +216,6 @@ def test_(k, n, m, x):
     #f=a.nfaPosition().toDFA().minimal()
     #print len(f.States)
     for i in xrange(m):
-        print a.sampler(x)
+        print(a.sampler(x))
 
 ###Use: test_(k,n,m,x=0.5)

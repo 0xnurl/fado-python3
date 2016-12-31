@@ -22,14 +22,15 @@
    You should have received a copy of the GNU General Public License along
    with this program; if not, write to the Free Software Foundation, Inc.,
    675 Mass Ave, Cambridge, MA 02139, USA."""
+from __future__ import absolute_import
 import copy
 
-import reex
-from common import *
-import fio
-from transducers import SFT, infixTransducer, prefixTransducer, suffixTransducer, outfixTransducer, hypercodeTransducer
-import fa
-import fl
+from . import reex
+from .common import *
+from . import fio
+from .transducers import SFT, infixTransducer, prefixTransducer, suffixTransducer, outfixTransducer, hypercodeTransducer
+from . import fa
+from . import fl
 
 
 def fixedHierSubset(x, y):

@@ -22,6 +22,7 @@ fa.py
 
    You should have received a copy of the GNU General Public License along with this program; if not,
    write to the Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA."""
+from __future__ import absolute_import
 
 #__package__="FAdo"
 
@@ -29,11 +30,11 @@ import os
 import os.path
 import subprocess
 
-from yappy_parser import Yappy, grules
+from .yappy_parser import Yappy, grules
 
-from fa import NFA, DFA
-from fl import DCFA
-import common
+from .fa import NFA, DFA
+from .fl import DCFA
+from . import common
 
 
 class GrailCommandError(common.fnhException):

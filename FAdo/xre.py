@@ -27,13 +27,14 @@ Extended regular expression classes and its manipulation
    You should have received a copy of the GNU General Public Licensealong
    with this program; if not, write to the Free Software Foundation, Inc.,
    675 Mass Ave, Cambridge, MA 02139, USA."""
+from __future__ import absolute_import
 
 import copy
 
-from yappy_parser import *
-import reex
-import fa
-from common import *
+from .yappy_parser import *
+from . import reex
+from . import fa
+from .common import *
 
 
 class xre(reex.regexp):
