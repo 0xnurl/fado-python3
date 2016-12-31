@@ -1,0 +1,53 @@
+1.0
+ - 
+0.9.8
+ - Cover automata
+ - New fio module that deals with i/o
+ - Two-way automata starting to be supported
+ - Distinguishability of a language
+ - New xre (extended Regular Expressions) module
+0.9.7
+ - stupid error in DFA.__repr__() fixed
+ - better dealing of incomplete automata
+ - new DFA and NFA file format
+ - better integration with GRAIL+
+0.9.6
+  - some random bugs corrected in combo and single operations
+0.9.5
+  - star and concatenation for DFAs aiming minimal transition complexity
+  - new API documentation
+  - better regular expression random generation
+0.9.4
+  - A primitive (but working) uninstall. 
+  - New setup for generator (bug fixed)
+  - Shufle was migrated to fa.py	
+  - Shuffle for NFAs
+  - comboperations: shuffle corrected
+  - fa: dump added to NFA and DFA
+0.9.3
+  - Prefix-free and prefix-closed finite languages random trie added
+  - Renaming of AcyclicP to acyclicP. Loops are now excluded from the
+  test unless a strict flag is passed as an argument.
+  - trimP corrected accordingly
+  - Version in package now reflects the proper version and not the
+  major one
+  - Corrections and simplifications added to ADFA.minimal()
+  - Random balanced and "unbalanced" trie generation
+  - Solved a bug with a mutual inclusions between fa and fl.
+  - DFAtoADFA now resides in fl.
+  - sigmaInititialSegment() added to fl
+  - fa: product of dfas now ensures that its argument is a dfa.
+
+0.9.2
+  - Grammar tables for grail, reex and FAdo now start with a "."
+  - fl.py (Finite Languages) added to the project: AFA, ADFA and ANFA
+  supported
+  - Grail+ interface inproved. Now, only if the command hasmore than
+  one argument a temporary file is created.
+  - Uniform random generation of trie automata with (at least) a word
+  of a maximum lenght added (fl.py)
+  - rndfa.py added: a wrap for the ICDFA random Generator.
+  - Errors corrected in minimazation methods.
+  - readFromFile now supports comments as documented.
+  - saveToFile deals correctly with append flag.
+  - Bugs on deleteState() were corrected. 

@@ -1,0 +1,556 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>cfg &mdash; FAdo 1.2 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="FAdo 1.2 documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">FAdo 1.2 documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for cfg</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;**Context Free Grammars Manipulation.**</span>
+
+<span class="sd">Basic context-free grammars manipulation for building uniform random generetors</span>
+
+<span class="sd">.. *Authors:* Rogério Reis &amp; Nelma Moreira</span>
+
+<span class="sd">.. *This is part of FAdo project* http://fado.dcc.fc.up.pt</span>
+
+<span class="sd">.. *Copyright:* 1999-2014 Rogério Reis &amp; Nelma Moreira {rvr,nam}@dcc.fc.up.pt</span>
+
+
+<span class="sd">.. This program is free software; you can redistribute it and/or</span>
+<span class="sd">   modify it under the terms of the GNU General Public License as published</span>
+<span class="sd">   by the Free Software Foundation; either version 2 of the License, or</span>
+<span class="sd">   (at your option) any later version.</span>
+
+<span class="sd">   This program is distributed in the hope that it will be useful,</span>
+<span class="sd">   but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY</span>
+<span class="sd">   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License</span>
+<span class="sd">   for more details.</span>
+
+<span class="sd">   You should have received a copy of the GNU General Public License along</span>
+<span class="sd">   with this program; if not, write to the Free Software Foundation, Inc.,</span>
+<span class="sd">   675 Mass Ave, Cambridge, MA 02139, USA.&quot;&quot;&quot;</span>
+
+<span class="c">#__package__ = &quot;FAdo&quot;</span>
+
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">string</span>
+<span class="kn">from</span> <span class="nn">types</span> <span class="kn">import</span> <span class="n">StringType</span>
+<span class="kn">from</span> <span class="nn">random</span> <span class="kn">import</span> <span class="n">randint</span>
+<span class="kn">import</span> <span class="nn">common</span>
+
+
+<div class="viewcode-block" id="CFGrammar"><a class="viewcode-back" href="../index.html#cfg.CFGrammar">[docs]</a><span class="k">class</span> <span class="nc">CFGrammar</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Class for context-free grammars</span>
+
+<span class="sd">     :var Rules: grammar rules</span>
+<span class="sd">     :var Terminals: terminals symbols</span>
+<span class="sd">     :var Nonterminals: nonterminals symbols</span>
+<span class="sd">     :var Start: start symbol</span>
+<span class="sd">     :type Start: string</span>
+<span class="sd">     :var ntr: dictionary of rules for each nonterminal&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gram</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialization</span>
+
+<span class="sd">            :param gram: is a list for productions; each production is a tuple (LeftHandside, RightHandside) with</span>
+<span class="sd">                LeftHandside nonterminal, RightHandside list of symbols, First production is for start symbol</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Rules</span> <span class="o">=</span> <span class="n">gram</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Nonterminals</span> <span class="o">=</span> <span class="p">{</span><span class="n">r</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">Rules</span><span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Terminals</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">Rules</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="ow">is</span> <span class="n">StringType</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">r</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">Nonterminals</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">Terminals</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">r</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+                    <span class="k">if</span> <span class="n">s</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">Nonterminals</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">Terminals</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Start</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Rules</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Nullable</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tr</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ntr</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Rules</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">Rules</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ntr</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ntr</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">Rules</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span><span class="n">i</span><span class="p">}</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ntr</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">Rules</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Grammar rules</span>
+
+<span class="sd">            :return: a string representing the grammar rules&quot;&quot;&quot;</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="s">&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Rules</span><span class="p">)):</span>
+            <span class="n">lhs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Rules</span><span class="p">[</span><span class="n">n</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">rhs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Rules</span><span class="p">[</span><span class="n">n</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">rhs</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">StringType</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">rhs</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">rhs</span> <span class="o">=</span> <span class="n">string</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">rhs</span><span class="p">)</span>
+            <span class="n">s</span> <span class="o">+=</span> <span class="s">&quot;{0:s} | {1:s} -&gt; {2:s} </span><span class="se">\n</span><span class="s">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">lhs</span><span class="p">,</span> <span class="n">rhs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s">&quot;Grammar Rules:</span><span class="se">\n\n</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">s</span>
+
+<div class="viewcode-block" id="CFGrammar.maketerminals"><a class="viewcode-back" href="../index.html#cfg.CFGrammar.maketerminals">[docs]</a>    <span class="k">def</span> <span class="nf">maketerminals</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Extracts C{terminals} from the rules. Nonterminals must already exist&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Terminals</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">Rules</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="ow">is</span> <span class="n">StringType</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">r</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">Nonterminals</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">Terminals</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">r</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+                    <span class="k">if</span> <span class="n">s</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">Nonterminals</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">Terminals</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="CFGrammar.makenonterminals"><a class="viewcode-back" href="../index.html#cfg.CFGrammar.makenonterminals">[docs]</a>    <span class="k">def</span> <span class="nf">makenonterminals</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Extracts C{nonterminals}  from grammar rules.&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">Rules</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Nonterminals</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</div>
+    <span class="k">def</span> <span class="nf">terminalrules</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tr</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">Terminals</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Rules</span><span class="p">)):</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">Rules</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">a</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">a</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">tr</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">tr</span><span class="p">[</span><span class="n">a</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="n">i</span><span class="p">}</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">tr</span><span class="p">[</span><span class="n">a</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">nonterminalrules</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ntr</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Rules</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">Rules</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ntr</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ntr</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">Rules</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span><span class="n">i</span><span class="p">}</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ntr</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">Rules</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+
+<div class="viewcode-block" id="CFGrammar.NULLABLE"><a class="viewcode-back" href="../index.html#cfg.CFGrammar.NULLABLE">[docs]</a>    <span class="k">def</span> <span class="nf">NULLABLE</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Determines which nonterminals X -&gt;* [] &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Nullable</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">Terminals</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Nullable</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">Nonterminals</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Nullable</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">if</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ntr</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ntr</span><span class="p">[</span><span class="n">s</span><span class="p">]:</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">Rules</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">]:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">Nullable</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+                        <span class="k">break</span>
+        <span class="n">k</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">while</span> <span class="n">k</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">k</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">Rules</span><span class="p">:</span>
+                <span class="n">e</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">r</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">Nullable</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
+                        <span class="n">e</span> <span class="o">=</span> <span class="mi">1</span>
+                        <span class="k">break</span>
+                <span class="k">if</span> <span class="n">e</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">Nullable</span><span class="p">[</span><span class="n">r</span><span class="p">[</span><span class="mi">0</span><span class="p">]]:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">Nullable</span><span class="p">[</span><span class="n">r</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="mi">1</span>
+                    <span class="n">k</span> <span class="o">=</span> <span class="mi">1</span>
+
+</div></div>
+<div class="viewcode-block" id="CNF"><a class="viewcode-back" href="../index.html#cfg.CNF">[docs]</a><span class="k">class</span> <span class="nc">CNF</span><span class="p">(</span><span class="n">CFGrammar</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;No useless nonterminals or epsilon rules are ALLOWED... Given a CFG grammar description generates one in CNF</span>
+<span class="sd">      Then its possible to random generate words of a given size. Before some pre-calculations are nedded.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gram</span><span class="p">,</span> <span class="n">mark</span><span class="o">=</span><span class="s">&quot;A@&quot;</span><span class="p">):</span>
+       <span class="c"># super(CNF, self).__init__(gram)</span>
+        <span class="n">CFGrammar</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gram</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mark</span> <span class="o">=</span> <span class="n">mark</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">newnt</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nttr</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">unitary</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_unitary</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Chomsky</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">get_unitary</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">set</span><span class="p">([</span><span class="n">r</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">Rules</span> <span class="k">if</span>
+                    <span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="ow">is</span> <span class="n">StringType</span> <span class="ow">and</span>
+                     <span class="n">r</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">Nonterminals</span><span class="p">)</span> <span class="ow">or</span>
+                    <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">r</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">Nonterminals</span><span class="p">)])</span>
+
+<div class="viewcode-block" id="CNF.elim_unitary"><a class="viewcode-back" href="../index.html#cfg.CNF.elim_unitary">[docs]</a>    <span class="k">def</span> <span class="nf">elim_unitary</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Elimination of unitary rules &quot;&quot;&quot;</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">while</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">f</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">unitary</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_unitary</span><span class="p">()</span>
+
+            <span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">unitary</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">u</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="ow">is</span> <span class="n">StringType</span><span class="p">:</span>
+                    <span class="n">ui</span> <span class="o">=</span> <span class="n">u</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">ui</span> <span class="o">=</span> <span class="n">u</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">ui</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ntr</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ntr</span><span class="p">[</span><span class="n">ui</span><span class="p">]:</span>
+                        <span class="k">if</span> <span class="p">(</span><span class="n">u</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">Rules</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">Rules</span><span class="p">:</span>
+                            <span class="n">f</span> <span class="o">=</span> <span class="mi">1</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">Rules</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">u</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">Rules</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">]))</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">ntr</span><span class="p">[</span><span class="n">u</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Rules</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">unitary</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Rules</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
+</div>
+    <span class="k">def</span> <span class="nf">get_ntr_tr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">):</span>
+        <span class="n">nta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mark</span> <span class="o">+</span> <span class="n">a</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Nonterminals</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">nta</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Rules</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">nta</span><span class="p">,</span> <span class="n">a</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">nta</span>
+
+    <span class="k">def</span> <span class="nf">iter_rule</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lhs</span><span class="p">,</span> <span class="n">rhs</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">rhs</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">StringType</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">rhs</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Rules</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">((</span><span class="n">lhs</span><span class="p">,</span> <span class="n">rhs</span><span class="p">))</span>
+            <span class="k">return</span>
+        <span class="n">nta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mark</span> <span class="o">+</span> <span class="s">&quot;_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">newnt</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Nonterminals</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">nta</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">newnt</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Rules</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">lhs</span><span class="p">,</span> <span class="p">(</span><span class="n">rhs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">nta</span><span class="p">)))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">iter_rule</span><span class="p">(</span><span class="n">nta</span><span class="p">,</span> <span class="n">rhs</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">i</span><span class="p">)</span>
+
+<div class="viewcode-block" id="CNF.Chomsky"><a class="viewcode-back" href="../index.html#cfg.CNF.Chomsky">[docs]</a>    <span class="k">def</span> <span class="nf">Chomsky</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Transform to CNF &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">elim_unitary</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nttr</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="c"># terminal a is replaced by A@_a in all rules &gt; 2</span>
+        <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">Terminals</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Rules</span><span class="p">)):</span>
+                <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Rules</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">StringType</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Rules</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span> <span class="o">&gt;=</span> <span class="mi">2</span> <span class="ow">and</span> <span class="n">a</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">Rules</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">]:</span>
+                    <span class="k">if</span> <span class="n">a</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">nttr</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">nttr</span><span class="p">[</span><span class="n">a</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_ntr_tr</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+                    <span class="n">rr</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Rules</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+                    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">rr</span><span class="p">)):</span>
+                        <span class="k">if</span> <span class="n">rr</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">==</span> <span class="n">a</span><span class="p">:</span>
+                            <span class="n">rr</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nttr</span><span class="p">[</span><span class="n">a</span><span class="p">]</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">Rules</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Rules</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">rr</span><span class="p">))</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Rules</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Rules</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">StringType</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Rules</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">iter_rule</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Rules</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">Rules</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">i</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="cfgGenerator"><a class="viewcode-back" href="../index.html#cfg.cfgGenerator">[docs]</a><span class="k">class</span> <span class="nc">cfgGenerator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;CFG uniform genetaror &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cfgr</span><span class="p">,</span> <span class="n">size</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Object initialization</span>
+<span class="sd">            :param cfgr: grammar for the random objects</span>
+<span class="sd">            :type cfgr: CNF</span>
+<span class="sd">            :param size: size of objects</span>
+<span class="sd">            :type size: integer&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grammar</span> <span class="o">=</span> <span class="n">cfgr</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">=</span> <span class="n">size</span>
+ <span class="c">#       self.density = {}</span>
+ <span class="c">#       self.density_r = {}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_eval_densities</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
+
+<div class="viewcode-block" id="cfgGenerator.generate"><a class="viewcode-back" href="../index.html#cfg.cfgGenerator.generate">[docs]</a>    <span class="k">def</span> <span class="nf">generate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Generates a new random object generated from the start symbol</span>
+
+<span class="sd">            :returns: object</span>
+<span class="sd">            :rtype: string&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gen</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grammar</span><span class="o">.</span><span class="n">Start</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+</div>
+    <span class="k">def</span> <span class="nf">_gen</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nt</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Generates a new random object generated from the nonterminal</span>
+
+<span class="sd">            :param nt: nonterminal</span>
+<span class="sd">            :type nt: string</span>
+<span class="sd">            :param n: object size</span>
+<span class="sd">            :type n: integer</span>
+<span class="sd">            :returns: object</span>
+<span class="sd">            :rtype: string&quot;&quot;&quot;</span>
+        <span class="n">g</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">grammar</span>
+        <span class="k">if</span> <span class="n">n</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">density</span><span class="p">[</span><span class="n">nt</span><span class="p">]</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">density</span><span class="p">[</span><span class="n">nt</span><span class="p">][</span><span class="n">n</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">u</span> <span class="o">=</span> <span class="n">randint</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">density</span><span class="p">[</span><span class="n">nt</span><span class="p">][</span><span class="n">n</span><span class="p">])</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">g</span><span class="o">.</span><span class="n">ntr</span><span class="p">[</span><span class="n">nt</span><span class="p">]:</span>
+                    <span class="k">if</span> <span class="n">g</span><span class="o">.</span><span class="n">Rules</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="ow">in</span> <span class="n">g</span><span class="o">.</span><span class="n">Terminals</span><span class="p">:</span>
+                        <span class="n">r</span> <span class="o">+=</span> <span class="mi">1</span>
+                        <span class="k">if</span> <span class="n">r</span> <span class="o">&gt;</span> <span class="n">u</span><span class="p">:</span>
+                            <span class="n">ic</span> <span class="o">=</span> <span class="n">i</span>
+                            <span class="k">break</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">g</span><span class="o">.</span><span class="n">Rules</span><span class="p">[</span><span class="n">ic</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+                <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">KeyError</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">g</span><span class="o">.</span><span class="n">ntr</span><span class="p">[</span><span class="n">nt</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">Rules</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">n</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">density_r</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
+                        <span class="n">r</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">density_r</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">n</span><span class="p">]</span>
+                        <span class="k">if</span> <span class="n">r</span> <span class="o">&gt;</span> <span class="n">u</span><span class="p">:</span>
+                            <span class="n">ic</span> <span class="o">=</span> <span class="n">i</span>
+                            <span class="k">break</span>
+            <span class="n">uk</span> <span class="o">=</span> <span class="n">randint</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">density_r</span><span class="p">[</span><span class="n">ic</span><span class="p">][</span><span class="n">n</span><span class="p">])</span>
+            <span class="n">rk</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">density</span><span class="p">[</span><span class="n">g</span><span class="o">.</span><span class="n">Rules</span><span class="p">[</span><span class="n">ic</span><span class="p">][</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]]</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">density</span><span class="p">[</span><span class="n">g</span><span class="o">.</span><span class="n">Rules</span><span class="p">[</span><span class="n">ic</span><span class="p">][</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]][</span><span class="n">k</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span>
+                            <span class="n">n</span> <span class="o">-</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">density</span><span class="p">[</span><span class="n">g</span><span class="o">.</span><span class="n">Rules</span><span class="p">[</span><span class="n">ic</span><span class="p">][</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]]</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">density</span><span class="p">[</span><span class="n">g</span><span class="o">.</span><span class="n">Rules</span><span class="p">[</span><span class="n">ic</span><span class="p">][</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]][</span>
+                        <span class="n">n</span> <span class="o">-</span> <span class="n">k</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">):</span>
+                    <span class="n">rk</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">density</span><span class="p">[</span><span class="n">g</span><span class="o">.</span><span class="n">Rules</span><span class="p">[</span><span class="n">ic</span><span class="p">][</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]][</span><span class="n">k</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">density</span><span class="p">[</span><span class="n">g</span><span class="o">.</span><span class="n">Rules</span><span class="p">[</span><span class="n">ic</span><span class="p">][</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]][</span><span class="n">n</span> <span class="o">-</span> <span class="n">k</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="n">rk</span> <span class="o">&gt;</span> <span class="n">uk</span><span class="p">:</span>
+                        <span class="n">kk</span> <span class="o">=</span> <span class="n">k</span>
+                        <span class="k">break</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gen</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">Rules</span><span class="p">[</span><span class="n">ic</span><span class="p">][</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">kk</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gen</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">Rules</span><span class="p">[</span><span class="n">ic</span><span class="p">][</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">n</span> <span class="o">-</span> <span class="n">kk</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_eval_densities</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Evaluates densities</span>
+
+<span class="sd">            :param n: object size</span>
+<span class="sd">            :type n: integer&quot;&quot;&quot;</span>
+        <span class="n">g</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">grammar</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">density</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">density_r</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">nt</span> <span class="ow">in</span> <span class="n">g</span><span class="o">.</span><span class="n">Nonterminals</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">density</span><span class="p">[</span><span class="n">nt</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">density</span><span class="p">[</span><span class="n">nt</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">g</span><span class="o">.</span><span class="n">terminalrules</span><span class="p">()</span>
+        <span class="n">g</span><span class="o">.</span><span class="n">nonterminalrules</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">g</span><span class="o">.</span><span class="n">tr</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">g</span><span class="o">.</span><span class="n">tr</span><span class="p">[</span><span class="n">t</span><span class="p">]:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">density</span><span class="p">[</span><span class="n">g</span><span class="o">.</span><span class="n">Rules</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]][</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">nt</span> <span class="ow">in</span> <span class="n">g</span><span class="o">.</span><span class="n">ntr</span><span class="p">:</span>
+                <span class="n">r</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">g</span><span class="o">.</span><span class="n">ntr</span><span class="p">[</span><span class="n">nt</span><span class="p">]:</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">Rules</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">i</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">density_r</span><span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">density_r</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">density_r</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">l</span><span class="p">]</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span>
+                            <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">density</span><span class="p">[</span><span class="n">g</span><span class="o">.</span><span class="n">Rules</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]][</span><span class="n">k</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">density</span><span class="p">[</span><span class="n">g</span><span class="o">.</span><span class="n">Rules</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]][</span><span class="n">l</span> <span class="o">-</span> <span class="n">k</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span>
+                             <span class="nb">xrange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">l</span><span class="p">)</span> <span class="k">if</span>
+                             <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">density</span><span class="p">[</span><span class="n">g</span><span class="o">.</span><span class="n">Rules</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]]</span> <span class="ow">and</span> <span class="n">l</span> <span class="o">-</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">density</span><span class="p">[</span><span class="n">g</span><span class="o">.</span><span class="n">Rules</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]]])</span>
+                        <span class="n">r</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">density_r</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">l</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">r</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">density</span><span class="p">[</span><span class="n">nt</span><span class="p">][</span><span class="n">l</span><span class="p">]</span> <span class="o">=</span> <span class="n">r</span>
+
+</div>
+<div class="viewcode-block" id="reStringRGenerator"><a class="viewcode-back" href="../index.html#cfg.reStringRGenerator">[docs]</a><span class="k">class</span> <span class="nc">reStringRGenerator</span><span class="p">(</span><span class="n">cfgGenerator</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Uniform random Generator for reStrings&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Sigma</span><span class="o">=</span><span class="p">[</span><span class="s">&quot;a&quot;</span><span class="p">,</span> <span class="s">&quot;b&quot;</span><span class="p">],</span> <span class="n">size</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">cfgr</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">empty</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">ident</span><span class="o">=</span><span class="s">&quot;Ti&quot;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Uniform random generator for regular expressions. Used without arguments generates an uncollapsible re</span>
+<span class="sd">                over {a,b} with size 10. For generate an arbitary re over an alphabet of 10 symbols of size 100:</span>
+<span class="sd">                reStringRGenerator (small_alphabet(10),100,reStringRGenerator.g_regular_base)</span>
+
+<span class="sd">                :param Sigma: re alphabet (that will be the set of grammar terminals)</span>
+<span class="sd">                :type Sigma: list or set</span>
+<span class="sd">                :param size: word size</span>
+<span class="sd">                :type size: integer</span>
+<span class="sd">                :param cfgr: base grammar</span>
+<span class="sd">                :param epsilon: if not None is added to a grammar terminals</span>
+<span class="sd">                :param empty: if not None is added to a grammar terminals</span>
+
+<span class="sd">                .. note::</span>
+<span class="sd">                   the grammar can have already this symbols&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">cfgr</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">base</span> <span class="o">=</span> <span class="n">gRules</span><span class="p">(</span><span class="n">reGrammar</span><span class="p">[</span><span class="s">&quot;g_regular_uncollaps&quot;</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">base</span> <span class="o">=</span> <span class="n">gRules</span><span class="p">(</span><span class="n">cfgr</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Sigma</span> <span class="o">=</span> <span class="n">Sigma</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">Sigma</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">ident</span><span class="p">,</span> <span class="n">i</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">eps</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">ident</span><span class="p">,</span> <span class="n">common</span><span class="o">.</span><span class="n">Epsilon</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">empty</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">ident</span><span class="p">,</span> <span class="n">common</span><span class="o">.</span><span class="n">EmptySet</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gen</span> <span class="o">=</span> <span class="n">cfgGenerator</span><span class="p">(</span><span class="n">CNF</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="p">),</span> <span class="n">size</span><span class="p">)</span>
+
+<div class="viewcode-block" id="reStringRGenerator.generate"><a class="viewcode-back" href="../index.html#cfg.reStringRGenerator.generate">[docs]</a>    <span class="k">def</span> <span class="nf">generate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Generates a new random RE string&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">gen</span><span class="o">.</span><span class="n">generate</span><span class="p">()</span>
+
+
+<span class="c">#noinspection PyUnusedLocal</span></div></div>
+<span class="k">def</span> <span class="nf">CYKParserTable</span><span class="p">(</span><span class="n">gramm</span><span class="p">,</span> <span class="n">word</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Evaluates CYK parser table</span>
+
+<span class="sd">      :param gramm: grammar</span>
+<span class="sd">      :type gramm: CNF</span>
+<span class="sd">      :param word: word to be parsed</span>
+<span class="sd">      :type word: string</span>
+<span class="sd">      :returns: the CYK table</span>
+<span class="sd">      :rtype: list of lists of symbols&quot;&quot;&quot;</span>
+    <span class="k">pass</span>
+
+
+<div class="viewcode-block" id="gRules"><a class="viewcode-back" href="../index.html#cfg.gRules">[docs]</a><span class="k">def</span> <span class="nf">gRules</span><span class="p">(</span><span class="n">rules_list</span><span class="p">,</span> <span class="n">rulesym</span><span class="o">=</span><span class="s">&quot;-&gt;&quot;</span><span class="p">,</span> <span class="n">rhssep</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">rulesep</span><span class="o">=</span><span class="s">&#39;|&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Transforms a list of rules into  a grammar description.</span>
+
+<span class="sd">      :param rules_list: is a list of rule where rule is a string  of the form: Word rulesym Word1 ... Word2 or  Word</span>
+<span class="sd">          rulesym []</span>
+<span class="sd">      :param rulesym: LHS and RHS rule separator</span>
+<span class="sd">      :param rhssep: RHS values separator (None for white chars)</span>
+<span class="sd">      :return: a grammar description &quot;&quot;&quot;</span>
+    <span class="n">gr</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">sep</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">rulesym</span><span class="p">)</span>
+    <span class="c">#rsep = re.compile(rulesep)</span>
+    <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rules_list</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="ow">is</span> <span class="n">StringType</span><span class="p">:</span>
+            <span class="n">rule</span> <span class="o">=</span> <span class="n">r</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">rule</span> <span class="o">=</span> <span class="n">r</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="n">sep</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">rule</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">m</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">m</span><span class="o">.</span><span class="n">start</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">common</span><span class="o">.</span><span class="n">CFGgrammarError</span><span class="p">(</span><span class="n">rule</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">lhs</span> <span class="o">=</span> <span class="n">rule</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">m</span><span class="o">.</span><span class="n">start</span><span class="p">()]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">m</span><span class="o">.</span><span class="n">end</span><span class="p">()</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">rule</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="n">common</span><span class="o">.</span><span class="n">CFGgrammarError</span><span class="p">(</span><span class="n">rule</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">rest</span> <span class="o">=</span> <span class="n">string</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="n">rule</span><span class="p">[</span><span class="n">m</span><span class="o">.</span><span class="n">end</span><span class="p">():])</span>
+                <span class="k">if</span> <span class="n">rest</span> <span class="o">==</span> <span class="s">&quot;[]&quot;</span><span class="p">:</span>
+                    <span class="n">rhs</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">multi</span> <span class="o">=</span> <span class="n">string</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">rest</span><span class="p">,</span> <span class="n">rulesep</span><span class="p">)</span>
+                    <span class="n">rhs</span> <span class="o">=</span> <span class="p">[]</span>
+                    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">multi</span><span class="p">:</span>
+                        <span class="n">l</span> <span class="o">=</span> <span class="n">string</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">rhssep</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">l</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                            <span class="n">l</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">string</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">rhssep</span><span class="p">))</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">l</span> <span class="o">=</span> <span class="n">l</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                        <span class="n">gr</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">lhs</span><span class="p">,</span> <span class="n">l</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">gr</span>
+
+</div>
+<div class="viewcode-block" id="smallAlphabet"><a class="viewcode-back" href="../index.html#cfg.smallAlphabet">[docs]</a><span class="k">def</span> <span class="nf">smallAlphabet</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">sigma_base</span><span class="o">=</span><span class="s">&quot;a&quot;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Easy way to have small alphabets</span>
+
+<span class="sd">      :param k: alphabet size (must be less than 52)</span>
+<span class="sd">      :param sigma_base: initial symbol</span>
+<span class="sd">      </span>
+<span class="sd">      :returns: alphabet</span>
+<span class="sd">      :rtype: list&quot;&quot;&quot;</span>
+    <span class="n">Sigma</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">k</span> <span class="o">&gt;=</span> <span class="mi">52</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">common</span><span class="o">.</span><span class="n">CFGterminalError</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+    <span class="n">lim</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="mi">26</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">lim</span><span class="p">):</span>
+        <span class="n">Sigma</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">chr</span><span class="p">(</span><span class="nb">ord</span><span class="p">(</span><span class="n">sigma_base</span><span class="p">)</span> <span class="o">+</span> <span class="n">i</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">k</span> <span class="o">&gt;=</span> <span class="mi">26</span><span class="p">:</span>
+        <span class="n">sigma_base</span> <span class="o">=</span> <span class="s">&#39;A&#39;</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">k</span> <span class="o">-</span> <span class="n">lim</span><span class="p">):</span>
+            <span class="n">Sigma</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">chr</span><span class="p">(</span><span class="nb">ord</span><span class="p">(</span><span class="n">sigma_base</span><span class="p">)</span> <span class="o">+</span> <span class="n">i</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">Sigma</span>
+
+</div>
+<span class="n">reGrammar</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;g_regular_base&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s">&quot;Tr -&gt; Tr + Tc | Tc&quot;</span><span class="p">,</span> <span class="s">&quot;Tc -&gt; Tc Ts |  Ts&quot;</span><span class="p">,</span>
+                                <span class="s">&quot;Ts -&gt; Ts * | Ti | ( Tr ) &quot;</span><span class="p">],</span>
+             <span class="s">&#39;g_regular_wredund&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s">&quot;Tr -&gt; Trs | Tf &quot;</span><span class="p">,</span> <span class="s">&quot;Trs -&gt; Trs + Tf | Tf + Tf&quot;</span><span class="p">,</span>
+                                   <span class="s">&quot;Tf -&gt; Tc | Te | Ti&quot;</span><span class="p">,</span>
+                                   <span class="s">&quot;Tc -&gt; Tc Ts |  Ts Ts&quot;</span><span class="p">,</span>
+                                   <span class="s">&quot;Ts -&gt; Te | Ti | ( Trs ) &quot;</span><span class="p">,</span>
+                                   <span class="s">&quot;Te -&gt; ( Trs ) * | ( Tc ) * | Ti *&quot;</span><span class="p">],</span>
+             <span class="s">&#39;g_regular_uncollaps&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s">&quot;Ts -&gt;  Trs | Tcc  | Tee | Ti | </span><span class="si">%s</span><span class="s"> | </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">common</span><span class="o">.</span><span class="n">Epsilon</span><span class="p">,</span> <span class="n">common</span><span class="o">.</span><span class="n">EmptySet</span><span class="p">),</span>
+                                     <span class="s">&quot;Tcc -&gt; Tcc Tr | Tr Tr&quot;</span><span class="p">,</span>
+                                     <span class="s">&quot;Tr -&gt; ( Trs ) | Tee | Ti &quot;</span><span class="p">,</span>
+                                     <span class="s">&quot;Tee -&gt; ( Trs ) * | ( Tcc ) * | Ti *&quot;</span><span class="p">,</span>
+                                     <span class="s">&quot;Trs -&gt; </span><span class="si">%s</span><span class="s"> + Tx | Ty + Tz&quot;</span> <span class="o">%</span> <span class="n">common</span><span class="o">.</span><span class="n">Epsilon</span><span class="p">,</span>
+                                     <span class="s">&quot;Tx -&gt; Tt | Tt + Tx&quot;</span><span class="p">,</span>
+                                     <span class="s">&quot;Tt -&gt; Tcc | Ti &quot;</span><span class="p">,</span>
+                                     <span class="s">&quot;Ty -&gt; Tz | Ty + Tz&quot;</span><span class="p">,</span>
+                                     <span class="s">&quot;Tz -&gt; Tcc | Tee | Ti &quot;</span><span class="p">],</span>
+             <span class="s">&#39;g_rpn&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s">&quot;Tx -&gt; </span><span class="si">%s</span><span class="s"> | Ti | +  Tx  Tx  | . Tx Tx  | * Tx&quot;</span> <span class="o">%</span> <span class="n">common</span><span class="o">.</span><span class="n">Epsilon</span><span class="p">],</span>
+             <span class="s">&#39;g_sha&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s">&quot;Ts  -&gt; Ted | Tec | Tes | Ti |</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">common</span><span class="o">.</span><span class="n">Epsilon</span><span class="p">,</span>
+                       <span class="s">&quot;Tec -&gt; . Tec Tr | . Tr Tr &quot;</span><span class="p">,</span>
+                       <span class="s">&quot;Tr -&gt; Ted | Tes | Ti&quot;</span><span class="p">,</span>
+                       <span class="s">&quot;Tes -&gt; * Ted | * Tec | * Ti&quot;</span><span class="p">,</span>
+                       <span class="s">&quot;Ted -&gt; + </span><span class="si">%s</span><span class="s"> Tx | + Ty Tz&quot;</span> <span class="o">%</span> <span class="n">common</span><span class="o">.</span><span class="n">Epsilon</span><span class="p">,</span>
+                       <span class="s">&quot;Tx -&gt; Tt | + Tt Tx&quot;</span><span class="p">,</span>
+                       <span class="s">&quot;Tt -&gt; Tec | Ti&quot;</span><span class="p">,</span>
+                       <span class="s">&quot;Ty -&gt; Tz | + Ty Tz&quot;</span><span class="p">,</span>
+                       <span class="s">&quot;Tz -&gt; Tec | Tes | Ti&quot;</span><span class="p">],</span>
+             <span class="s">&#39;g_rpn_pi&#39;</span><span class="p">:</span> <span class="p">[</span> <span class="s">&quot;Tp -&gt; Ti | +  Tp  Tx | + Tnp Tp | . Tx Tp | . Tp </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">common</span><span class="o">.</span><span class="n">Epsilon</span><span class="p">,</span>
+                           <span class="s">&quot;Tx -&gt; </span><span class="si">%s</span><span class="s"> | Ti | +  Tx  Tx  | . Tx Tx  | * Tx&quot;</span> <span class="o">%</span> <span class="n">common</span><span class="o">.</span><span class="n">Epsilon</span><span class="p">,</span>
+                           <span class="s">&quot;Tnp -&gt; </span><span class="si">%s</span><span class="s"> | +  Tnp  Tnp | . Tnp Tnp | . Tp Tnp&quot;</span> <span class="o">%</span> <span class="n">common</span><span class="o">.</span><span class="n">Epsilon</span><span class="p">]}</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">FAdo 1.2 documentation</a> &raquo;</li>
+          <li><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 1999-2014, Rogério Reis &amp; Nelma Moreira.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

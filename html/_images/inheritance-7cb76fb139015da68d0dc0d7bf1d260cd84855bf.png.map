@@ -1,0 +1,5 @@
+<map id="inheritancef387756b4f" name="inheritancef387756b4f">
+<area shape="rect" id="node1" title="Any FAdo object that is drawable" alt="" coords="5,5,135,31"/>
+<area shape="rect" id="node3" href="#graphs.Graph" title="Graph base class" alt="" coords="183,5,283,31"/>
+<area shape="rect" id="node2" href="#graphs.DiGraph" title="Directed graph base class" alt="" coords="331,5,443,31"/>
+</map>

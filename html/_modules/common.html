@@ -1,0 +1,786 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>common &mdash; FAdo 1.2 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="FAdo 1.2 documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">FAdo 1.2 documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for common</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;**Common definitions for FAdo files**</span>
+
+<span class="sd">.. *Authors:* Rogério Reis &amp; Nelma Moreira</span>
+
+<span class="sd">.. *This is part of FAdo project*   http://fado.dcc.fc.up.pt.</span>
+
+<span class="sd">.. *Copyright:* 1999-2014 Rogério Reis &amp; Nelma Moreira {rvr,nam}@dcc.fc.up.pt</span>
+
+<span class="sd">.. *Contributions by:*</span>
+<span class="sd">   - Marco Almeida</span>
+<span class="sd">   - Hugo Gouveia</span>
+
+<span class="sd">.. This program is free software; you can redistribute it and/or</span>
+<span class="sd">   modify it under the terms of the GNU General Public License as published</span>
+<span class="sd">   by the Free Software Foundation; either version 2 of the License, or</span>
+<span class="sd">   (at your option) any later version.</span>
+
+<span class="sd">   This program is distributed in the hope that it will be useful,</span>
+<span class="sd">   but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY</span>
+<span class="sd">   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License</span>
+<span class="sd">   for more details.</span>
+
+<span class="sd">   You should have received a copy of the GNU General Public License along</span>
+<span class="sd">   with this program; if not, write to the Free Software Foundation, Inc.,</span>
+<span class="sd">   675 Mass Ave, Cambridge, MA 02139, USA.&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">abstractmethod</span>
+<span class="kn">import</span> <span class="nn">functools</span>
+<span class="kn">import</span> <span class="nn">tempfile</span>
+<span class="kn">import</span> <span class="nn">subprocess</span>
+
+<span class="n">FAdoVersion</span> <span class="o">=</span> <span class="s">&quot;1.2&quot;</span>
+
+<span class="k">class</span> <span class="nc">fnhException</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="k">pass</span>
+
+
+<span class="k">class</span> <span class="nc">NImplemented</span><span class="p">(</span><span class="n">fnhException</span><span class="p">):</span>
+    <span class="k">pass</span>
+
+
+<span class="k">class</span> <span class="nc">NonPlanar</span><span class="p">(</span><span class="n">fnhException</span><span class="p">):</span>
+    <span class="k">pass</span>
+
+
+<span class="k">class</span> <span class="nc">VertexNotInGraph</span><span class="p">(</span><span class="n">fnhException</span><span class="p">):</span>
+    <span class="k">pass</span>
+
+
+<span class="k">class</span> <span class="nc">FAException</span><span class="p">(</span><span class="n">fnhException</span><span class="p">):</span>
+    <span class="k">pass</span>
+
+
+<span class="k">class</span> <span class="nc">DFAerror</span><span class="p">(</span><span class="n">fnhException</span><span class="p">):</span>
+    <span class="k">pass</span>
+
+<span class="k">class</span> <span class="nc">TFASignal</span><span class="p">(</span><span class="n">fnhException</span><span class="p">):</span>
+    <span class="k">pass</span>
+
+<span class="k">class</span> <span class="nc">PDAerror</span><span class="p">(</span><span class="n">fnhException</span><span class="p">):</span>
+    <span class="k">pass</span>
+
+
+<span class="k">class</span> <span class="nc">CFGerror</span><span class="p">(</span><span class="n">fnhException</span><span class="p">):</span>
+    <span class="k">pass</span>
+
+
+<span class="k">class</span> <span class="nc">FAdoError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="k">pass</span>
+
+
+<span class="k">class</span> <span class="nc">FAdoGeneralError</span><span class="p">(</span><span class="n">FAdoError</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">msg</span> <span class="o">=</span> <span class="n">msg</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&quot;FAdo: &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">msg</span>
+
+
+<span class="k">class</span> <span class="nc">VersoError</span><span class="p">(</span><span class="n">FAdoGeneralError</span><span class="p">):</span>
+    <span class="k">pass</span>
+
+<span class="k">class</span> <span class="nc">TFAAccept</span><span class="p">(</span><span class="n">TFASignal</span><span class="p">):</span>
+    <span class="k">pass</span>
+
+<span class="k">class</span> <span class="nc">TFAReject</span><span class="p">(</span><span class="n">TFASignal</span><span class="p">):</span>
+    <span class="k">pass</span>
+
+<span class="k">class</span> <span class="nc">TFARejectLoop</span><span class="p">(</span><span class="n">TFAReject</span><span class="p">):</span>
+    <span class="k">pass</span>
+
+<span class="k">class</span> <span class="nc">TFARejectBlocked</span><span class="p">(</span><span class="n">TFAReject</span><span class="p">):</span>
+    <span class="k">pass</span>
+
+<span class="k">class</span> <span class="nc">TFARejectNonFinal</span><span class="p">(</span><span class="n">TFAReject</span><span class="p">):</span>
+    <span class="k">pass</span>
+
+<span class="k">class</span> <span class="nc">CFGgrammarError</span><span class="p">(</span><span class="n">CFGerror</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rule</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rule</span> <span class="o">=</span> <span class="n">rule</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&quot;Error in rule </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">rule</span>
+
+<span class="k">class</span> <span class="nc">CFGterminalError</span><span class="p">(</span><span class="n">CFGerror</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">=</span> <span class="n">size</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&quot;To many alphabetic symbols: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span>
+
+
+<span class="k">class</span> <span class="nc">DFAnoInitial</span><span class="p">(</span><span class="n">DFAerror</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&quot;No initial state defined&quot;</span>
+
+
+<span class="k">class</span> <span class="nc">DuplicateName</span><span class="p">(</span><span class="n">DFAerror</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">number</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">number</span> <span class="o">=</span> <span class="n">number</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&quot;State  number </span><span class="si">%s</span><span class="s"> repeated&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">number</span>
+
+
+<span class="k">class</span> <span class="nc">FAdoSyntacticError</span><span class="p">(</span><span class="n">FAdoError</span><span class="p">):</span>
+    <span class="k">pass</span>
+
+
+<span class="k">class</span> <span class="nc">DFASyntaticError</span><span class="p">(</span><span class="n">DFAerror</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">line</span> <span class="o">=</span> <span class="n">line</span>
+
+
+<span class="k">class</span> <span class="nc">DFAstateUnknown</span><span class="p">(</span><span class="n">DFAerror</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stidx</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stidx</span> <span class="o">=</span> <span class="n">stidx</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&quot;State  </span><span class="si">%s</span><span class="s"> unknown&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">stidx</span>
+
+
+<span class="k">class</span> <span class="nc">DFAnotNFA</span><span class="p">(</span><span class="n">DFAerror</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="n">msg</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&quot;Not a DFA </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">message</span>
+
+
+<span class="k">class</span> <span class="nc">DFAepsilonRedefinition</span><span class="p">(</span><span class="n">DFAerror</span><span class="p">):</span>
+    <span class="k">pass</span>
+
+
+<span class="k">class</span> <span class="nc">DFAsymbolUnknown</span><span class="p">(</span><span class="n">DFAerror</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sym</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">symbol</span> <span class="o">=</span> <span class="n">sym</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&quot;Symbol </span><span class="si">%s</span><span class="s"> is unknown&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">symbol</span>
+
+
+<span class="k">class</span> <span class="nc">GraphError</span><span class="p">(</span><span class="n">FAdoGeneralError</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&quot;Graph Error&quot;</span>
+
+
+<span class="k">class</span> <span class="nc">DFAstopped</span><span class="p">(</span><span class="n">DFAerror</span><span class="p">):</span>
+    <span class="k">pass</span>
+
+
+<span class="k">class</span> <span class="nc">DFAFileError</span><span class="p">(</span><span class="n">DFAerror</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="n">name</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&quot;Error in file: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">filename</span>
+
+
+<span class="k">class</span> <span class="nc">DFAFound</span><span class="p">(</span><span class="n">DFAerror</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">word</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">word</span> <span class="o">=</span> <span class="n">word</span><span class="p">[:]</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&quot;Found: $s&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">word</span>
+
+
+<span class="k">class</span> <span class="nc">DFAEmptyDFA</span><span class="p">(</span><span class="n">DFAerror</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&quot;Dfa is empty&quot;</span>
+
+
+<span class="k">class</span> <span class="nc">DFAequivalent</span><span class="p">(</span><span class="n">DFAerror</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&quot;Dfa are equivalent&quot;</span>
+
+
+<span class="k">class</span> <span class="nc">DFAnotComplete</span><span class="p">(</span><span class="n">DFAerror</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&quot;Dfa is not complete&quot;</span>
+
+
+<span class="k">class</span> <span class="nc">DFAnotMinimal</span><span class="p">(</span><span class="n">DFAerror</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&quot;Dfa is not minimal&quot;</span>
+
+
+<span class="k">class</span> <span class="nc">DFAinputError</span><span class="p">(</span><span class="n">DFAerror</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">word</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">word</span> <span class="o">=</span> <span class="n">word</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&quot;Input error: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">word</span>
+
+
+<span class="k">class</span> <span class="nc">DFAdifferentSigma</span><span class="p">(</span><span class="n">DFAerror</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&quot;Dfas with different alphabets&quot;</span>
+
+<span class="k">class</span> <span class="nc">DFAEmptySigma</span><span class="p">(</span><span class="n">DFAerror</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&quot;Dfa alphabet is empty&quot;</span>
+
+
+<span class="k">class</span> <span class="nc">DFAmarkedError</span><span class="p">(</span><span class="n">DFAerror</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sym</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sym</span> <span class="o">=</span> <span class="n">sym</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&quot;Symbol not marked </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sym</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">TRError</span><span class="p">(</span><span class="n">FAException</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&quot;Transducer Error&quot;</span>
+
+
+<span class="k">class</span> <span class="nc">regexpInvalid</span><span class="p">(</span><span class="n">DFAerror</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">word</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">word</span> <span class="o">=</span> <span class="n">word</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="s">&#39;Error in regexp </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">word</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">message</span>
+
+
+<span class="k">class</span> <span class="nc">regexpInvalidSymbols</span><span class="p">(</span><span class="n">DFAerror</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="s">&#39;Symbols in regexp do not match alphabet&#39;</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">message</span>
+
+
+<span class="k">class</span> <span class="nc">notAcyclic</span><span class="p">(</span><span class="n">DFAerror</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&quot;Automaton is not acyclic &quot;</span>
+
+
+<span class="k">class</span> <span class="nc">IllegalBias</span><span class="p">(</span><span class="n">FAdoGeneralError</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&quot;Bias with illegal value &quot;</span>
+
+
+<span class="k">class</span> <span class="nc">CodesError</span><span class="p">(</span><span class="n">FAdoGeneralError</span><span class="p">):</span>
+    <span class="k">pass</span>
+
+<span class="k">class</span> <span class="nc">CodingTheoryError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">msg</span> <span class="o">=</span> <span class="n">msg</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&quot;FAdo: coding theory error. Message: &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">msg</span>
+
+<span class="k">class</span> <span class="nc">PropertyNotSatisfied</span><span class="p">(</span><span class="n">CodesError</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&quot;Property not satisfied&quot;</span>
+
+
+<span class="k">class</span> <span class="nc">GraphError</span><span class="p">(</span><span class="n">fnhException</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="n">message</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">message</span>
+
+
+<span class="k">class</span> <span class="nc">TestsError</span><span class="p">(</span><span class="n">DFAerror</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">message</span>
+
+
+<span class="k">class</span> <span class="nc">PDAsymbolUnknown</span><span class="p">(</span><span class="n">PDAerror</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symb</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">symb</span> <span class="o">=</span> <span class="n">symb</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&quot;Unknown stack symbol </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">symb</span>
+
+
+<span class="k">class</span> <span class="nc">NotSP</span><span class="p">(</span><span class="n">DFAerror</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&quot;DFA is not Serial-Paralel.&quot;</span>
+
+
+<span class="n">EmptySet</span> <span class="o">=</span> <span class="s">&quot;@empty_set&quot;</span>
+<span class="n">Epsilon</span> <span class="o">=</span> <span class="s">&quot;@epsilon&quot;</span>
+<span class="n">DeadName</span> <span class="o">=</span> <span class="s">&quot;@DeaD&quot;</span>
+
+<span class="n">DEBUG</span> <span class="o">=</span> <span class="bp">False</span>
+
+<span class="n">TYPE_DISJ</span> <span class="o">=</span> <span class="s">&quot;disj&quot;</span>
+<span class="n">TYPE_CONC</span> <span class="o">=</span> <span class="s">&quot;conc&quot;</span>
+<span class="n">TYPE_STAR</span> <span class="o">=</span> <span class="s">&quot;star&quot;</span>
+<span class="n">TYPE_SYMB</span> <span class="o">=</span> <span class="s">&quot;sym&quot;</span>
+<span class="n">TYPE_EWRD</span> <span class="o">=</span> <span class="s">&quot;ewrd&quot;</span>
+<span class="n">TYPE_ESET</span> <span class="o">=</span> <span class="s">&quot;eset&quot;</span>
+
+
+<span class="k">def</span> <span class="nf">debug</span><span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="k">print</span> <span class="s">&quot;</span><span class="si">%s%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="s">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s">&quot;</span><span class="se">\t</span><span class="s">&quot;</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">level</span><span class="p">)]),</span> <span class="n">string</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">SPLabel</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Label class for Serial-Paralel test algorithm</span>
+
+<span class="sd">    .. seealso::</span>
+<span class="sd">        Moreira &amp; Reis, Fundamenta Informatica, &#39;Series-Paralel automata and short regular expressions&#39;,  n.91 3-4,</span>
+<span class="sd">        pag 611-629&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">val</span><span class="p">:</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">val</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="n">lbl</span><span class="p">()):</span>
+            <span class="k">return</span> <span class="s">&#39;spl: ref </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">lastref</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s">&#39;spl: val </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">val</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="n">lbl</span><span class="p">()):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">val</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span>
+
+    <span class="k">def</span> <span class="nf">ref</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">lbl</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">assign</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lastref</span><span class="p">()</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">val</span>
+
+    <span class="k">def</span> <span class="nf">lastref</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="n">lbl</span><span class="p">()):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">lastref</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">lbl</span><span class="p">(</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">val</span><span class="p">()))</span>
+
+
+<span class="k">class</span> <span class="nc">lbl</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">val</span><span class="p">:</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">val</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="n">lbl</span><span class="p">()):</span>
+            <span class="k">return</span> <span class="s">&#39;lbl: ref </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">lastref</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s">&#39;lbl: val </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">val</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="n">lbl</span><span class="p">()):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">val</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span>
+
+    <span class="k">def</span> <span class="nf">ref</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">lbl</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">assign</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lastref</span><span class="p">()</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">val</span>
+
+    <span class="k">def</span> <span class="nf">lastref</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="n">lbl</span><span class="p">()):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">lastref</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">lbl</span><span class="p">(</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">val</span><span class="p">()))</span>
+
+
+<span class="k">class</span> <span class="nc">memoized</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Decorator that caches a function&#39;s return value each time it is called.</span>
+
+<span class="sd">    If called later with the same arguments, the cached value is returned, and not re-evaluated.&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">func</span> <span class="o">=</span> <span class="n">func</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cache</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache</span><span class="p">[</span><span class="n">args</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cache</span><span class="p">[</span><span class="n">args</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+            <span class="k">return</span> <span class="n">value</span>
+        <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+            <span class="c"># uncachable -- for instance, passing a list as an argument.</span>
+            <span class="c"># Better to not cache than to blow up entirely.</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the function&#39;s docstring.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="o">.</span><span class="n">__doc__</span>
+
+    <span class="c"># noinspection PyUnusedLocal</span>
+    <span class="k">def</span> <span class="nf">__get__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">,</span> <span class="n">objtype</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Support instance methods.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__call__</span><span class="p">,</span> <span class="n">obj</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">memoize</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">method_name</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Memoizes a given method result on instances of given class.</span>
+
+<span class="sd">    Given method should have no side effects. Results are stored as instance attributes --- given parameters are</span>
+<span class="sd">    disregarded.</span>
+
+<span class="sd">    :param cls:</span>
+<span class="sd">    :param method_name:</span>
+
+<span class="sd">    .. note: original method is stored as &lt;cls&gt;.memoize_&lt;method_name&gt;_original</span>
+
+<span class="sd">    .. note: values are stored as &lt;instance&gt;.memoized_&lt;method_name&gt;</span>
+
+<span class="sd">    .. attention: all instances in all threads will be affected&quot;&quot;&quot;</span>
+    <span class="n">saved_name</span> <span class="o">=</span> <span class="s">&quot;memoize_&quot;</span> <span class="o">+</span> <span class="n">method_name</span> <span class="o">+</span> <span class="s">&quot;_original&quot;</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">saved_name</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">False</span>
+    <span class="n">attr_name</span> <span class="o">=</span> <span class="s">&quot;memoized_&quot;</span> <span class="o">+</span> <span class="n">method_name</span>
+    <span class="n">method</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">method_name</span><span class="p">)</span>
+    <span class="nb">setattr</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">saved_name</span><span class="p">,</span> <span class="n">method</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="s">&quot;memoized_instances&quot;</span><span class="p">):</span>
+        <span class="n">cls</span><span class="o">.</span><span class="n">memoized_instances</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">inst_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">cls</span><span class="o">.</span><span class="n">memoized_instances</span><span class="p">[</span><span class="n">method_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">inst_list</span>
+
+    <span class="k">def</span> <span class="nf">memo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">param</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr_name</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">method</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">param</span><span class="p">)</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr_name</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+            <span class="n">inst_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">value</span>
+
+    <span class="n">memo</span><span class="o">.</span><span class="n">__name__</span> <span class="o">=</span> <span class="n">method_name</span>
+    <span class="nb">setattr</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">method_name</span><span class="p">,</span> <span class="n">memo</span><span class="p">)</span>
+    <span class="k">return</span> <span class="bp">True</span>
+
+
+<span class="k">def</span> <span class="nf">dememoize</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">method_name</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Restore method of given class from memoized state. Stored attributes will be removed.&quot;&quot;&quot;</span>
+    <span class="n">saved_name</span> <span class="o">=</span> <span class="s">&quot;memoize_&quot;</span> <span class="o">+</span> <span class="n">method_name</span> <span class="o">+</span> <span class="s">&quot;_original&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">saved_name</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">False</span>
+    <span class="n">method</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">saved_name</span><span class="p">)</span>
+    <span class="nb">delattr</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">saved_name</span><span class="p">)</span>
+    <span class="nb">setattr</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">method_name</span><span class="p">,</span> <span class="n">method</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">instance</span> <span class="ow">in</span> <span class="n">cls</span><span class="o">.</span><span class="n">memoized_instances</span><span class="p">[</span><span class="n">method_name</span><span class="p">]:</span>
+        <span class="nb">delattr</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span> <span class="s">&quot;memoized_&quot;</span> <span class="o">+</span> <span class="n">method_name</span><span class="p">)</span>
+    <span class="k">del</span> <span class="n">cls</span><span class="o">.</span><span class="n">memoized_instances</span><span class="p">[</span><span class="n">method_name</span><span class="p">]</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">cls</span><span class="o">.</span><span class="n">memoized_instances</span><span class="p">:</span>
+        <span class="k">del</span> <span class="n">cls</span><span class="o">.</span><span class="n">memoized_instances</span>
+    <span class="k">return</span> <span class="bp">True</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">product</span> <span class="k">as</span> <span class="n">cartesianProduct</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">cartesianProduct</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">x</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">y</span><span class="p">]</span>
+
+
+<span class="k">def</span> <span class="nf">uSet</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;returns the first element of a set</span>
+
+<span class="sd">    :param set s: the set</span>
+<span class="sd">    :return: the first element of s</span>
+<span class="sd">    :rtype: x&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+
+<span class="k">def</span> <span class="nf">tmpFileName</span><span class="p">():</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getpid</span><span class="p">()</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1000000</span><span class="p">)</span>
+    <span class="k">return</span> <span class="s">&quot;/var/tmp/F</span><span class="si">%d</span><span class="s">-</span><span class="si">%d</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">forceIterable</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Forces a non iterable object into a list, otherwise returns itself</span>
+
+<span class="sd">    :param list x: the object</span>
+<span class="sd">    :return: object as a list</span>
+<span class="sd">    :rtype: list&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="s">&#39;__iter__&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">([</span><span class="n">x</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">x</span>
+
+
+<span class="k">def</span> <span class="nf">binomial</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="n">k</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Exactly what it seems</span>
+
+<span class="sd">    :param int n: n</span>
+<span class="sd">    :param int k: k</span>
+<span class="sd">    :rtype: int&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="nb">reduce</span><span class="p">(</span><span class="k">lambda</span> <span class="n">acc</span><span class="p">,</span> <span class="n">m</span><span class="p">:</span> <span class="n">acc</span> <span class="o">*</span> <span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="n">k</span> <span class="o">+</span> <span class="n">m</span><span class="p">)</span> <span class="o">/</span> <span class="n">m</span><span class="p">,</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">k</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">delFromList</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">l1</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Delete every element of l1 from l</span>
+
+<span class="sd">    :type l: list</span>
+<span class="sd">    :type l1:list</span>
+
+<span class="sd">    .. versionadded: 0.9.8&quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">l1</span><span class="p">:</span>
+        <span class="n">l</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">suffixes</span><span class="p">(</span><span class="n">word</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Returns the list of propper suffixes of a word</span>
+
+<span class="sd">    :param word: the word</span>
+<span class="sd">    :type word: str</span>
+<span class="sd">    :rtype: list</span>
+
+<span class="sd">    .. versionadded: 0.9.8&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">word</span><span class="p">[</span><span class="n">i</span><span class="p">:]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">word</span><span class="p">))]</span>
+
+<span class="k">def</span> <span class="nf">graphvizTranslate</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Translate epsilons for graphviz</span>
+
+<span class="sd">    :param s: symbol</span>
+<span class="sd">    :type s: str</span>
+<span class="sd">    :rtype: str&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">s</span> <span class="o">==</span> <span class="n">Epsilon</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s">&quot;&amp;epsilon;&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">s</span>
+
+<span class="kn">import</span> <span class="nn">warnings</span>
+
+
+<span class="k">def</span> <span class="nf">deprecated</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;This is a decorator which can be used to mark functions as deprecated. It will result in a warning being emmitted</span>
+<span class="sd">    when the function is used.&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">newFunc</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&quot;Call to deprecated function </span><span class="si">%s</span><span class="s">.&quot;</span> <span class="o">%</span> <span class="n">func</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span>
+                      <span class="n">category</span><span class="o">=</span><span class="ne">DeprecationWarning</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">newFunc</span><span class="o">.</span><span class="n">__name__</span> <span class="o">=</span> <span class="n">func</span><span class="o">.</span><span class="n">__name__</span>
+    <span class="n">newFunc</span><span class="o">.</span><span class="n">__doc__</span> <span class="o">=</span> <span class="n">func</span><span class="o">.</span><span class="n">__doc__</span>
+    <span class="n">newFunc</span><span class="o">.</span><span class="n">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="n">__dict__</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">newFunc</span>
+
+
+<span class="k">class</span> <span class="nc">Drawable</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Any FAdo object that is drawable&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">display</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fileName</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="s">&quot;30,20&quot;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Display automata using dot</span>
+
+<span class="sd">        :param size: size of representation</span>
+<span class="sd">        :param fileName: filename to use for the graphic representation (default a os tmpfile</span>
+<span class="sd">        :return: name of the file created</span>
+
+<span class="sd">        .. versionchanged:: 1.0.4&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">fileName</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">fnameGV</span> <span class="o">=</span> <span class="n">fileName</span> <span class="o">+</span> <span class="s">&quot;.gv&quot;</span>
+            <span class="n">fnamePDF</span> <span class="o">=</span> <span class="n">fileName</span> <span class="o">+</span> <span class="s">&quot;.pdf&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">f</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span><span class="p">(</span><span class="n">suffix</span><span class="o">=</span><span class="s">&quot;.gv&quot;</span><span class="p">)</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="n">fnameGV</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span>
+            <span class="n">fname</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">fnameGV</span><span class="p">)</span>
+            <span class="n">fnamePDF</span> <span class="o">=</span> <span class="n">fname</span> <span class="o">+</span> <span class="s">&quot;.pdf&quot;</span>
+        <span class="n">foo</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">fnameGV</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">)</span>
+        <span class="n">foo</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dotFormat</span><span class="p">(</span><span class="n">size</span><span class="p">))</span>
+        <span class="n">foo</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="n">callstr</span> <span class="o">=</span> <span class="s">&quot;dot -Tpdf </span><span class="si">%s</span><span class="s"> -o </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">fnameGV</span><span class="p">,</span> <span class="n">fnamePDF</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">callstr</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">result</span><span class="p">:</span>
+            <span class="k">print</span> <span class="s">&quot;Need graphviz to visualize objects&quot;</span>
+            <span class="k">return</span>
+        <span class="c">#os.system(&quot;dot -Tpdf %s -o %s&quot; % (fnameGV, fnamePDF))</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s">&#39;nt&#39;</span><span class="p">:</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s">&quot;start </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">fnamePDF</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s">&quot;open </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">fnamePDF</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">fnamePDF</span>
+
+    <span class="k">def</span> <span class="nf">makePNG</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fileName</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="s">&quot;30,20&quot;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Produce png file to display</span>
+
+<span class="sd">        :param str fileName: file name, if None will be a tmpfile</span>
+<span class="sd">        :param size: size for graphviz</span>
+<span class="sd">        :return: name of the file created</span>
+
+<span class="sd">        .. versionadded:: 1.0.4&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">fileName</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">fnameGV</span> <span class="o">=</span> <span class="n">fileName</span> <span class="o">+</span> <span class="s">&quot;.gv&quot;</span>
+            <span class="n">fnamePNG</span> <span class="o">=</span> <span class="n">fileName</span> <span class="o">+</span> <span class="s">&quot;.png&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">f</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span><span class="p">(</span><span class="n">suffix</span><span class="o">=</span><span class="s">&quot;.gv&quot;</span><span class="p">)</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="n">fnameGV</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span>
+            <span class="n">fname</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">fnameGV</span><span class="p">)</span>
+            <span class="n">fnamePNG</span> <span class="o">=</span> <span class="n">fname</span> <span class="o">+</span> <span class="s">&quot;.png&quot;</span>
+        <span class="n">foo</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">fnameGV</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">)</span>
+        <span class="n">foo</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dotFormat</span><span class="p">(</span><span class="n">size</span><span class="p">))</span>
+        <span class="n">foo</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="n">callstr</span> <span class="o">=</span> <span class="s">&quot;dot -Tpng </span><span class="si">%s</span><span class="s"> -o </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">fnameGV</span><span class="p">,</span> <span class="n">fnamePNG</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">callstr</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">result</span><span class="p">:</span>
+            <span class="k">print</span> <span class="s">&quot;Need graphviz to visualize objects&quot;</span>
+            <span class="k">return</span>
+        <span class="k">return</span> <span class="n">fnamePNG</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">dotFormat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Some dot representation</span>
+
+<span class="sd">        :param size: size parameter for dotviz</span>
+<span class="sd">        :type size: str</span>
+<span class="sd">        :rtype: str&quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+
+
+<div class="viewcode-block" id="Word"><a class="viewcode-back" href="../index.html#common.Word">[docs]</a><span class="k">class</span> <span class="nc">Word</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Class to implement generic words as iterables with pretty-print</span>
+
+<span class="sd">    Basically a unified way to deal with words with caracters of of sizes different of one with no much fuss&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">it</span><span class="o">=</span><span class="p">[]):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Sigma</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">simple</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">it</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&quot;Word:</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">__str__</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">simple</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span>
+
+    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">item</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">append</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">simple</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Sigma</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">dup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__add__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Word</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">FAdoSyntacticError</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">new</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dup</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">other</span><span class="p">:</span>
+                <span class="n">new</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">new</span>
+</pre></div></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">FAdo 1.2 documentation</a> &raquo;</li>
+          <li><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 1999-2014, Rogério Reis &amp; Nelma Moreira.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,1122 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>codes &mdash; FAdo 1.2 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="FAdo 1.2 documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">FAdo 1.2 documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for codes</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;Code theory module</span>
+
+<span class="sd">.. versionadded:: 1.0</span>
+
+<span class="sd">.. *Authors:* Rogério Reis, Nelma Moreira &amp; Stavros Konstantinidis</span>
+
+<span class="sd">.. *This is part of FAdo project*   http://fado.dcc.fc.up.pt.</span>
+
+<span class="sd">.. *Copyright:* 1999-2014 Rogério Reis &amp; Nelma Moreira {rvr,nam}@dcc.fc.up.pt</span>
+
+<span class="sd">.. This program is free software; you can redistribute it and/or</span>
+<span class="sd">   modify it under the terms of the GNU General Public License as published</span>
+<span class="sd">   by the Free Software Foundation; either version 2 of the License, or</span>
+<span class="sd">   (at your option) any later version.</span>
+
+<span class="sd">   This program is distributed in the hope that it will be useful,</span>
+<span class="sd">   but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY</span>
+<span class="sd">   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License</span>
+<span class="sd">   for more details.</span>
+
+<span class="sd">   You should have received a copy of the GNU General Public License along</span>
+<span class="sd">   with this program; if not, write to the Free Software Foundation, Inc.,</span>
+<span class="sd">   675 Mass Ave, Cambridge, MA 02139, USA.&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+
+<span class="kn">import</span> <span class="nn">reex</span>
+<span class="kn">from</span> <span class="nn">common</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">import</span> <span class="nn">fio</span>
+<span class="kn">from</span> <span class="nn">transducers</span> <span class="kn">import</span> <span class="n">SFT</span><span class="p">,</span> <span class="n">infixTransducer</span><span class="p">,</span> <span class="n">prefixTransducer</span><span class="p">,</span> <span class="n">suffixTransducer</span><span class="p">,</span> <span class="n">outfixTransducer</span><span class="p">,</span> <span class="n">hypercodeTransducer</span>
+<span class="kn">import</span> <span class="nn">fa</span>
+<span class="kn">import</span> <span class="nn">fl</span>
+
+
+<span class="k">def</span> <span class="nf">fixedHierSubset</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Returns whether x==y, or the fixed property with name x is a subset of y</span>
+<span class="sd">    Currently (Jan 2015) the fixed properties names are   &#39;UD_codes&#39;,</span>
+<span class="sd">    &#39;Prefix_codes&#39;, &#39;Suffix_codes&#39;, &#39;Infix_codes&#39;, &#39;Outfix_codes&#39;, &#39;Hypercodes&#39;</span>
+<span class="sd">    :param tuple x</span>
+<span class="sd">    :param tuple y</span>
+<span class="sd">    :rtype: bool</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">x</span> <span class="o">==</span> <span class="n">y</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">True</span>
+    <span class="k">if</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="s">&#39;Fixed&#39;</span> <span class="ow">or</span> <span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="s">&#39;Fixed&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">False</span>
+    <span class="k">if</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;Hypercodes&#39;</span> <span class="ow">or</span> <span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;UD_codes&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">True</span>
+    <span class="k">if</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;UD_codes&#39;</span> <span class="ow">or</span> <span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;Hypercodes&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">False</span>
+    <span class="k">if</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;Infix_codes&#39;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;Outfix_codes&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">True</span>
+    <span class="k">if</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;Outfix_codes&#39;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;Infix_codes&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">True</span>
+    <span class="k">if</span> <span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;Infix_codes&#39;</span> <span class="ow">or</span> <span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;Outfix_codes&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">False</span>
+    <span class="k">if</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">True</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">False</span>
+
+
+<span class="k">def</span> <span class="nf">isSubclass</span><span class="p">(</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Which property (language class) is a subclass of the other (if any).</span>
+<span class="sd">       It returns 1 if p1 is a subclass of p2; 2 if p2 is a subclass of p1;</span>
+<span class="sd">       3 if they are equal; 0 otherwise</span>
+<span class="sd">    :param IPTProp p1: an input preserving transducer property</span>
+<span class="sd">    :param IPTProp p2: an input preserving transducer property</span>
+<span class="sd">    :rtype: int    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">_lessEqualID</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Returns whether the property with ID X is a subset of that with ID Y.</span>
+<span class="sd">        This is the case when X has a subset X1, say, such that each property named</span>
+<span class="sd">        in X1 is  a subset of some property named in Y</span>
+<span class="sd">        :param set X</span>
+<span class="sd">        :param set Y</span>
+<span class="sd">        :rtype: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">YL</span> <span class="o">=</span> <span class="p">[</span><span class="n">y</span> <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">Y</span><span class="p">]</span>
+        <span class="n">YDel</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">X</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">YL</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">fixedHierSubset</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+                    <span class="n">YDel</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+            <span class="n">YL</span> <span class="o">=</span> <span class="p">[</span><span class="n">y</span> <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">YL</span> <span class="k">if</span> <span class="n">y</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">YDel</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">YL</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">True</span>
+        <span class="k">return</span> <span class="bp">False</span>
+
+    <span class="k">if</span> <span class="n">p1</span><span class="o">.</span><span class="n">Sigma</span> <span class="o">!=</span> <span class="n">p2</span><span class="o">.</span><span class="n">Sigma</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">0</span>
+    <span class="k">if</span> <span class="n">p1</span><span class="o">.</span><span class="n">ID</span> <span class="o">&lt;=</span> <span class="n">p2</span><span class="o">.</span><span class="n">ID</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">p2</span><span class="o">.</span><span class="n">ID</span> <span class="o">&lt;=</span> <span class="n">p1</span><span class="o">.</span><span class="n">ID</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">3</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">2</span>
+    <span class="k">if</span> <span class="n">p2</span><span class="o">.</span><span class="n">ID</span> <span class="o">&lt;=</span> <span class="n">p1</span><span class="o">.</span><span class="n">ID</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">1</span>
+    <span class="k">if</span> <span class="n">_lessEqualID</span><span class="p">(</span><span class="n">p1</span><span class="o">.</span><span class="n">ID</span><span class="p">,</span> <span class="n">p2</span><span class="o">.</span><span class="n">ID</span><span class="p">):</span>
+        <span class="k">return</span> <span class="mi">1</span>
+    <span class="k">if</span> <span class="n">_lessEqualID</span><span class="p">(</span><span class="n">p2</span><span class="o">.</span><span class="n">ID</span><span class="p">,</span> <span class="n">p1</span><span class="o">.</span><span class="n">ID</span><span class="p">):</span>
+        <span class="k">return</span> <span class="mi">2</span>
+    <span class="k">return</span> <span class="mi">0</span>
+
+
+<span class="k">def</span> <span class="nf">unionOfIDs</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Returns the &quot;union&quot; of the two sets: property ID X and propoerty ID Y.</span>
+<span class="sd">    The result is the set union minus any element in one set that names</span>
+<span class="sd">    a property containing a property named in the other set</span>
+<span class="sd">    :param set X</span>
+<span class="sd">    :param set Y</span>
+<span class="sd">    :rtype: set</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">Z</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span> <span class="o">|</span> <span class="n">X</span>
+    <span class="n">XL</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">X</span><span class="p">]</span>
+    <span class="n">YL</span> <span class="o">=</span> <span class="p">[</span><span class="n">y</span> <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">Y</span><span class="p">]</span>
+    <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">XL</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">YL</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">XL</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+        <span class="n">YDel</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">YL</span><span class="p">)):</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="n">YL</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">fixedHierSubset</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+                <span class="n">YDel</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">fixedHierSubset</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+                <span class="n">Z</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+                <span class="n">YDel</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+                <span class="n">Z</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+                <span class="k">break</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">pass</span>
+        <span class="n">YL</span> <span class="o">=</span> <span class="p">[</span><span class="n">y</span> <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">YL</span> <span class="k">if</span> <span class="n">y</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">YDel</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">Z</span> <span class="o">|</span> <span class="nb">set</span><span class="p">(</span><span class="n">YL</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="CodeProperty"><a class="viewcode-back" href="../index.html#codes.CodeProperty">[docs]</a><span class="k">class</span> <span class="nc">CodeProperty</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    .. seealso:: K. Dudzinski and S. Konstantinidis: Formal descriptions of code properties: decidability, complexity,</span>
+<span class="sd">       implementation. International Journal of Foundations of Computer Science 23:1 (2012), 67--85.</span>
+
+<span class="sd">    :var Sigma: the alphabet&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">alph</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">CodingTheoryError</span><span class="p">(</span><span class="s">&#39;new property must have a name&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Sigma</span> <span class="o">=</span> <span class="n">alph</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ID</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">set</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ID</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ID</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">satisfiesP</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">aut</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Satisfaction of the property by the automaton language</span>
+
+<span class="sd">        :param NFA|DFA aut: the automaton</span>
+<span class="sd">        :rtype: bool&quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">notSatisfiesW</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">aut</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a witness of non-satisfaction of the property by the automaton language</span>
+
+<span class="sd">        :param DFA|NFA aut: the automaton</span>
+<span class="sd">        :return: word witness tuple</span>
+<span class="sd">        :rtype: tuple&quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">maximalP</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">aut</span><span class="p">,</span> <span class="n">U</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Tests if the language is maximal w.r.t. the property</span>
+
+<span class="sd">        :param DFA|NFA U: Universe of permitted words (Sigma^* as default)</span>
+<span class="sd">        :param DFA|NFA aut: the automaton</span>
+<span class="sd">        :rtype: bool&quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">notMaximalW</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">aut</span><span class="p">,</span> <span class="n">U</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Witness of non maximality</span>
+
+<span class="sd">        :param DFA|NFA aut: the automaton</span>
+<span class="sd">        :param DFA|NFA U: Universe of permitted words (Sigma^* as default)</span>
+<span class="sd">        :return: a witness</span>
+<span class="sd">        :rtype: str&quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+
+</div>
+<div class="viewcode-block" id="IPTProp"><a class="viewcode-back" href="../index.html#codes.IPTProp">[docs]</a><span class="k">class</span> <span class="nc">IPTProp</span><span class="p">(</span><span class="n">CodeProperty</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Input Preserving Transducer Property</span>
+
+<span class="sd">    .. inheritance-diagram:: IPTProp</span>
+
+<span class="sd">    :var SFT Aut: the transducer defining the property</span>
+<span class="sd">    :var set Sigma: alphabet&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">aut</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Constructor</span>
+<span class="sd">        :param SFT aut: Input preserving transducer&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">aut</span><span class="o">.</span><span class="n">codeOfTransducer</span><span class="p">()</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">IPTProp</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">aut</span><span class="o">.</span><span class="n">Sigma</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Aut</span> <span class="o">=</span> <span class="n">aut</span>
+
+    <span class="k">def</span> <span class="nf">__and__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Conjunction of two properties</span>
+
+<span class="sd">        :param IPTProp other: right hand operand</span>
+<span class="sd">        :rtype: IPTProp &quot;&quot;&quot;</span>
+        <span class="n">sub</span> <span class="o">=</span> <span class="n">isSubclass</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">sub</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">sub</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">IATProp</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">sub</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">other</span>
+            <span class="n">nt</span> <span class="o">=</span> <span class="n">other</span><span class="o">.</span><span class="n">Aut</span><span class="o">.</span><span class="n">dup</span><span class="p">()</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="n">nt</span><span class="o">.</span><span class="n">addState</span><span class="p">()</span>
+            <span class="n">nt</span><span class="o">.</span><span class="n">addInitial</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+            <span class="n">nt</span><span class="o">.</span><span class="n">addFinal</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">nt</span><span class="o">.</span><span class="n">Sigma</span><span class="p">:</span>
+                <span class="n">nt</span><span class="o">.</span><span class="n">addTransition</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">unionOfIDs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ID</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">ID</span><span class="p">)</span>
+            <span class="n">pty</span> <span class="o">=</span> <span class="n">IPTProp</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Aut</span> <span class="o">|</span> <span class="n">nt</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">pty</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">sub</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">other</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">unionOfIDs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ID</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">ID</span><span class="p">)</span>
+            <span class="n">pty</span> <span class="o">=</span> <span class="n">IPTProp</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Aut</span> <span class="o">|</span> <span class="n">other</span><span class="o">.</span><span class="n">Aut</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">pty</span>
+
+<div class="viewcode-block" id="IPTProp.notSatisfiesW"><a class="viewcode-back" href="../index.html#codes.IPTProp.notSatisfiesW">[docs]</a>    <span class="k">def</span> <span class="nf">notSatisfiesW</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">aut</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a witness of non-satisfaction of the property by the automaton language</span>
+
+<span class="sd">        :param DFA|NFA aut: the automaton</span>
+<span class="sd">        :return: word witness pair</span>
+<span class="sd">        :rtype: tuple&quot;&quot;&quot;</span>
+        <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Aut</span><span class="o">.</span><span class="n">inIntersection</span><span class="p">(</span><span class="n">aut</span><span class="p">)</span><span class="o">.</span><span class="n">outIntersection</span><span class="p">(</span><span class="n">aut</span><span class="p">)</span><span class="o">.</span><span class="n">nonFunctionalW</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">u</span> <span class="o">==</span> <span class="n">v</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">u</span><span class="p">,</span> <span class="n">w</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span>
+</div>
+<div class="viewcode-block" id="IPTProp.satisfiesP"><a class="viewcode-back" href="../index.html#codes.IPTProp.satisfiesP">[docs]</a>    <span class="k">def</span> <span class="nf">satisfiesP</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">aut</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Satisfaction of the property by the automaton language</span>
+
+<span class="sd">        :param DFA|NFA aut: the automaton</span>
+<span class="sd">        :rtype: bool&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">notSatisfiesW</span><span class="p">(</span><span class="n">aut</span><span class="p">)</span> <span class="o">==</span> <span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="IPTProp.notMaximalW"><a class="viewcode-back" href="../index.html#codes.IPTProp.notMaximalW">[docs]</a>    <span class="k">def</span> <span class="nf">notMaximalW</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">aut</span><span class="p">,</span> <span class="n">U</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Tests if the language is maximal w.r.t. the property</span>
+
+<span class="sd">        :param DFA|NFA aut: the automaton</span>
+<span class="sd">        :param DFA|NFA U: Universe of permitted words (Sigma^* as default)</span>
+<span class="sd">        :rtype: bool</span>
+<span class="sd">        :raises PropertyNotSatisfied: if not satisfied&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">satisfiesP</span><span class="p">(</span><span class="n">aut</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">PropertyNotSatisfied</span><span class="p">(</span><span class="s">&quot;Property is not satisfied&quot;</span><span class="p">)</span>
+        <span class="n">l</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Aut</span><span class="o">.</span><span class="n">runOnNFA</span><span class="p">(</span><span class="n">aut</span><span class="p">)</span> <span class="o">|</span> <span class="bp">self</span><span class="o">.</span><span class="n">Aut</span><span class="o">.</span><span class="n">inverse</span><span class="p">()</span><span class="o">.</span><span class="n">runOnNFA</span><span class="p">(</span><span class="n">aut</span><span class="p">)</span> <span class="o">|</span> <span class="n">aut</span><span class="p">)</span><span class="o">.</span><span class="n">__invert__</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">U</span><span class="p">:</span>
+            <span class="n">l</span> <span class="o">=</span> <span class="n">l</span> <span class="o">&amp;</span> <span class="n">U</span><span class="o">.</span><span class="n">toNFA</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">w</span> <span class="o">=</span> <span class="n">l</span><span class="o">.</span><span class="n">witness</span><span class="p">()</span>
+        <span class="k">except</span> <span class="n">DFAEmptyDFA</span><span class="p">:</span>
+            <span class="n">w</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">return</span> <span class="n">w</span>
+</div>
+<div class="viewcode-block" id="IPTProp.maximalP"><a class="viewcode-back" href="../index.html#codes.IPTProp.maximalP">[docs]</a>    <span class="k">def</span> <span class="nf">maximalP</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">aut</span><span class="p">,</span> <span class="n">U</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Tests if the language is maximal w.r.t. the property</span>
+
+<span class="sd">        :param NFA aut: the automaton</span>
+<span class="sd">        :param NFA U: Universe of permitted words (Sigma^* as default)</span>
+<span class="sd">        :rtype: bool&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">notMaximalW</span><span class="p">(</span><span class="n">aut</span><span class="o">.</span><span class="n">toNFA</span><span class="p">(),</span> <span class="n">U</span><span class="p">)</span> <span class="ow">is</span> <span class="bp">None</span>
+
+</div></div>
+<span class="n">ErrDetectProp</span> <span class="o">=</span> <span class="n">IPTProp</span>  <span class="c"># another name for IPTProp</span>
+
+
+<div class="viewcode-block" id="IATProp"><a class="viewcode-back" href="../index.html#codes.IATProp">[docs]</a><span class="k">class</span> <span class="nc">IATProp</span><span class="p">(</span><span class="n">IPTProp</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Input Altering Transducer Property</span>
+
+<span class="sd">    .. inheritance-diagram:: IATProp&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__and__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Conjunction of two properties</span>
+
+<span class="sd">        :param IPTProp other: right hand operand</span>
+<span class="sd">        :rtype: IPTProp &quot;&quot;&quot;</span>
+        <span class="n">sub</span> <span class="o">=</span> <span class="n">isSubclass</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">sub</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">sub</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">IATProp</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">sub</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">other</span>
+            <span class="n">nt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Aut</span><span class="o">.</span><span class="n">dup</span><span class="p">()</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="n">nt</span><span class="o">.</span><span class="n">addState</span><span class="p">()</span>
+            <span class="n">nt</span><span class="o">.</span><span class="n">addInitial</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+            <span class="n">nt</span><span class="o">.</span><span class="n">addFinal</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">nt</span><span class="o">.</span><span class="n">Sigma</span><span class="p">:</span>
+                <span class="n">nt</span><span class="o">.</span><span class="n">addTransition</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">unionOfIDs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ID</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">ID</span><span class="p">)</span>
+            <span class="n">pty</span> <span class="o">=</span> <span class="n">IPTProp</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">Aut</span> <span class="o">|</span> <span class="n">nt</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">pty</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">sub</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">other</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">unionOfIDs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ID</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">ID</span><span class="p">)</span>
+            <span class="n">pty</span> <span class="o">=</span> <span class="n">IATProp</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Aut</span> <span class="o">|</span> <span class="n">other</span><span class="o">.</span><span class="n">Aut</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">pty</span>
+
+<div class="viewcode-block" id="IATProp.notSatisfiesW"><a class="viewcode-back" href="../index.html#codes.IATProp.notSatisfiesW">[docs]</a>    <span class="k">def</span> <span class="nf">notSatisfiesW</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">aut</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a witness of non-satisfaction of the property by the automaton language</span>
+
+<span class="sd">        :param DFA|NFA aut: the automaton</span>
+<span class="sd">        :return: word witness pair</span>
+<span class="sd">        :rtype: tuple&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">Aut</span><span class="o">.</span><span class="n">inIntersection</span><span class="p">(</span><span class="n">aut</span><span class="p">)</span><span class="o">.</span><span class="n">outIntersection</span><span class="p">(</span><span class="n">aut</span><span class="p">)</span><span class="o">.</span><span class="n">nonEmptyW</span><span class="p">()</span>
+
+</div></div>
+<div class="viewcode-block" id="TrajProp"><a class="viewcode-back" href="../index.html#codes.TrajProp">[docs]</a><span class="k">class</span> <span class="nc">TrajProp</span><span class="p">(</span><span class="n">IATProp</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Class of trajectoty properties</span>
+
+<span class="sd">    .. inheritance-diagram:: TrajProp&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">aut</span><span class="p">,</span> <span class="n">Sigma</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Constructor</span>
+
+<span class="sd">        :param DFA|NFA aut: regular expression over {0,1}</span>
+<span class="sd">        :param set Sigma: the alphabet&quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">TrajProp</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trajToTransducer</span><span class="p">(</span><span class="n">aut</span><span class="p">,</span> <span class="n">Sigma</span><span class="p">))</span>
+
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="TrajProp.trajToTransducer"><a class="viewcode-back" href="../index.html#codes.TrajProp.trajToTransducer">[docs]</a>    <span class="k">def</span> <span class="nf">trajToTransducer</span><span class="p">(</span><span class="n">traj</span><span class="p">,</span> <span class="n">Sigma</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Input Altering Tranducer corresponding to a Trajectory</span>
+
+<span class="sd">        :param NFA traj: trajectory language</span>
+<span class="sd">        :param set Sigma: alphabet</span>
+<span class="sd">        :rtype: SFT&quot;&quot;&quot;</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">SFT</span><span class="p">()</span>
+        <span class="n">t</span><span class="o">.</span><span class="n">Sigma</span> <span class="o">=</span> <span class="n">Sigma</span>
+        <span class="k">for</span> <span class="n">s</span><span class="p">,</span> <span class="n">sn</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">traj</span><span class="o">.</span><span class="n">States</span><span class="p">):</span>
+            <span class="n">no</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">stateIndex</span><span class="p">((</span><span class="n">sn</span><span class="p">,</span> <span class="bp">False</span><span class="p">),</span> <span class="bp">True</span><span class="p">)</span>
+            <span class="n">yes</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">stateIndex</span><span class="p">((</span><span class="n">sn</span><span class="p">,</span> <span class="bp">True</span><span class="p">),</span> <span class="bp">True</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">traj</span><span class="o">.</span><span class="n">Final</span><span class="p">:</span>
+                <span class="n">t</span><span class="o">.</span><span class="n">addFinal</span><span class="p">(</span><span class="n">yes</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">traj</span><span class="o">.</span><span class="n">Initial</span><span class="p">:</span>
+                <span class="n">t</span><span class="o">.</span><span class="n">addInitial</span><span class="p">(</span><span class="n">no</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">traj</span><span class="o">.</span><span class="n">delta</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="p">{}):</span>
+                <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">Sigma</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">st</span> <span class="ow">in</span> <span class="n">traj</span><span class="o">.</span><span class="n">delta</span><span class="p">[</span><span class="n">s</span><span class="p">][</span><span class="n">b</span><span class="p">]:</span>
+                        <span class="n">fNo</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">stateIndex</span><span class="p">((</span><span class="n">traj</span><span class="o">.</span><span class="n">States</span><span class="p">[</span><span class="n">st</span><span class="p">],</span> <span class="bp">False</span><span class="p">),</span> <span class="bp">True</span><span class="p">)</span>
+                        <span class="n">fYes</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">stateIndex</span><span class="p">((</span><span class="n">traj</span><span class="o">.</span><span class="n">States</span><span class="p">[</span><span class="n">st</span><span class="p">],</span> <span class="bp">True</span><span class="p">),</span> <span class="bp">True</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">b</span> <span class="o">==</span> <span class="s">&quot;0&quot;</span><span class="p">:</span>
+                            <span class="n">t</span><span class="o">.</span><span class="n">addTransition</span><span class="p">(</span><span class="n">no</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">fNo</span><span class="p">)</span>
+                            <span class="n">t</span><span class="o">.</span><span class="n">addTransition</span><span class="p">(</span><span class="n">yes</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">fYes</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">b</span> <span class="o">==</span> <span class="s">&quot;1&quot;</span><span class="p">:</span>
+                            <span class="n">t</span><span class="o">.</span><span class="n">addTransition</span><span class="p">(</span><span class="n">no</span><span class="p">,</span> <span class="n">Epsilon</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">fYes</span><span class="p">)</span>
+                            <span class="n">t</span><span class="o">.</span><span class="n">addTransition</span><span class="p">(</span><span class="n">yes</span><span class="p">,</span> <span class="n">Epsilon</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">fYes</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">t</span>
+
+</div></div>
+<span class="k">class</span> <span class="nc">FixedProp</span><span class="p">(</span><span class="n">CodeProperty</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Abstract class for fixed properties &quot;&quot;&quot;</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">notSatisfiesW</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">aut</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Test whether the language is a code.</span>
+
+<span class="sd">           :param DFA|NFA aut: the automaton</span>
+<span class="sd">           :return: two different factorizations of the same word</span>
+<span class="sd">           :rtype: tuple of list&quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">satisfiesP</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">aut</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Satisfaction of the property by the automaton language</span>
+
+<span class="sd">        :param NFA|DFA aut: the automaton</span>
+<span class="sd">        :rtype: bool&quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">maximalP</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">aut</span><span class="p">,</span> <span class="n">U</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Tests if the language is maximal w.r.t. the property</span>
+
+<span class="sd">        :param DFA|NFA U: Universe of permitted words (Sigma^* as default)</span>
+<span class="sd">        :param DFA|NFA aut: the automaton</span>
+<span class="sd">        :rtype: bool&quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">notMaximalW</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">aut</span><span class="p">,</span> <span class="n">U</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Witness of non maximality</span>
+
+<span class="sd">        :param DFA|NFA aut: the automaton</span>
+<span class="sd">        :param DFA|NFA U: Universe of permitted words (Sigma^* as default)</span>
+<span class="sd">        :return: a witness</span>
+<span class="sd">        :rtype: str&quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+
+
+<span class="k">class</span> <span class="nc">UDCodeProp</span><span class="p">(</span><span class="n">FixedProp</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Uniquely decodable Code Property</span>
+
+<span class="sd">    .. inheritance-diagram:: UDCodeProp&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">alphabet</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">UDCodeProp</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">((</span><span class="s">&#39;Fixed&#39;</span><span class="p">,</span> <span class="s">&#39;UD_codes&#39;</span><span class="p">),</span> <span class="n">alphabet</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">notSatisfiesW</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">aut</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Test whether the language is a code.</span>
+
+<span class="sd">        :param DFA|NFA aut: the automaton</span>
+<span class="sd">        :return: two different factorizations of the same word</span>
+<span class="sd">        :rtype: tuple of list&quot;&quot;&quot;</span>
+        <span class="k">def</span> <span class="nf">_findFactors</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">m</span><span class="p">):</span>
+            <span class="n">l</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">i1</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+                <span class="n">j</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s">&#39;1&#39;</span><span class="p">,</span> <span class="n">i1</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="k">break</span>
+                <span class="n">l</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">w</span><span class="p">[</span><span class="n">i1</span><span class="p">:</span><span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
+                <span class="n">i1</span> <span class="o">=</span> <span class="n">j</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="k">return</span> <span class="n">l</span>
+
+        <span class="n">n</span> <span class="o">=</span> <span class="n">aut</span><span class="o">.</span><span class="n">toNFA</span><span class="p">()</span>   <span class="c"># .eliminateEpsilonTransitions()</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">n</span><span class="o">.</span><span class="n">Initial</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">n</span><span class="o">.</span><span class="n">Final</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">[</span><span class="n">Epsilon</span><span class="p">],</span> <span class="p">[</span><span class="n">Epsilon</span><span class="p">,</span> <span class="n">Epsilon</span><span class="p">]</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">SFT</span><span class="p">()</span>
+        <span class="n">t</span><span class="o">.</span><span class="n">States</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">n</span><span class="o">.</span><span class="n">States</span><span class="p">)</span>
+        <span class="n">t</span><span class="o">.</span><span class="n">setInitial</span><span class="p">(</span><span class="n">n</span><span class="o">.</span><span class="n">Initial</span><span class="p">)</span>
+        <span class="n">t</span><span class="o">.</span><span class="n">setFinal</span><span class="p">(</span><span class="n">n</span><span class="o">.</span><span class="n">Initial</span><span class="p">)</span>
+        <span class="n">t</span><span class="o">.</span><span class="n">setSigma</span><span class="p">(</span><span class="n">n</span><span class="o">.</span><span class="n">Sigma</span><span class="p">)</span>
+        <span class="n">t</span><span class="o">.</span><span class="n">setOutput</span><span class="p">([</span><span class="s">&#39;1&#39;</span><span class="p">,</span> <span class="s">&#39;0&#39;</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">si</span> <span class="ow">in</span> <span class="n">n</span><span class="o">.</span><span class="n">delta</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">sym</span> <span class="ow">in</span> <span class="n">n</span><span class="o">.</span><span class="n">delta</span><span class="p">[</span><span class="n">si</span><span class="p">]:</span>
+                <span class="k">for</span> <span class="n">so</span> <span class="ow">in</span> <span class="n">n</span><span class="o">.</span><span class="n">delta</span><span class="p">[</span><span class="n">si</span><span class="p">][</span><span class="n">sym</span><span class="p">]:</span>
+                    <span class="k">if</span> <span class="n">so</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">n</span><span class="o">.</span><span class="n">Final</span><span class="p">:</span>
+                        <span class="n">t</span><span class="o">.</span><span class="n">addTransition</span><span class="p">(</span><span class="n">si</span><span class="p">,</span> <span class="n">sym</span><span class="p">,</span> <span class="s">&#39;0&#39;</span><span class="p">,</span> <span class="n">so</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">t</span><span class="o">.</span><span class="n">addTransition</span><span class="p">(</span><span class="n">si</span><span class="p">,</span> <span class="n">sym</span><span class="p">,</span> <span class="s">&#39;0&#39;</span><span class="p">,</span> <span class="n">so</span><span class="p">)</span>
+                        <span class="k">for</span> <span class="n">ss</span> <span class="ow">in</span> <span class="n">t</span><span class="o">.</span><span class="n">Initial</span><span class="p">:</span>
+                            <span class="n">t</span><span class="o">.</span><span class="n">addTransition</span><span class="p">(</span><span class="n">si</span><span class="p">,</span> <span class="n">sym</span><span class="p">,</span> <span class="s">&#39;1&#39;</span><span class="p">,</span> <span class="n">ss</span><span class="p">)</span>
+        <span class="n">t</span><span class="o">.</span><span class="n">trim</span><span class="p">()</span>
+        <span class="n">foo</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">nonFunctionalW</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">foo</span> <span class="o">==</span> <span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">_findFactors</span><span class="p">(</span><span class="n">foo</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">foo</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="n">_findFactors</span><span class="p">(</span><span class="n">foo</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">foo</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+
+    <span class="k">def</span> <span class="nf">maximalP</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">aut</span><span class="p">,</span> <span class="n">U</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Tests if the language is maximal w.r.t. the property</span>
+<span class="sd">        :param DFA|NFA aut: the automaton</span>
+<span class="sd">        :param DFA|NFA U: Universe of permitted words (Sigma^* as default)</span>
+<span class="sd">        :rtype: bool&quot;&quot;&quot;</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">infixTransducer</span><span class="p">(</span><span class="n">aut</span><span class="o">.</span><span class="n">Sigma</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">aut</span><span class="o">.</span><span class="n">dup</span><span class="p">()</span><span class="o">.</span><span class="n">star</span><span class="p">()</span>
+        <span class="k">return</span> <span class="p">(</span><span class="o">~</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">runOnNFA</span><span class="p">(</span><span class="n">a</span><span class="p">)))</span><span class="o">.</span><span class="n">emptyP</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">satisfiesP</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">aut</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Satisfaction of the code property by the automaton language</span>
+
+<span class="sd">        :param DFA|NFA aut: the automaton</span>
+<span class="sd">        :rtype: bool&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">notSatisfiesW</span><span class="p">(</span><span class="n">aut</span><span class="p">)</span> <span class="o">==</span> <span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="PrefixProp"><a class="viewcode-back" href="../index.html#codes.PrefixProp">[docs]</a><span class="k">class</span> <span class="nc">PrefixProp</span><span class="p">(</span><span class="n">TrajProp</span><span class="p">,</span> <span class="n">FixedProp</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Prefix Property</span>
+
+<span class="sd">    .. inheritance-diagram:: PrefixProp&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;Fixed&#39;</span><span class="p">,</span><span class="s">&#39;Prefix_codes&#39;</span><span class="p">)</span>
+        <span class="n">IATProp</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+
+<div class="viewcode-block" id="PrefixProp.satisfiesPrefixP"><a class="viewcode-back" href="../index.html#codes.PrefixProp.satisfiesPrefixP">[docs]</a>    <span class="k">def</span> <span class="nf">satisfiesPrefixP</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">aut</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Satisfaction of property by the automaton language: faster than satisfiesP</span>
+
+<span class="sd">        :param DFA|NFA aut: the automaton</span>
+<span class="sd">        :rtype: bool&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">aut</span><span class="p">,</span> <span class="n">fa</span><span class="o">.</span><span class="n">DFA</span><span class="p">):</span>
+            <span class="n">a</span> <span class="o">=</span> <span class="n">aut</span><span class="o">.</span><span class="n">dup</span><span class="p">()</span>
+            <span class="n">a</span><span class="o">.</span><span class="n">trim</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">a</span><span class="o">.</span><span class="n">Final</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">a</span><span class="o">.</span><span class="n">delta</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="p">{}):</span>
+                    <span class="k">return</span> <span class="bp">False</span>
+            <span class="k">return</span> <span class="bp">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">IATProp</span><span class="o">.</span><span class="n">satisfiesP</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">aut</span><span class="p">)</span>
+
+</div></div>
+<span class="k">class</span> <span class="nc">SuffixProp</span><span class="p">(</span><span class="n">TrajProp</span><span class="p">,</span> <span class="n">FixedProp</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Suffix Property</span>
+
+<span class="sd">    .. inheritance-diagram:: SuffixProp&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;Fixed&#39;</span><span class="p">,</span><span class="s">&#39;Suffix_codes&#39;</span><span class="p">)</span>
+        <span class="n">IATProp</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">InfixProp</span><span class="p">(</span><span class="n">PrefixProp</span><span class="p">,</span> <span class="n">SuffixProp</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Infix Property</span>
+
+<span class="sd">    .. inheritance-diagram:: InfixProp&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;Fixed&#39;</span><span class="p">,</span><span class="s">&#39;Infix_codes&#39;</span><span class="p">)</span>
+        <span class="n">IATProp</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">OutfixProp</span><span class="p">(</span><span class="n">PrefixProp</span><span class="p">,</span> <span class="n">SuffixProp</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Outfix Property</span>
+
+<span class="sd">    .. inheritance-diagram:: PrefixProp&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;Fixed&#39;</span><span class="p">,</span><span class="s">&#39;Outfix_codes&#39;</span><span class="p">)</span>
+        <span class="n">IATProp</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">HypercodeProp</span><span class="p">(</span><span class="n">InfixProp</span><span class="p">,</span> <span class="n">OutfixProp</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Hypercode Property</span>
+
+<span class="sd">    .. inheritance-diagram:: PrefixProp&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;Fixed&#39;</span><span class="p">,</span><span class="s">&#39;Hypercodes&#39;</span><span class="p">)</span>
+        <span class="n">IATProp</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="ErrCorrectProp"><a class="viewcode-back" href="../index.html#codes.ErrCorrectProp">[docs]</a><span class="k">class</span> <span class="nc">ErrCorrectProp</span><span class="p">(</span><span class="n">ErrDetectProp</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Error Correcting Property</span>
+
+<span class="sd">    .. inheritance-diagram:: ErrCorrectProp&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ErrCorrectProp</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Name</span> <span class="o">=</span> <span class="s">&quot;Error Correcting Codes&quot;</span>
+
+<div class="viewcode-block" id="ErrCorrectProp.notSatisfiesW"><a class="viewcode-back" href="../index.html#codes.ErrCorrectProp.notSatisfiesW">[docs]</a>    <span class="k">def</span> <span class="nf">notSatisfiesW</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">aut</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Satisfaction of the code property by the automaton language</span>
+
+<span class="sd">        :param DFA|NFA aut: the automaton</span>
+<span class="sd">        :rtype: tuple&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">Aut</span><span class="o">.</span><span class="n">inverse</span><span class="p">()</span><span class="o">.</span><span class="n">outIntersection</span><span class="p">(</span><span class="n">aut</span><span class="p">)</span><span class="o">.</span><span class="n">nonFunctionalW</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="ErrCorrectProp.satisfiesP"><a class="viewcode-back" href="../index.html#codes.ErrCorrectProp.satisfiesP">[docs]</a>    <span class="k">def</span> <span class="nf">satisfiesP</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">aut</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Satisfaction of the property by the automaton language</span>
+
+<span class="sd">        .. seealso:: S. Konstantinidis: Transducers and the Properties of Error-Detection, Error-Correction and</span>
+<span class="sd">            Finite-Delay Decodability. Journal Of Universal Computer Science 8 (2002), 278-291.</span>
+
+<span class="sd">        :param DFA|NFA aut: the automaton</span>
+<span class="sd">        :rtype: bool&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">notSatisfiesW</span><span class="p">(</span><span class="n">aut</span><span class="p">)</span> <span class="o">==</span> <span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="ErrCorrectProp.notMaximalW"><a class="viewcode-back" href="../index.html#codes.ErrCorrectProp.notMaximalW">[docs]</a>    <span class="k">def</span> <span class="nf">notMaximalW</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">aut</span><span class="p">,</span> <span class="n">U</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Tests if the language is maximal w.r.t. the property</span>
+
+<span class="sd">        :param DFA|NFA aut: the automaton</span>
+<span class="sd">        :param DFA|NFA U: Universe of permitted words (Sigma^* as default)</span>
+<span class="sd">        :rtype: bool&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">ErrDetectProp</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Aut</span><span class="o">.</span><span class="n">inverse</span><span class="p">()</span><span class="o">.</span><span class="n">composition</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Aut</span><span class="p">))</span><span class="o">.</span><span class="n">notMaximalW</span><span class="p">(</span><span class="n">aut</span><span class="p">,</span> <span class="n">U</span><span class="p">)</span>
+
+</div></div>
+<span class="k">def</span> <span class="nf">buildUDCodeProperty</span><span class="p">(</span><span class="n">alphabet</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Builds a UDCodeProp (from thin air ;-)</span>
+
+<span class="sd">    :param set alphabet: alphabet</span>
+<span class="sd">    :rtype: UDCodeProp&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">UDCodeProp</span><span class="p">(</span><span class="n">alphabet</span><span class="p">)</span>
+
+
+<span class="n">buildUDCodeProp</span> <span class="o">=</span> <span class="n">buildUDCodeProperty</span>
+
+
+<div class="viewcode-block" id="buildTrajPropS"><a class="viewcode-back" href="../index.html#codes.buildTrajPropS">[docs]</a><span class="k">def</span> <span class="nf">buildTrajPropS</span><span class="p">(</span><span class="n">regex</span><span class="p">,</span> <span class="n">sigma</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Builds a TrajProp from a string regexp</span>
+
+<span class="sd">    :param str regex: the regular expression</span>
+<span class="sd">    :param set sigma: alphabet</span>
+<span class="sd">    :rtype: TrajProp&quot;&quot;&quot;</span>
+    <span class="n">au</span> <span class="o">=</span> <span class="n">reex</span><span class="o">.</span><span class="n">str2regexp</span><span class="p">(</span><span class="n">regex</span><span class="p">)</span><span class="o">.</span><span class="n">toNFA</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">TrajProp</span><span class="p">(</span><span class="n">au</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="buildIATPropF"><a class="viewcode-back" href="../index.html#codes.buildIATPropF">[docs]</a><span class="k">def</span> <span class="nf">buildIATPropF</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Builds a IATProp from a FAdo SFT file</span>
+
+<span class="sd">    :param str fname: file name</span>
+<span class="sd">    :rtype: IATProp&quot;&quot;&quot;</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">fio</span><span class="o">.</span><span class="n">readOneFromFile</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">IATProp</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="buildIATPropS"><a class="viewcode-back" href="../index.html#codes.buildIATPropS">[docs]</a><span class="k">def</span> <span class="nf">buildIATPropS</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Builds a IATProp from a FAdo SFT string</span>
+
+<span class="sd">    :param str s: string containing SFT</span>
+<span class="sd">    :rtype: IATProp&quot;&quot;&quot;</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">fio</span><span class="o">.</span><span class="n">readOneFromString</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">IATProp</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="buildIPTPropF"><a class="viewcode-back" href="../index.html#codes.buildIPTPropF">[docs]</a><span class="k">def</span> <span class="nf">buildIPTPropF</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Builds a IPTProp from a FAdo SFT file</span>
+
+<span class="sd">    :param str fname: file name</span>
+<span class="sd">    :rtype: IPTProp&quot;&quot;&quot;</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">fio</span><span class="o">.</span><span class="n">readOneFromFile</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">IPTProp</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="buildIPTPropS"><a class="viewcode-back" href="../index.html#codes.buildIPTPropS">[docs]</a><span class="k">def</span> <span class="nf">buildIPTPropS</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Builds a IPTProp from a FAdo SFT string</span>
+
+<span class="sd">    :param str s: file name</span>
+<span class="sd">    :rtype: IPTProp&quot;&quot;&quot;</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">fio</span><span class="o">.</span><span class="n">readOneFromString</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">IPTProp</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="buildErrorDetectPropF"><a class="viewcode-back" href="../index.html#codes.buildErrorDetectPropF">[docs]</a><span class="k">def</span> <span class="nf">buildErrorDetectPropF</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Builds an Error Detecting Property</span>
+
+<span class="sd">    :param str fname: file name</span>
+<span class="sd">    :rtype: ErrDetectProp&quot;&quot;&quot;</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">fio</span><span class="o">.</span><span class="n">readOneFromFile</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">IPTProp</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="buildErrorDetectPropS"><a class="viewcode-back" href="../index.html#codes.buildErrorDetectPropS">[docs]</a><span class="k">def</span> <span class="nf">buildErrorDetectPropS</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Builds an Error Detecting Property from string</span>
+
+<span class="sd">    :param str s: transducer string</span>
+<span class="sd">    :rtype: ErrDetectProp&quot;&quot;&quot;</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">fio</span><span class="o">.</span><span class="n">readOneFromString</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">IPTProp</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="buildErrorCorrectPropF"><a class="viewcode-back" href="../index.html#codes.buildErrorCorrectPropF">[docs]</a><span class="k">def</span> <span class="nf">buildErrorCorrectPropF</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Builds an Error Correcting Property</span>
+
+<span class="sd">    :param str fname: file name</span>
+<span class="sd">    :rtype: ErrCorrectProp&quot;&quot;&quot;</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">fio</span><span class="o">.</span><span class="n">readOneFromFile</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">ErrCorrectProp</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="buildErrorCorrectPropS"><a class="viewcode-back" href="../index.html#codes.buildErrorCorrectPropS">[docs]</a><span class="k">def</span> <span class="nf">buildErrorCorrectPropS</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Builds an Error Correcting Property from string</span>
+
+<span class="sd">    :param str s: transducer string</span>
+<span class="sd">    :rtype: ErrCorrectProp&quot;&quot;&quot;</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">fio</span><span class="o">.</span><span class="n">readOneFromString</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">ErrCorrectProp</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="buildPrefixProperty"><a class="viewcode-back" href="../index.html#codes.buildPrefixProperty">[docs]</a><span class="k">def</span> <span class="nf">buildPrefixProperty</span><span class="p">(</span><span class="n">alphabet</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Builds a Prefix Code Property</span>
+
+<span class="sd">    :param set alphabet: alphabet</span>
+<span class="sd">    :rtype: PrefixProp&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">PrefixProp</span><span class="p">(</span><span class="n">prefixTransducer</span><span class="p">(</span><span class="n">alphabet</span><span class="p">))</span>
+
+</div>
+<span class="k">def</span> <span class="nf">buildSuffixProperty</span><span class="p">(</span><span class="n">alphabet</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Builds a Suffix Code Property</span>
+
+<span class="sd">    :param set alphabet: alphabet</span>
+<span class="sd">    :rtype: PrefixProp&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">SuffixProp</span><span class="p">(</span><span class="n">suffixTransducer</span><span class="p">(</span><span class="n">alphabet</span><span class="p">))</span>
+
+
+<span class="k">def</span> <span class="nf">buildInfixProperty</span><span class="p">(</span><span class="n">alphabet</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Builds a Suffix Code Property</span>
+
+<span class="sd">    :param set alphabet: alphabet</span>
+<span class="sd">    :rtype: PrefixProp&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">InfixProp</span><span class="p">(</span><span class="n">infixTransducer</span><span class="p">(</span><span class="n">alphabet</span><span class="p">))</span>
+
+
+<span class="k">def</span> <span class="nf">buildOutfixProperty</span><span class="p">(</span><span class="n">alphabet</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Builds a Outfix Code Property</span>
+
+<span class="sd">    :param set alphabet: alphabet</span>
+<span class="sd">    :rtype: PrefixProp&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">OutfixProp</span><span class="p">(</span><span class="n">outfixTransducer</span><span class="p">(</span><span class="n">alphabet</span><span class="p">))</span>
+
+
+<span class="k">def</span> <span class="nf">buildHypercodeProperty</span><span class="p">(</span><span class="n">alphabet</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Builds a Hypercode Property</span>
+
+<span class="sd">    :param set alphabet: alphabet</span>
+<span class="sd">    :rtype: PrefixProp&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">HypercodeProp</span><span class="p">(</span><span class="n">hypercodeTransducer</span><span class="p">(</span><span class="n">alphabet</span><span class="p">))</span>
+
+
+<div class="viewcode-block" id="createInputAlteringSIDTrans"><a class="viewcode-back" href="../index.html#codes.createInputAlteringSIDTrans">[docs]</a><span class="k">def</span> <span class="nf">createInputAlteringSIDTrans</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">sigmaSet</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Create an input-altering SID transducer based</span>
+
+<span class="sd">    :param int n: max number of errors</span>
+<span class="sd">    :param set sigmaSet: alphabet</span>
+<span class="sd">    :return: a transducer representing the SID channel</span>
+<span class="sd">    :rtype: SFT&quot;&quot;&quot;</span>
+    <span class="n">new</span> <span class="o">=</span> <span class="n">SFT</span><span class="p">()</span>
+    <span class="n">new</span><span class="o">.</span><span class="n">setSigma</span><span class="p">(</span><span class="n">sigmaSet</span><span class="p">)</span>
+    <span class="n">new</span><span class="o">.</span><span class="n">setOutput</span><span class="p">(</span><span class="n">sigmaSet</span><span class="p">)</span>
+    <span class="n">init</span> <span class="o">=</span> <span class="n">new</span><span class="o">.</span><span class="n">stateIndex</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span> <span class="bp">True</span><span class="p">)</span>
+    <span class="n">new</span><span class="o">.</span><span class="n">addInitial</span><span class="p">(</span><span class="n">init</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">sy</span> <span class="ow">in</span> <span class="n">new</span><span class="o">.</span><span class="n">Sigma</span><span class="p">:</span>
+        <span class="n">new</span><span class="o">.</span><span class="n">addTransition</span><span class="p">(</span><span class="n">init</span><span class="p">,</span> <span class="n">sy</span><span class="p">,</span> <span class="n">sy</span><span class="p">,</span> <span class="n">init</span><span class="p">)</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;=</span> <span class="n">n</span><span class="p">:</span>
+        <span class="n">d1</span> <span class="o">=</span> <span class="n">new</span><span class="o">.</span><span class="n">stateIndex</span><span class="p">((</span><span class="n">i</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span> <span class="bp">True</span><span class="p">)</span>
+        <span class="n">new</span><span class="o">.</span><span class="n">addFinal</span><span class="p">(</span><span class="n">d1</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">new</span><span class="o">.</span><span class="n">Sigma</span><span class="p">:</span>
+            <span class="n">new</span><span class="o">.</span><span class="n">addTransition</span><span class="p">(</span><span class="n">d1</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">d1</span><span class="p">)</span>
+            <span class="n">d</span> <span class="o">=</span> <span class="n">new</span><span class="o">.</span><span class="n">stateIndex</span><span class="p">((</span><span class="n">i</span><span class="p">,</span> <span class="n">s</span><span class="p">),</span> <span class="bp">True</span><span class="p">)</span>
+            <span class="n">new</span><span class="o">.</span><span class="n">addFinal</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">new</span><span class="o">.</span><span class="n">addTransition</span><span class="p">(</span><span class="n">init</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">Epsilon</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">s1</span> <span class="ow">in</span> <span class="n">new</span><span class="o">.</span><span class="n">Sigma</span> <span class="o">-</span> <span class="p">{</span><span class="n">s</span><span class="p">}:</span>
+                    <span class="n">new</span><span class="o">.</span><span class="n">addTransition</span><span class="p">(</span><span class="n">init</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">s1</span><span class="p">,</span> <span class="n">d1</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">bar</span> <span class="o">=</span> <span class="n">new</span><span class="o">.</span><span class="n">stateIndex</span><span class="p">((</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="bp">None</span><span class="p">))</span>
+                <span class="n">new</span><span class="o">.</span><span class="n">addTransition</span><span class="p">(</span><span class="n">bar</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">Epsilon</span><span class="p">,</span> <span class="n">d1</span><span class="p">)</span>
+                <span class="n">new</span><span class="o">.</span><span class="n">addTransition</span><span class="p">(</span><span class="n">bar</span><span class="p">,</span> <span class="n">Epsilon</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">d1</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">s1</span> <span class="ow">in</span> <span class="n">new</span><span class="o">.</span><span class="n">Sigma</span><span class="p">:</span>
+                    <span class="n">foo</span> <span class="o">=</span> <span class="n">new</span><span class="o">.</span><span class="n">stateIndex</span><span class="p">((</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">s</span><span class="p">))</span>
+                    <span class="n">new</span><span class="o">.</span><span class="n">addTransition</span><span class="p">(</span><span class="n">foo</span><span class="p">,</span> <span class="n">s1</span><span class="p">,</span> <span class="n">Epsilon</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">s1</span> <span class="o">!=</span> <span class="n">s</span><span class="p">:</span>
+                        <span class="n">new</span><span class="o">.</span><span class="n">addTransition</span><span class="p">(</span><span class="n">bar</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">s1</span><span class="p">,</span> <span class="n">d1</span><span class="p">)</span>
+                        <span class="n">new</span><span class="o">.</span><span class="n">addTransition</span><span class="p">(</span><span class="n">foo</span><span class="p">,</span> <span class="n">Epsilon</span><span class="p">,</span> <span class="n">s1</span><span class="p">,</span> <span class="n">d1</span><span class="p">)</span>
+                        <span class="k">for</span> <span class="n">s2</span> <span class="ow">in</span> <span class="n">new</span><span class="o">.</span><span class="n">Sigma</span><span class="p">:</span>
+                            <span class="n">new</span><span class="o">.</span><span class="n">addTransition</span><span class="p">(</span><span class="n">foo</span><span class="p">,</span> <span class="n">s2</span><span class="p">,</span> <span class="n">s1</span><span class="p">,</span> <span class="n">d1</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">s1</span> <span class="ow">in</span> <span class="n">new</span><span class="o">.</span><span class="n">Sigma</span> <span class="o">-</span> <span class="p">{</span><span class="n">s</span><span class="p">}:</span>
+                <span class="n">new</span><span class="o">.</span><span class="n">addTransition</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">s1</span><span class="p">,</span> <span class="n">s1</span><span class="p">,</span> <span class="n">d1</span><span class="p">)</span>
+        <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">new</span>
+
+</div>
+<div class="viewcode-block" id="editDistanceW"><a class="viewcode-back" href="../index.html#codes.editDistanceW">[docs]</a><span class="k">def</span> <span class="nf">editDistanceW</span><span class="p">(</span><span class="n">auto</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Compute the edit distance of a given regular language accepted by the NFA via Input-altering transducer.</span>
+
+<span class="sd">    .. attention::</span>
+<span class="sd">       language should have at least two words</span>
+
+<span class="sd">    .. seealso:: Lila Kari, Stavros Konstantinidis, Steffen Kopecki, Meng Yang. An efficient algorithm for computing</span>
+<span class="sd">        the edit distance of a regular language via input-altering transducers. arXiv:1406.1041 [cs.FL]</span>
+
+<span class="sd">    :param NFA auto: language recogniser</span>
+<span class="sd">    :return: The edit distance of the given regular language plus a witness pair</span>
+<span class="sd">    :rtype: tuple&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">_normalize</span><span class="p">(</span><span class="n">tr</span><span class="p">):</span>
+        <span class="n">tr</span><span class="o">.</span><span class="n">States</span> <span class="o">=</span> <span class="p">[(</span><span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">,</span> <span class="n">s3</span><span class="p">,</span> <span class="n">s4</span><span class="p">)</span> <span class="k">for</span> <span class="p">(((</span><span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">),</span> <span class="n">s3</span><span class="p">),</span> <span class="n">s4</span><span class="p">)</span> <span class="ow">in</span> <span class="n">tr</span><span class="o">.</span><span class="n">States</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">_addTNone</span><span class="p">(</span><span class="n">tr</span><span class="p">,</span> <span class="n">au</span><span class="p">,</span> <span class="n">n1</span><span class="p">,</span> <span class="n">s1</span><span class="p">,</span> <span class="n">si</span><span class="p">,</span> <span class="n">so</span><span class="p">,</span> <span class="n">symb1</span><span class="p">,</span> <span class="n">symb2</span><span class="p">,</span> <span class="n">l</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i1</span> <span class="ow">in</span> <span class="n">au</span><span class="o">.</span><span class="n">delta</span><span class="p">[</span><span class="n">si</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">symb1</span><span class="p">,</span> <span class="p">[]):</span>
+            <span class="k">for</span> <span class="n">i2</span> <span class="ow">in</span> <span class="n">au</span><span class="o">.</span><span class="n">delta</span><span class="p">[</span><span class="n">so</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">symb2</span><span class="p">,</span> <span class="p">[]):</span>
+                <span class="n">new</span> <span class="o">=</span> <span class="n">tr</span><span class="o">.</span><span class="n">stateIndex</span><span class="p">((</span><span class="n">n1</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="n">i1</span><span class="p">,</span> <span class="n">i2</span><span class="p">),</span> <span class="bp">True</span><span class="p">)</span>
+                <span class="n">l</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">new</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">i1</span> <span class="ow">in</span> <span class="n">au</span><span class="o">.</span><span class="n">Final</span> <span class="ow">and</span> <span class="n">i2</span> <span class="ow">in</span> <span class="n">au</span><span class="o">.</span><span class="n">Final</span><span class="p">:</span>
+                    <span class="n">tr</span><span class="o">.</span><span class="n">addFinal</span><span class="p">(</span><span class="n">new</span><span class="p">)</span>
+                <span class="n">tr</span><span class="o">.</span><span class="n">addTransition</span><span class="p">(</span><span class="n">s1</span><span class="p">,</span> <span class="n">symb1</span><span class="p">,</span> <span class="n">symb2</span><span class="p">,</span> <span class="n">new</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_addT</span><span class="p">(</span><span class="n">tr</span><span class="p">,</span> <span class="n">au</span><span class="p">,</span> <span class="n">n1</span><span class="p">,</span> <span class="n">s1</span><span class="p">,</span> <span class="n">aa</span><span class="p">,</span> <span class="n">si</span><span class="p">,</span> <span class="n">so</span><span class="p">,</span> <span class="n">symb1</span><span class="p">,</span> <span class="n">symb2</span><span class="p">,</span> <span class="n">l</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i1</span> <span class="ow">in</span> <span class="n">au</span><span class="o">.</span><span class="n">delta</span><span class="p">[</span><span class="n">si</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">symb1</span><span class="p">,</span> <span class="p">[]):</span>
+            <span class="k">for</span> <span class="n">i2</span> <span class="ow">in</span> <span class="n">au</span><span class="o">.</span><span class="n">delta</span><span class="p">[</span><span class="n">so</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">symb2</span><span class="p">,</span> <span class="p">[]):</span>
+                <span class="n">new</span> <span class="o">=</span> <span class="n">tr</span><span class="o">.</span><span class="n">stateIndex</span><span class="p">((</span><span class="n">n1</span><span class="p">,</span> <span class="n">aa</span><span class="p">,</span> <span class="n">i1</span><span class="p">,</span> <span class="n">i2</span><span class="p">),</span> <span class="bp">True</span><span class="p">)</span>
+                <span class="n">l</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">new</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">i1</span> <span class="ow">in</span> <span class="n">au</span><span class="o">.</span><span class="n">Final</span> <span class="ow">and</span> <span class="n">i2</span> <span class="ow">in</span> <span class="n">au</span><span class="o">.</span><span class="n">Final</span><span class="p">:</span>
+                    <span class="n">tr</span><span class="o">.</span><span class="n">addFinal</span><span class="p">(</span><span class="n">new</span><span class="p">)</span>
+                <span class="n">tr</span><span class="o">.</span><span class="n">addTransition</span><span class="p">(</span><span class="n">s1</span><span class="p">,</span> <span class="n">symb1</span><span class="p">,</span> <span class="n">symb2</span><span class="p">,</span> <span class="n">new</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_noneLoops</span><span class="p">(</span><span class="n">tr</span><span class="p">,</span> <span class="n">au</span><span class="p">,</span> <span class="n">l</span><span class="p">):</span>
+        <span class="n">todo</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">l</span><span class="p">)</span>
+        <span class="n">done</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">while</span> <span class="n">todo</span><span class="p">:</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="n">todo</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+            <span class="n">done</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+            <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">s3</span><span class="p">,</span> <span class="n">s4</span><span class="p">)</span> <span class="o">=</span> <span class="n">tr</span><span class="o">.</span><span class="n">States</span><span class="p">[</span><span class="n">s</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">tr</span><span class="o">.</span><span class="n">Sigma</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">i1</span> <span class="ow">in</span> <span class="n">au</span><span class="o">.</span><span class="n">delta</span><span class="p">[</span><span class="n">s3</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="p">[]):</span>
+                    <span class="k">for</span> <span class="n">i2</span> <span class="ow">in</span> <span class="n">au</span><span class="o">.</span><span class="n">delta</span><span class="p">[</span><span class="n">s4</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="p">[]):</span>
+                        <span class="n">new</span> <span class="o">=</span> <span class="n">tr</span><span class="o">.</span><span class="n">stateIndex</span><span class="p">((</span><span class="n">a</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="n">i1</span><span class="p">,</span> <span class="n">i2</span><span class="p">),</span> <span class="bp">True</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">i1</span> <span class="ow">in</span> <span class="n">au</span><span class="o">.</span><span class="n">Final</span> <span class="ow">and</span> <span class="n">i2</span> <span class="ow">in</span> <span class="n">au</span><span class="o">.</span><span class="n">Final</span><span class="p">:</span>
+                            <span class="n">tr</span><span class="o">.</span><span class="n">addFinal</span><span class="p">(</span><span class="n">new</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">new</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">done</span><span class="p">:</span>
+                            <span class="n">l</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">new</span><span class="p">)</span>
+                            <span class="n">todo</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">new</span><span class="p">)</span>
+                        <span class="n">tr</span><span class="o">.</span><span class="n">addTransition</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">new</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">extendTrans</span><span class="p">(</span><span class="n">tr</span><span class="p">,</span> <span class="n">au</span><span class="p">,</span> <span class="n">lln</span><span class="p">,</span> <span class="n">ll</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Extend the transducer</span>
+
+<span class="sd">        :param set ll: last level added states (not None)</span>
+<span class="sd">        :param set lln: last level added states (None)</span>
+<span class="sd">        :param SFT tr: the old transducer to be updated</span>
+<span class="sd">        :param NFA au: the automaton recogize the regular language</span>
+<span class="sd">        :return: last level added states lln, ll</span>
+<span class="sd">        :rtype: tuple</span>
+
+<span class="sd">        .. attention::</span>
+<span class="sd">           NFA au must have its state names as indexes (renameStates())&quot;&quot;&quot;</span>
+        <span class="n">newll</span><span class="p">,</span> <span class="n">newlln</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(),</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">lln</span><span class="p">:</span>
+            <span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">s3</span><span class="p">,</span> <span class="n">s4</span><span class="p">)</span> <span class="o">=</span> <span class="n">tr</span><span class="o">.</span><span class="n">States</span><span class="p">[</span><span class="n">s</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">tr</span><span class="o">.</span><span class="n">Sigma</span><span class="p">:</span>
+                <span class="n">_addTNone</span><span class="p">(</span><span class="n">tr</span><span class="p">,</span> <span class="n">au</span><span class="p">,</span> <span class="n">m</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">s3</span><span class="p">,</span> <span class="n">s4</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">Epsilon</span><span class="p">,</span> <span class="n">newlln</span><span class="p">)</span>
+                <span class="n">_addTNone</span><span class="p">(</span><span class="n">tr</span><span class="p">,</span> <span class="n">au</span><span class="p">,</span> <span class="n">m</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">s3</span><span class="p">,</span> <span class="n">s4</span><span class="p">,</span> <span class="n">Epsilon</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">newlln</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">tr</span><span class="o">.</span><span class="n">Sigma</span> <span class="o">-</span> <span class="p">{</span><span class="n">a</span><span class="p">}:</span>
+                    <span class="n">_addTNone</span><span class="p">(</span><span class="n">tr</span><span class="p">,</span> <span class="n">au</span><span class="p">,</span> <span class="n">m</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">s3</span><span class="p">,</span> <span class="n">s4</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">newlln</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">ll</span><span class="p">:</span>
+            <span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">s3</span><span class="p">,</span> <span class="n">s4</span><span class="p">)</span> <span class="o">=</span> <span class="n">tr</span><span class="o">.</span><span class="n">States</span><span class="p">[</span><span class="n">s</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">tr</span><span class="o">.</span><span class="n">Sigma</span><span class="p">:</span>
+                <span class="n">_addT</span><span class="p">(</span><span class="n">tr</span><span class="p">,</span> <span class="n">au</span><span class="p">,</span> <span class="n">m</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">s3</span><span class="p">,</span> <span class="n">s4</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">Epsilon</span><span class="p">,</span> <span class="n">newll</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">b</span> <span class="o">!=</span> <span class="n">a</span><span class="p">:</span>
+                    <span class="n">_addTNone</span><span class="p">(</span><span class="n">tr</span><span class="p">,</span> <span class="n">au</span><span class="p">,</span> <span class="n">m</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">s3</span><span class="p">,</span> <span class="n">s4</span><span class="p">,</span> <span class="n">Epsilon</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">newlln</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">tr</span><span class="o">.</span><span class="n">Sigma</span> <span class="o">-</span> <span class="p">{</span><span class="n">b</span><span class="p">}:</span>
+                        <span class="n">_addTNone</span><span class="p">(</span><span class="n">tr</span><span class="p">,</span> <span class="n">au</span><span class="p">,</span> <span class="n">m</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">s3</span><span class="p">,</span> <span class="n">s4</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">newlln</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">newll</span><span class="p">:</span>
+            <span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">s3</span><span class="p">,</span> <span class="n">s4</span><span class="p">)</span> <span class="o">=</span> <span class="n">tr</span><span class="o">.</span><span class="n">States</span><span class="p">[</span><span class="n">s</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">tr</span><span class="o">.</span><span class="n">Sigma</span> <span class="o">-</span> <span class="p">{</span><span class="n">a</span><span class="p">}:</span>
+                <span class="n">_addTNone</span><span class="p">(</span><span class="n">tr</span><span class="p">,</span> <span class="n">au</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">s3</span><span class="p">,</span> <span class="n">s4</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">newlln</span><span class="p">)</span>
+        <span class="n">_noneLoops</span><span class="p">(</span><span class="n">tr</span><span class="p">,</span> <span class="n">au</span><span class="p">,</span> <span class="n">newlln</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">newlln</span><span class="p">,</span> <span class="n">newll</span>
+
+    <span class="n">auto</span> <span class="o">=</span> <span class="n">auto</span><span class="o">.</span><span class="n">toNFA</span><span class="p">()</span><span class="o">.</span><span class="n">renameStates</span><span class="p">()</span><span class="o">.</span><span class="n">addEpsilonLoops</span><span class="p">()</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">createInputAlteringSIDTrans</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">auto</span><span class="o">.</span><span class="n">Sigma</span><span class="p">)</span><span class="o">.</span><span class="n">inIntersection</span><span class="p">(</span><span class="n">auto</span><span class="p">)</span><span class="o">.</span><span class="n">outIntersection</span><span class="p">(</span><span class="n">auto</span><span class="p">)</span>
+    <span class="n">_normalize</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+    <span class="n">lvn</span><span class="p">,</span> <span class="n">lv</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(),</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">States</span><span class="p">)):</span>
+        <span class="n">n0</span><span class="p">,</span> <span class="n">a0</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">States</span><span class="p">[</span><span class="n">i</span><span class="p">][:</span><span class="mi">2</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">n0</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">a0</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">lvn</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">lv</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+    <span class="n">errn</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">nonEmptyW</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">w</span> <span class="o">!=</span> <span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">errn</span><span class="p">,</span> <span class="n">w</span>
+        <span class="n">lvn</span><span class="p">,</span> <span class="n">lv</span> <span class="o">=</span> <span class="n">extendTrans</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">auto</span><span class="p">,</span> <span class="n">lvn</span><span class="p">,</span> <span class="n">lv</span><span class="p">)</span>
+        <span class="n">errn</span> <span class="o">+=</span> <span class="mi">1</span>
+
+</div>
+<div class="viewcode-block" id="exponentialDensityP"><a class="viewcode-back" href="../index.html#codes.exponentialDensityP">[docs]</a><span class="k">def</span> <span class="nf">exponentialDensityP</span><span class="p">(</span><span class="n">aut</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Checks if language density is exponential</span>
+
+<span class="sd">    Using breadth first search (BFS)</span>
+
+<span class="sd">    .. attention::</span>
+<span class="sd">        aut should not have Epsilon transitions</span>
+
+<span class="sd">    :param NFA aut: the representation of the language</span>
+<span class="sd">    :rtype: bool&quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">fractions</span>
+    <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">deque</span>
+
+    <span class="k">def</span> <span class="nf">_listgcd</span><span class="p">(</span><span class="n">ll</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ll</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">ll</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">fractions</span><span class="o">.</span><span class="n">gcd</span><span class="p">(</span><span class="n">ll</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">_listgcd</span><span class="p">(</span><span class="n">ll</span><span class="p">[</span><span class="mi">1</span><span class="p">:]))</span>
+
+    <span class="n">components</span> <span class="o">=</span> <span class="n">aut</span><span class="o">.</span><span class="n">trim</span><span class="p">()</span><span class="o">.</span><span class="n">stronglyConnectedComponents</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">components</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">g</span> <span class="o">=</span> <span class="n">aut</span><span class="o">.</span><span class="n">dup</span><span class="p">()</span>
+            <span class="n">g</span><span class="o">.</span><span class="n">deleteStates</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">indexList</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">States</span><span class="p">))</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">c</span><span class="p">)))</span>
+            <span class="n">marked</span><span class="p">,</span> <span class="n">levelNum</span><span class="p">,</span> <span class="n">levelSym</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">g</span><span class="o">.</span><span class="n">States</span><span class="p">:</span>
+                <span class="n">marked</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+                <span class="n">levelNum</span><span class="o">.</span><span class="n">append</span><span class="p">([])</span>
+                <span class="n">levelSym</span><span class="o">.</span><span class="n">append</span><span class="p">([])</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">States</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">queue</span> <span class="o">=</span> <span class="n">deque</span><span class="p">()</span>
+            <span class="n">queue</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+            <span class="n">marked</span><span class="p">[</span><span class="n">g</span><span class="o">.</span><span class="n">stateIndex</span><span class="p">(</span><span class="n">v</span><span class="p">)]</span> <span class="o">=</span> <span class="bp">True</span>
+            <span class="n">levelNum</span><span class="p">[</span><span class="n">g</span><span class="o">.</span><span class="n">stateIndex</span><span class="p">(</span><span class="n">v</span><span class="p">)]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">queue</span><span class="p">):</span>
+                <span class="n">t</span> <span class="o">=</span> <span class="n">queue</span><span class="o">.</span><span class="n">popleft</span><span class="p">()</span>
+                <span class="n">symbols</span> <span class="o">=</span> <span class="p">[</span><span class="n">s</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">g</span><span class="o">.</span><span class="n">delta</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">stateIndex</span><span class="p">(</span><span class="n">t</span><span class="p">),</span> <span class="p">{})]</span>
+                <span class="n">edges</span> <span class="o">=</span> <span class="p">[</span><span class="n">g</span><span class="o">.</span><span class="n">delta</span><span class="p">[</span><span class="n">g</span><span class="o">.</span><span class="n">stateIndex</span><span class="p">(</span><span class="n">t</span><span class="p">)][</span><span class="n">k</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">symbols</span><span class="p">]</span>
+                <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">symbols</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">s</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">levelSym</span><span class="p">[</span><span class="n">levelNum</span><span class="p">[</span><span class="n">g</span><span class="o">.</span><span class="n">stateIndex</span><span class="p">(</span><span class="n">t</span><span class="p">)][</span><span class="mi">0</span><span class="p">]]:</span>
+                        <span class="n">levelSym</span><span class="p">[</span><span class="n">levelNum</span><span class="p">[</span><span class="n">g</span><span class="o">.</span><span class="n">stateIndex</span><span class="p">(</span><span class="n">t</span><span class="p">)][</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">edges</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">e</span><span class="p">:</span>
+                        <span class="n">levelNum</span><span class="p">[</span><span class="n">o</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">levelNum</span><span class="p">[</span><span class="n">g</span><span class="o">.</span><span class="n">stateIndex</span><span class="p">(</span><span class="n">t</span><span class="p">)][</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="ow">not</span> <span class="n">marked</span><span class="p">[</span><span class="n">o</span><span class="p">]:</span>
+                            <span class="n">marked</span><span class="p">[</span><span class="n">o</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
+                            <span class="n">queue</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">States</span><span class="p">[</span><span class="n">o</span><span class="p">])</span>
+            <span class="k">if</span> <span class="p">[</span><span class="n">l</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">levelSym</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">l</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">]:</span>
+                <span class="k">return</span> <span class="bp">True</span>
+            <span class="n">lengths</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">levelNum</span><span class="p">:</span>
+                <span class="n">first</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="p">[</span><span class="n">m</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">s</span> <span class="k">if</span> <span class="n">m</span> <span class="o">-</span> <span class="n">first</span><span class="p">]:</span>
+                    <span class="n">lengths</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="n">first</span><span class="p">)</span>
+            <span class="n">d</span> <span class="o">=</span> <span class="n">_listgcd</span><span class="p">(</span><span class="n">lengths</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">d</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">True</span>
+            <span class="n">pattern</span> <span class="o">=</span> <span class="s">&quot;&quot;</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">d</span><span class="p">):</span>
+                <span class="n">pattern</span> <span class="o">=</span> <span class="n">pattern</span> <span class="o">+</span> <span class="n">levelSym</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="n">lengths</span><span class="p">)):</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">levelSym</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">pattern</span><span class="p">[</span><span class="n">j</span> <span class="o">%</span> <span class="n">d</span><span class="p">]:</span>
+                    <span class="k">return</span> <span class="bp">True</span>
+    <span class="k">return</span> <span class="bp">False</span>
+
+</div>
+<span class="k">def</span> <span class="nf">long2base</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">q</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Maps n to a list of digits corresponding to the base q representation of n in reverse order</span>
+
+<span class="sd">    :param int n: a positive integer</span>
+<span class="sd">    :param int q: base to represent n</span>
+<span class="sd">    :return: list of q-ary &#39;digits&#39;, that is, elements of {0,1,..,q-1}</span>
+<span class="sd">    :rtype: list&quot;&quot;&quot;</span>
+    <span class="n">lt</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">while</span> <span class="n">n</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">lt</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">n</span> <span class="o">%</span> <span class="n">q</span><span class="p">)</span>
+        <span class="n">n</span> <span class="o">/=</span> <span class="n">q</span>
+    <span class="k">return</span> <span class="n">lt</span>
+
+
+<span class="k">def</span> <span class="nf">list2string</span><span class="p">(</span><span class="n">lt</span><span class="p">,</span> <span class="n">dy</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    :param list lt: list of nonnegative integers from some set {0,1,...,q-1}</span>
+<span class="sd">    :param dict dy: mapping from {0,1,...,q-1} to some alphabet symbols</span>
+<span class="sd">    :return: string of symbols corresponding to the integers in lt</span>
+<span class="sd">    :rtype: str&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="s">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">dy</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">lt</span><span class="p">])</span>
+
+
+<span class="k">def</span> <span class="nf">notUniversalStatW</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">maxIter</span><span class="o">=</span><span class="mi">20000</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Tests statistically whether the NFA a is l-non-universal, by evaluating a on &lt;= maxIter randomly chosen words of length l</span>
+
+<span class="sd">    :type a: NFA</span>
+<span class="sd">    :param int l: nonnegative integer</span>
+<span class="sd">    :type maxIter: int</span>
+<span class="sd">    :return: (w,i) where w is the word found at i-th try; or (None, i) after i tries</span>
+<span class="sd">    :rtype: tuple&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">l</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>  <span class="c"># first handle the case of the empty word</span>
+        <span class="k">if</span> <span class="n">a</span><span class="o">.</span><span class="n">evalWordP</span><span class="p">(</span><span class="n">Epsilon</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">None</span><span class="p">,</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Epsilon</span><span class="p">,</span> <span class="mi">1</span>
+    <span class="n">lt</span> <span class="o">=</span> <span class="p">[</span><span class="n">s</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">a</span><span class="o">.</span><span class="n">Sigma</span><span class="p">]</span>
+    <span class="c"># dictionary dy is used to refer to each alphabet symbol in lt using a numeric index</span>
+    <span class="n">dy</span> <span class="o">=</span> <span class="p">{</span><span class="n">i</span><span class="p">:</span> <span class="n">lt</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">lt</span><span class="p">))}</span>
+    <span class="n">q</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">lt</span><span class="p">)</span>
+    <span class="n">numWords</span> <span class="o">=</span> <span class="n">q</span> <span class="o">**</span> <span class="n">l</span>
+    <span class="n">tmp</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>  <span class="c"># will remember in tmp the distinct words generated so far</span>
+    <span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">maxIter</span><span class="p">):</span>
+        <span class="c"># next pick one word out of the possible numWords of length l; specifically pick</span>
+        <span class="c"># the i-th one, where i is randomly chosen. For this, choose a random int n whose</span>
+        <span class="c"># base q representation is of the form &#39;1d_1...d_l&#39;, where the l d&#39;s are digits</span>
+        <span class="c"># in {0,1,...,q-1}, so the desired number i is the one represented as &#39;d_1...d_l&#39;</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">numWords</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">numWords</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="n">list2string</span><span class="p">(</span><span class="n">long2base</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">q</span><span class="p">),</span> <span class="n">dy</span><span class="p">)[:</span><span class="n">l</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">a</span><span class="o">.</span><span class="n">evalWordP</span><span class="p">(</span><span class="n">w</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">w</span><span class="p">,</span> <span class="n">j</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">tmp</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">w</span><span class="p">)</span>  <span class="c"># Note: the current random word could be equal to a past one !!</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span> <span class="o">==</span> <span class="n">numWords</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">None</span><span class="p">,</span> <span class="n">numWords</span>
+    <span class="k">return</span> <span class="bp">None</span><span class="p">,</span> <span class="n">maxIter</span>
+
+
+<span class="k">def</span> <span class="nf">symmAndRefl</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">ipt</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Return the  transducer      t | t.inverse,  if ipt is True;</span>
+<span class="sd">        return the transducer  t | t.inverse | id,  otherwise</span>
+
+<span class="sd">    :type t: SFT</span>
+<span class="sd">    :type ipt: bool</span>
+<span class="sd">    :rtype: SFT&quot;&quot;&quot;</span>
+    <span class="n">t1</span> <span class="o">=</span> <span class="n">t</span> <span class="o">|</span> <span class="n">t</span><span class="o">.</span><span class="n">inverse</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">ipt</span> <span class="ow">is</span> <span class="bp">True</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">t1</span>
+    <span class="n">t2</span> <span class="o">=</span> <span class="n">SFT</span><span class="p">()</span>
+    <span class="n">s0</span> <span class="o">=</span> <span class="n">t2</span><span class="o">.</span><span class="n">addState</span><span class="p">()</span>
+    <span class="n">t2</span><span class="o">.</span><span class="n">addInitial</span><span class="p">(</span><span class="n">s0</span><span class="p">)</span>
+    <span class="n">t2</span><span class="o">.</span><span class="n">addFinal</span><span class="p">(</span><span class="n">s0</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">sym</span> <span class="ow">in</span> <span class="n">t</span><span class="o">.</span><span class="n">Sigma</span><span class="p">:</span>
+        <span class="n">t2</span><span class="o">.</span><span class="n">addTransition</span><span class="p">(</span><span class="n">s0</span><span class="p">,</span> <span class="n">sym</span><span class="p">,</span> <span class="n">sym</span><span class="p">,</span> <span class="n">s0</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">t1</span> <span class="o">|</span> <span class="n">t2</span>
+
+
+<span class="k">def</span> <span class="nf">constructCode</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">ipt</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Returns up to n words of length l satisfying the property p, the first one being seed.</span>
+<span class="sd">        If ipt is True, the property is assumed to be input-preserving transducer type</span>
+
+<span class="sd">    :type p: IATProp|IPTProp</span>
+<span class="sd">    :type l: int</span>
+<span class="sd">    :type n: int</span>
+<span class="sd">    :type seed: str</span>
+<span class="sd">    :type ipt: bool</span>
+<span class="sd">    :rtype: list&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">l</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">Epsilon</span><span class="p">]</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">symmAndRefl</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">Aut</span><span class="p">,</span> <span class="n">ipt</span><span class="p">)</span>  <span class="c"># make a version of p.Aut that is symmetric and reflexive</span>
+    <span class="k">if</span> <span class="n">seed</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span> <span class="o">!=</span> <span class="n">l</span><span class="p">:</span>
+        <span class="n">a0</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">Sigma</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">seed</span> <span class="o">=</span> <span class="s">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">a0</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">l</span><span class="p">)])</span>
+    <span class="n">lt</span> <span class="o">=</span> <span class="p">[</span><span class="n">seed</span><span class="p">]</span>
+    <span class="n">cnt</span><span class="p">,</span> <span class="n">more</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="bp">True</span>
+    <span class="k">while</span> <span class="n">more</span> <span class="ow">and</span> <span class="n">cnt</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">:</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">fl</span><span class="o">.</span><span class="n">FL</span><span class="p">(</span><span class="n">lt</span><span class="p">)</span><span class="o">.</span><span class="n">trieFA</span><span class="p">()</span><span class="o">.</span><span class="n">toNFA</span><span class="p">()</span>
+        <span class="n">b</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">runOnNFA</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+        <span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span> <span class="o">=</span> <span class="n">notUniversalStatW</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">l</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">w</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">more</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">cnt</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">lt</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">w</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">lt</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">FAdo 1.2 documentation</a> &raquo;</li>
+          <li><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 1999-2014, Rogério Reis &amp; Nelma Moreira.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,14 @@
+Do: "make install"
+  and IGNORE all the warning messages about symbols defined but not used
+  ...in due time it will aks for your passwd to "sudo" the instalation
+     
+     That should do it.
+
+If anything fails... write me (rvr@dcc.fc.up.pt)
+
+enjoy
+
+
+P.S. If you want to uninstall it you can try "make uninstall", but
+because python setup utils do not have any uninstall commands, it is a bit
+of a improvisation, that we hope to work on most of the systems.

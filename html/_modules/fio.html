@@ -1,0 +1,704 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>fio &mdash; FAdo 1.2 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="FAdo 1.2 documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">FAdo 1.2 documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for fio</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;**In/Out.**</span>
+
+<span class="sd">FAdo IO.</span>
+
+<span class="sd">.. *Authors:* Rogério Reis &amp; Nelma Moreira</span>
+
+<span class="sd">.. *This is part of FAdo project*   http://fado.dcc.fc.up.pt.</span>
+
+<span class="sd">.. *Copyright:* 2014 Rogério Reis &amp; Nelma Moreira {rvr,nam}@dcc.fc.up.pt</span>
+
+<span class="sd">.. This program is free software; you can redistribute it and/or</span>
+<span class="sd">   modify it under the terms of the GNU General Public License as published</span>
+<span class="sd">   by the Free Software Foundation; either version 2 of the License, or</span>
+<span class="sd">   (at your option) any later version.</span>
+
+<span class="sd">   This program is distributed in the hope that it will be useful,</span>
+<span class="sd">   but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY</span>
+<span class="sd">   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License</span>
+<span class="sd">   for more details.</span>
+
+<span class="sd">   You should have received a copy of the GNU General Public License along</span>
+<span class="sd">   with this program; if not, write to the Free Software Foundation, Inc.,</span>
+<span class="sd">   675 Mass Ave, Cambridge, MA 02139, USA.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">yappy_parser</span> <span class="kn">import</span> <span class="n">Yappy</span><span class="p">,</span> <span class="n">grules</span>
+
+<span class="kn">from</span> <span class="nn">common</span> <span class="kn">import</span> <span class="n">Epsilon</span><span class="p">,</span> <span class="n">DFAerror</span><span class="p">,</span> <span class="n">TRError</span>
+<span class="kn">from</span> <span class="nn">fa</span> <span class="kn">import</span> <span class="n">DFA</span><span class="p">,</span> <span class="n">NFA</span><span class="p">,</span> <span class="n">statePP</span>
+<span class="kn">from</span> <span class="nn">transducers</span> <span class="kn">import</span> <span class="n">SFT</span><span class="p">,</span> <span class="n">GFT</span><span class="p">,</span> <span class="n">Transducer</span>
+
+
+<div class="viewcode-block" id="ParserFAdo"><a class="viewcode-back" href="../index.html#fio.ParserFAdo">[docs]</a><span class="k">class</span> <span class="nc">ParserFAdo</span><span class="p">(</span><span class="n">Yappy</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A parser for FAdo standard automata descriptions</span>
+
+<span class="sd">    .. inheritance-diagram:: ParserFAdo&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">no_table</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="s">&quot;.tableFAdo&quot;</span><span class="p">):</span>
+        <span class="n">tokenizer</span> <span class="o">=</span> <span class="p">[(</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">+&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="s">&quot;EOL&quot;</span><span class="p">,</span> <span class="s">&quot;EOL&quot;</span><span class="p">)),</span>
+                     <span class="p">(</span><span class="s">&quot;#.*&quot;</span><span class="p">,</span> <span class="s">&quot;&quot;</span><span class="p">),</span>
+                     <span class="p">(</span><span class="s">&quot;\s+&quot;</span><span class="p">,</span> <span class="s">&quot;&quot;</span><span class="p">),</span>
+                     <span class="c">#(&quot;@epsilon&quot;, lambda x: (&quot;ids&quot;, &quot;@epsilon&quot;)),</span>
+                     <span class="p">(</span><span class="s">&quot;@epsilon&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="s">&quot;ids&quot;</span><span class="p">,</span> <span class="n">Epsilon</span><span class="p">)),</span>
+                     <span class="p">(</span><span class="s">&quot;@NFA&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="s">&quot;NFA&quot;</span><span class="p">,</span> <span class="s">&quot;NFA&quot;</span><span class="p">)),</span>
+                     <span class="p">(</span><span class="s">&quot;@DFA&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="s">&quot;DFA&quot;</span><span class="p">,</span> <span class="s">&quot;DFA&quot;</span><span class="p">)),</span>
+                     <span class="p">(</span><span class="s">&quot;@TDFA&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="s">&quot;TDFA&quot;</span><span class="p">,</span> <span class="s">&quot;TDFA&quot;</span><span class="p">)),</span>
+                     <span class="p">(</span><span class="s">&quot;@Transducer&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="s">&quot;TRANS&quot;</span><span class="p">,</span> <span class="s">&quot;TRANS&quot;</span><span class="p">)),</span>
+                     <span class="p">(</span><span class="s">&quot;\*&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="s">&quot;SEP&quot;</span><span class="p">,</span> <span class="s">&quot;SEP&quot;</span><span class="p">)),</span>
+                     <span class="p">(</span><span class="s">&quot;\$&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="s">&quot;DOLLAR&quot;</span><span class="p">,</span> <span class="s">&quot;DOLLAR&quot;</span><span class="p">)),</span>
+                     <span class="p">(</span><span class="s">&quot;\^&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="s">&quot;CARET&quot;</span><span class="p">,</span> <span class="s">&quot;CARET&quot;</span><span class="p">)),</span>
+                     <span class="p">(</span><span class="s">&quot;&lt;&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="s">&quot;mv&quot;</span><span class="p">,</span> <span class="s">&quot;LEFT&quot;</span><span class="p">)),</span>
+                     <span class="p">(</span><span class="s">&quot;&gt;&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="s">&quot;mv&quot;</span><span class="p">,</span> <span class="s">&quot;RIGHT&quot;</span><span class="p">)),</span>
+                     <span class="p">(</span><span class="s">&#39;&quot;[A-Za-z0-9\(\)\[\]\{\}:\.,_-]+&quot;&#39;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="s">&quot;id&quot;</span><span class="p">,</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">])),</span>
+                     <span class="p">(</span><span class="s">&quot;[A-Za-z0-9]+&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="s">&quot;id&quot;</span><span class="p">,</span> <span class="n">x</span><span class="p">))]</span>
+        <span class="n">grammar</span> <span class="o">=</span> <span class="n">grules</span><span class="p">([(</span><span class="s">&quot;r -&gt; d r&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">defaultSemRule</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;r -&gt; n r&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">defaultSemRule</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;r -&gt; td r&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">defaultSemRule</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;r -&gt; tr r&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">defaultSemRule</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;r -&gt; dummy r&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">emptySemRule</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;r -&gt; &quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">emptySemRule</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;d -&gt; DFA l t1&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">startDFASemRule</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;n -&gt; NFA l t1n&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">startNFASemRule</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;n -&gt; NFA l1 i tn&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">startNFASemRule</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;td -&gt; TDFA l tt1&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">startTDFASemRule</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;tr -&gt; TRANS l5 ttr&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">startTRANSSemRule</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;tr -&gt; TRANS l3 ttri&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">startTRANSSemRule</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;idt -&gt; id&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">defaultSemRule</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;idt -&gt; ids&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">defaultSemRule</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;l -&gt; id l&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">finalSemRule</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;l -&gt; DOLLAR l2&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">emptySemRule</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;l -&gt; EOL&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">emptySemRule</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;l1 -&gt; id l1&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">finalSemRule</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;l1 -&gt; SEP&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">emptySemRule</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;l2 -&gt; id l2 &quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">addAlphabet</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;l2 -&gt; EOL&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">emptySemRule</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;i -&gt; id i&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">initialSemRule</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;i -&gt; DOLLAR l2&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">emptySemRule</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;i -&gt; EOL&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">emptySemRule</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;l5 -&gt; id l5&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">finalSemRule</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;l5 -&gt; DOLLAR it&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">emptySemRule</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;l5 -&gt; EOL&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">emptySemRule</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;l3 -&gt; id l3&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">finalSemRule</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;l3 -&gt; SEP l4&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">emptySemRule</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;l4 -&gt; id l4&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">initialSemRule</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;l4 -&gt; DOLLAR it&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">emptySemRule</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;l4 -&gt; EOL&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">emptySemRule</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;it -&gt; id it&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">addAlphabet</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;it -&gt; DOLLAR ot&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">emptySemRule</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;it -&gt; EOL&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">emptySemRule</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;ot -&gt; id ot &quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">addAlphabetOut</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;ot -&gt; EOL&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">emptySemRule</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;t1 -&gt; EOL t1&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">emptySemRule</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;t1 -&gt; id EOL t&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">firstDeclareState</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;t1 -&gt; id id id EOL t&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">firstTransitionSemRule</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;t1 -&gt; &quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">emptySemRule</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;tt1 -&gt; EOL tt1&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">emptySemRule</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;tt1 - id EOL tt&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">firstDeclareState</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;tt1 -&gt; id ids id mv tt&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">firstTTransitionSemRule</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;tt1 -&gt; id id id mv tt&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">firstTTransitionSemRule</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;tt1 -&gt; id DOLLAR id mv tt&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">firstTTransitionSemRule</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;tt1 -&gt; id CARET id mv tt&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">firstTTransitionSemRule</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;tt1 -&gt; &quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">emptySemRule</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;tt -&gt; id EOL tt&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">declareState</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;tt -&gt; id ids is mv EOL tt&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">transitionTSemRule</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;tt -&gt; id id is mv EOL tt&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">transitionTSemRule</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;tt -&gt; id DOLLAR is mv EOL tt&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">transitionTSemRule</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;tt -&gt; id CARET is mv EOL tt&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">transitionTSemRule</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;tt -&gt; EOL tt&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">emptySemRule</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;tt -&gt; &quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">emptySemRule</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;t1n -&gt; EOL t1n&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">emptySemRule</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;t1n -&gt; id EOL tn&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">firstDeclareState</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;t1n -&gt; id id id EOL tn&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">firstTransitionSemRule</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;t1n -&gt; id ids id EOL tn&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">firstTransitionESemRule</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;t1n -&gt; &quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">emptySemRule</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;t -&gt; id EOL t&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">declareState</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;t -&gt; id id id EOL t&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">transitionSemRule</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;t -&gt; EOL t&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">emptySemRule</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;t -&gt; &quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">emptySemRule</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;tn - EOL tn&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">emptySemRule</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;tn -&gt; id EOL tn&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">declareState</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;tn -&gt; id id id EOL tn&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">transitionSemRule</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;tn -&gt; id ids id EOL tn&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">transitionESemRule</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;tn -&gt; EOL tn&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">emptySemRule</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;tn -&gt; &quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">emptySemRule</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;ttr - EOL ttr&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">emptySemRule</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;ttr -&gt; id EOL ttr&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">declareState</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;ttr -&gt; id idt idt id EOL ttrs&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">firstTransitionTransSemRule</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;ttr -&gt; &quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">emptySemRule</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;ttrs -&gt; id EOL ttrs&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">declareState</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;ttrs -&gt; id idt idt id EOL ttrs&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">transitionTransSemRule</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;ttrs -&gt; EOL ttrs&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">emptySemRule</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;ttrs -&gt; &quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">emptySemRule</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;ttri - EOL ttri&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">emptySemRule</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;ttri -&gt; id EOL ttri&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">declareState</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;ttri -&gt; id idt idt id EOL ttri&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">transitionTransSemRule</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;ttri -&gt; EOL ttri&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">emptySemRule</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;ttri -&gt; &quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">emptySemRule</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&quot;dummy -&gt; EOL&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">emptySemRule</span><span class="p">)</span>
+                          <span class="p">])</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">theList</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transitions</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">initials</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">finals</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">alphabet</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">alphabetOut</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">TRtype</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="n">Yappy</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tokenizer</span><span class="p">,</span> <span class="n">grammar</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="n">no_table</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">initLocal</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Starts local structures for a new automata&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transitions</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">initials</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">finals</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">alphabet</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">alphabetOut</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+
+    <span class="c"># noinspection PyUnusedLocal</span>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">defaultSemRule</span><span class="p">(</span><span class="n">lst</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Defines the default semantic rule for Yappy</span>
+<span class="sd">        :param list lst: list of the arguments semantics</span>
+<span class="sd">        :param dict context: context for the semantic rules</span>
+<span class="sd">        :returns: first argument semantics&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">lst</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="c"># noinspection PyUnusedLocal</span>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">emptySemRule</span><span class="p">(</span><span class="n">lst</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Defines the empty semantic rule for Yappy</span>
+<span class="sd">        :param lst: lst of the arguments semantics</span>
+<span class="sd">        :param dict context: context for the semantic rules</span>
+<span class="sd">        :returns: empty list&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[]</span>
+
+    <span class="c"># noinspection PyUnusedLocal</span>
+    <span class="k">def</span> <span class="nf">startDFASemRule</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lst</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+
+
+<span class="sd">        :param context:</span>
+<span class="sd">        :param lst:</span>
+<span class="sd">        :param context:&quot;&quot;&quot;</span>
+        <span class="n">new</span> <span class="o">=</span> <span class="n">DFA</span><span class="p">()</span>
+        <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+            <span class="n">new</span><span class="o">.</span><span class="n">addState</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">new</span><span class="o">.</span><span class="n">Sigma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">alphabet</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">initials</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+        <span class="n">new</span><span class="o">.</span><span class="n">setInitial</span><span class="p">(</span><span class="n">new</span><span class="o">.</span><span class="n">stateIndex</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+        <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">finals</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">finals</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+            <span class="n">new</span><span class="o">.</span><span class="n">addFinal</span><span class="p">(</span><span class="n">new</span><span class="o">.</span><span class="n">stateIndex</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+        <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">transitions</span><span class="p">:</span>
+            <span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">x3</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transitions</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+            <span class="n">new</span><span class="o">.</span><span class="n">addTransition</span><span class="p">(</span><span class="n">new</span><span class="o">.</span><span class="n">stateIndex</span><span class="p">(</span><span class="n">x1</span><span class="p">),</span> <span class="n">x2</span><span class="p">,</span> <span class="n">new</span><span class="o">.</span><span class="n">stateIndex</span><span class="p">(</span><span class="n">x3</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">theList</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">initLocal</span><span class="p">()</span>
+
+    <span class="c"># noinspection PyUnusedLocal</span>
+    <span class="k">def</span> <span class="nf">startTDFASemRule</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lst</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        :param lst:</span>
+<span class="sd">        :param context:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+
+    <span class="c"># noinspection PyUnusedLocal</span>
+    <span class="k">def</span> <span class="nf">startNFASemRule</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lst</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        :param lst:</span>
+<span class="sd">        :param context:&quot;&quot;&quot;</span>
+        <span class="n">new</span> <span class="o">=</span> <span class="n">NFA</span><span class="p">()</span>
+        <span class="n">new</span><span class="o">.</span><span class="n">Sigma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">alphabet</span>
+        <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+            <span class="n">new</span><span class="o">.</span><span class="n">addState</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">initials</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">initials</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+            <span class="n">new</span><span class="o">.</span><span class="n">addInitial</span><span class="p">(</span><span class="n">new</span><span class="o">.</span><span class="n">stateIndex</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+        <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">finals</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">finals</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+            <span class="n">new</span><span class="o">.</span><span class="n">addFinal</span><span class="p">(</span><span class="n">new</span><span class="o">.</span><span class="n">stateIndex</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+        <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">transitions</span><span class="p">:</span>
+            <span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">x3</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transitions</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+            <span class="n">new</span><span class="o">.</span><span class="n">addTransition</span><span class="p">(</span><span class="n">new</span><span class="o">.</span><span class="n">stateIndex</span><span class="p">(</span><span class="n">x1</span><span class="p">),</span> <span class="n">x2</span><span class="p">,</span> <span class="n">new</span><span class="o">.</span><span class="n">stateIndex</span><span class="p">(</span><span class="n">x3</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">theList</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">initLocal</span><span class="p">()</span>
+
+    <span class="c"># noinspection PyUnusedLocal</span>
+    <span class="k">def</span> <span class="nf">startTRANSSemRule</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lst</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">            :param lst:</span>
+<span class="sd">            :param context:&quot;&quot;&quot;</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">TRtype</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">new</span> <span class="o">=</span> <span class="n">SFT</span><span class="p">()</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">TRtype</span> <span class="o">==</span> <span class="s">&quot;GFT&quot;</span><span class="p">:</span>
+                <span class="n">new</span> <span class="o">=</span> <span class="n">GFT</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span> <span class="k">raise</span> <span class="n">TRError</span>
+            <span class="n">new</span><span class="o">.</span><span class="n">Sigma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">alphabet</span>
+            <span class="n">new</span><span class="o">.</span><span class="n">Output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">alphabetOut</span>
+            <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">:</span>
+                <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+                <span class="n">new</span><span class="o">.</span><span class="n">addState</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+            <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">initials</span><span class="p">:</span>
+                <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">initials</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+                <span class="n">new</span><span class="o">.</span><span class="n">addInitial</span><span class="p">(</span><span class="n">new</span><span class="o">.</span><span class="n">stateIndex</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+            <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">finals</span><span class="p">:</span>
+                <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">finals</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+                <span class="n">new</span><span class="o">.</span><span class="n">addFinal</span><span class="p">(</span><span class="n">new</span><span class="o">.</span><span class="n">stateIndex</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+            <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">transitions</span><span class="p">:</span>
+                <span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">x3</span><span class="p">,</span> <span class="n">x4</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transitions</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+                <span class="n">new</span><span class="o">.</span><span class="n">addTransition</span><span class="p">(</span><span class="n">new</span><span class="o">.</span><span class="n">stateIndex</span><span class="p">(</span><span class="n">x1</span><span class="p">),</span> <span class="n">x2</span><span class="p">,</span> <span class="n">x3</span><span class="p">,</span> <span class="n">new</span><span class="o">.</span><span class="n">stateIndex</span><span class="p">(</span><span class="n">x4</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">theList</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">initLocal</span><span class="p">()</span>
+
+    <span class="c"># noinspection PyUnusedLocal</span>
+    <span class="k">def</span> <span class="nf">finalSemRule</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lst</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        :param lst:</span>
+<span class="sd">        :param context:&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">finals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lst</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">lst</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="c"># noinspection PyUnusedLocal</span>
+    <span class="k">def</span> <span class="nf">initialSemRule</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lst</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        :param lst:</span>
+<span class="sd">        :param context:&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">initials</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lst</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">lst</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="c"># noinspection PyUnusedLocal</span>
+    <span class="k">def</span> <span class="nf">firstTransitionSemRule</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lst</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        :param lst:</span>
+<span class="sd">        :param context:&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">initials</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lst</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">lst</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">lst</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transitions</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">lst</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">lst</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">lst</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span>
+
+    <span class="c"># noinspection PyUnusedLocal</span>
+    <span class="k">def</span> <span class="nf">firstTTransitionSemRule</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lst</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        :param lst:</span>
+<span class="sd">        :param context:&quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+
+    <span class="c"># noinspection PyUnusedLocal</span>
+    <span class="k">def</span> <span class="nf">firstTransitionTransSemRule</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lst</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        :param lst:</span>
+<span class="sd">        :param context:&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">initials</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lst</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">lst</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">lst</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">TRtype</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">and</span> <span class="p">(</span><span class="n">lst</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="n">Epsilon</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">lst</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">lst</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">!=</span> <span class="n">Epsilon</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">lst</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">TRtype</span> <span class="o">=</span> <span class="s">&quot;GFT&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transitions</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">lst</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">lst</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">lst</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">lst</span><span class="p">[</span><span class="mi">3</span><span class="p">]))</span>
+
+    <span class="c"># noinspection PyUnusedLocal</span>
+    <span class="k">def</span> <span class="nf">firstDeclareState</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lst</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        :param lst:</span>
+<span class="sd">        :param context:&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">lst</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">initials</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lst</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="c"># noinspection PyUnusedLocal</span>
+    <span class="k">def</span> <span class="nf">addAlphabet</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lst</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        :param lst:</span>
+<span class="sd">        :param context:&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">alphabet</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">lst</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="c"># noinspection PyUnusedLocal</span>
+    <span class="k">def</span> <span class="nf">addAlphabetOut</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lst</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        :param lst:</span>
+<span class="sd">        :param context:&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">alphabetOut</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">lst</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="c"># noinspection PyUnusedLocal</span>
+    <span class="k">def</span> <span class="nf">declareState</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lst</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        :param lst:</span>
+<span class="sd">        :param context:&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">lst</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="c"># noinspection PyUnusedLocal</span>
+    <span class="k">def</span> <span class="nf">firstTransitionESemRule</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lst</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        :param lst:</span>
+<span class="sd">        :param context:&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transitions</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">lst</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">Epsilon</span><span class="p">,</span> <span class="n">lst</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">initials</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lst</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">lst</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">lst</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+
+    <span class="c"># noinspection PyUnusedLocal</span>
+    <span class="k">def</span> <span class="nf">transitionSemRule</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lst</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        :param lst:</span>
+<span class="sd">        :param context:&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transitions</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">lst</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">lst</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">lst</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">lst</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">lst</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+
+    <span class="c"># noinspection PyUnusedLocal</span>
+    <span class="k">def</span> <span class="nf">transitionTransSemRule</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lst</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        :param lst:</span>
+<span class="sd">        :param context:&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">TRtype</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">and</span> <span class="p">(</span><span class="n">lst</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="n">Epsilon</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">lst</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">lst</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">!=</span> <span class="n">Epsilon</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">lst</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">TRtype</span> <span class="o">=</span> <span class="s">&quot;GFT&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transitions</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">lst</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">lst</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">lst</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">lst</span><span class="p">[</span><span class="mi">3</span><span class="p">]))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">lst</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">lst</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+
+    <span class="c"># noinspection PyUnusedLocal</span>
+    <span class="k">def</span> <span class="nf">transitionTSemRule</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lst</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        :param lst:</span>
+<span class="sd">        :param context:&quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+
+    <span class="c"># noinspection PyUnusedLocal</span>
+    <span class="k">def</span> <span class="nf">transitionESemRule</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lst</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        :param lst:</span>
+<span class="sd">        :param context:&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transitions</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">lst</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">Epsilon</span><span class="p">,</span> <span class="n">lst</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">lst</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">lst</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+
+    <span class="k">def</span> <span class="nf">result</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        :return:&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">theList</span>
+
+</div>
+<span class="k">def</span> <span class="nf">readOneFromFile</span><span class="p">(</span><span class="n">fileName</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Read the first of the FAdo objects from File</span>
+
+<span class="sd">    :param fileName: name of the file</span>
+<span class="sd">    :type fileName: str</span>
+<span class="sd">    :rtype: DFA|FA|STF&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">readFromFile</span><span class="p">(</span><span class="n">fileName</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="readFromFile"><a class="viewcode-back" href="../index.html#fio.readFromFile">[docs]</a><span class="k">def</span> <span class="nf">readFromFile</span><span class="p">(</span><span class="n">FileName</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Reads list of finite automata definition from a file.</span>
+
+<span class="sd">    :param FileName: file name</span>
+<span class="sd">    :type FileName: str</span>
+<span class="sd">    :rtype: list</span>
+
+<span class="sd">    The format of these files must be the as simple as possible:</span>
+
+<span class="sd">    .. hlist::</span>
+<span class="sd">       :columns: 1</span>
+
+<span class="sd">       * ``#`` begins a comment</span>
+<span class="sd">       * ``@DFA`` or ``@NFA`` begin a new automata (and determines its type) and must be followed by the list of the</span>
+<span class="sd">         final states separated by blanks</span>
+<span class="sd">       * fields are separated by a blank and transitions by a CR: ``state`` ``symbol`` ``new state``</span>
+<span class="sd">       * in case of a NFA declaration, the &quot;symbol&quot; @epsilon is interpreted as a epsilon-transition</span>
+<span class="sd">       * the source state of the first transition is the initial state</span>
+<span class="sd">       * in the case of a NFA, its declaration ``@NFA``  can, after the declaration of the final states,</span>
+<span class="sd">         have a ``*`` followed by the list of initial states</span>
+<span class="sd">       * both, NFA and DFA, may have a declaration of alphabet starting with a ``$`` followed by the symbols of the</span>
+<span class="sd">         alphabet</span>
+<span class="sd">       * a line with a sigle name, decrares a state</span>
+
+<span class="sd">    .. productionlist:: Fado Format</span>
+<span class="sd">       FAdo: FA | FA CR FAdo</span>
+<span class="sd">       FA: DFA | NFA | Transducer</span>
+<span class="sd">       DFA: &quot;@DFA&quot; LsStates Alphabet CR dTrans</span>
+<span class="sd">       NFA: &quot;@NFA&quot; LsStates Initials Alphabet CR nTrans</span>
+<span class="sd">       Transducer: &quot;@Transducer&quot; LsStates Initials Alphabet Output CR tTrans</span>
+<span class="sd">       Initials: &quot;*&quot; LsStates | \epsilon</span>
+<span class="sd">       Alphabet: &quot;$&quot; LsSymbols | \epsilon</span>
+<span class="sd">       Output: &quot;$&quot; LsSymbols | \epsilon</span>
+<span class="sd">       nSymbol: symbol | &quot;@epsilon&quot;</span>
+<span class="sd">       LsStates: stateid | stateid , LsStates</span>
+<span class="sd">       LsSymbols: symbol | symbol , LsSymbols</span>
+<span class="sd">       dTrans: stateid symbol stateid |</span>
+<span class="sd">        :| stateid symbol stateid CR dTrans</span>
+<span class="sd">       nTrans: stateid nSymbol stateid |</span>
+<span class="sd">        :| stateid nSymbol stateid CR nTrans</span>
+<span class="sd">       tTrans: stateid nSymbol nSymbol stateid |</span>
+<span class="sd">        :| stateid nSymbol nSymbol stateid CR nTrans</span>
+<span class="sd">    .. note::</span>
+<span class="sd">       If an error occur, either syntactic or because of a violation of the declared automata type,</span>
+<span class="sd">       an exception is raised</span>
+
+<span class="sd">    .. versionchanged:: 0.9.6</span>
+<span class="sd">    .. versionchanged:: 1.0&quot;&quot;&quot;</span>
+
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">ParserFAdo</span><span class="p">()</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">inputfile</span><span class="p">(</span><span class="n">FileName</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">parser</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>
+
+</div>
+<span class="k">def</span> <span class="nf">readOneFromString</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Reads one finite automata definition from a file.</span>
+
+<span class="sd">    .. seealso::</span>
+<span class="sd">        readFromFile for description of format</span>
+
+<span class="sd">    :param str s: the string</span>
+<span class="sd">    :rtype: DFA|NFA|SFT&quot;&quot;&quot;</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">ParserFAdo</span><span class="p">()</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">input</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">parser</span><span class="o">.</span><span class="n">result</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="saveToFile"><a class="viewcode-back" href="../index.html#fio.saveToFile">[docs]</a><span class="k">def</span> <span class="nf">saveToFile</span><span class="p">(</span><span class="n">FileName</span><span class="p">,</span> <span class="n">fa</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s">&quot;a&quot;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Saves a list finite automata definition to a file using the input format</span>
+
+<span class="sd">    .. versionchanged:: 0.9.5</span>
+<span class="sd">    .. versionchanged:: 0.9.6</span>
+<span class="sd">    .. versionchanged:: 0.9.7 New format with quotes and alphabet</span>
+
+<span class="sd">    :param FileName: file name</span>
+<span class="sd">    :type FileName: str</span>
+<span class="sd">    :param fa: the FA</span>
+<span class="sd">    :type fa: list of FA</span>
+<span class="sd">    :param mode: writing mode</span>
+<span class="sd">    :type mode: str &quot;&quot;&quot;</span>
+
+    <span class="c">#TODO: write the complete information into file according with the new format</span>
+    <span class="k">def</span> <span class="nf">_save_SFTransducer</span><span class="p">(</span><span class="n">tr</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Writes transducer to a file</span>
+
+<span class="sd">        :param tr: the transducer</span>
+<span class="sd">        :type tr: Transducer&quot;&quot;&quot;</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;@Transducer &quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">tr</span><span class="o">.</span><span class="n">Final</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;{0:&gt;s} &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">statePP</span><span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">States</span><span class="p">[</span><span class="n">s</span><span class="p">])))</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;* &quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">tr</span><span class="o">.</span><span class="n">Initial</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;{0:&gt;s} &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">statePP</span><span class="p">(</span><span class="n">fa</span><span class="o">.</span><span class="n">States</span><span class="p">[</span><span class="n">s</span><span class="p">])))</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">sin</span> <span class="ow">in</span> <span class="n">tr</span><span class="o">.</span><span class="n">delta</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">syin</span> <span class="ow">in</span> <span class="n">tr</span><span class="o">.</span><span class="n">delta</span><span class="p">[</span><span class="n">sin</span><span class="p">]:</span>
+                <span class="k">for</span> <span class="p">(</span><span class="n">syout</span><span class="p">,</span> <span class="n">sout</span><span class="p">)</span> <span class="ow">in</span> <span class="n">tr</span><span class="o">.</span><span class="n">delta</span><span class="p">[</span><span class="n">sin</span><span class="p">][</span><span class="n">syin</span><span class="p">]:</span>
+                    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;{0:&gt;s} {1:&gt;s} {2:&gt;s} {3:&gt;s}</span><span class="se">\n</span><span class="s">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">statePP</span><span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">States</span><span class="p">[</span><span class="n">sin</span><span class="p">]),</span> <span class="nb">str</span><span class="p">(</span><span class="n">syin</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">syout</span><span class="p">),</span>
+                                                                   <span class="n">statePP</span><span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">States</span><span class="p">[</span><span class="n">sout</span><span class="p">])))</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_saveFA</span><span class="p">(</span><span class="n">aut</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Writes one fa to a file</span>
+
+<span class="sd">        :param aut: the automaton</span>
+<span class="sd">        :type aut: FA or list&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">aut</span><span class="p">,</span> <span class="n">DFA</span><span class="p">):</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;@DFA &quot;</span><span class="p">)</span>
+            <span class="n">NFAp</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">aut</span><span class="p">,</span> <span class="n">NFA</span><span class="p">):</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;@NFA &quot;</span><span class="p">)</span>
+            <span class="n">NFAp</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">DFAerror</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">NFAp</span> <span class="ow">and</span> <span class="n">aut</span><span class="o">.</span><span class="n">Initial</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">foo</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="n">aut</span><span class="o">.</span><span class="n">Initial</span><span class="p">,</span> <span class="n">aut</span><span class="o">.</span><span class="n">Initial</span><span class="p">:</span> <span class="mi">0</span><span class="p">}</span>
+            <span class="n">aut</span><span class="o">.</span><span class="n">reorder</span><span class="p">(</span><span class="n">foo</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">sf</span> <span class="ow">in</span> <span class="n">aut</span><span class="o">.</span><span class="n">Final</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;{0:&gt;s} &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">statePP</span><span class="p">(</span><span class="n">aut</span><span class="o">.</span><span class="n">States</span><span class="p">[</span><span class="n">sf</span><span class="p">])))</span>
+        <span class="k">if</span> <span class="n">NFAp</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot; * &quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">sf</span> <span class="ow">in</span> <span class="n">aut</span><span class="o">.</span><span class="n">Initial</span><span class="p">:</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;{0:&gt;s} &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">statePP</span><span class="p">(</span><span class="n">aut</span><span class="o">.</span><span class="n">States</span><span class="p">[</span><span class="n">sf</span><span class="p">])))</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">aut</span><span class="o">.</span><span class="n">States</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">aut</span><span class="o">.</span><span class="n">delta</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">aut</span><span class="o">.</span><span class="n">delta</span><span class="p">[</span><span class="n">s</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">aut</span><span class="o">.</span><span class="n">delta</span><span class="p">[</span><span class="n">s</span><span class="p">][</span><span class="n">a</span><span class="p">],</span> <span class="nb">set</span><span class="p">):</span>
+                        <span class="k">for</span> <span class="n">s1</span> <span class="ow">in</span> <span class="n">aut</span><span class="o">.</span><span class="n">delta</span><span class="p">[</span><span class="n">s</span><span class="p">][</span><span class="n">a</span><span class="p">]:</span>
+                            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+                                <span class="s">&quot;{0:&gt;s} {1:&gt;s} {2:&gt;}</span><span class="se">\n</span><span class="s">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">statePP</span><span class="p">(</span><span class="n">aut</span><span class="o">.</span><span class="n">States</span><span class="p">[</span><span class="n">s</span><span class="p">]),</span> <span class="nb">str</span><span class="p">(</span><span class="n">a</span><span class="p">),</span> <span class="n">statePP</span><span class="p">(</span><span class="n">aut</span><span class="o">.</span><span class="n">States</span><span class="p">[</span><span class="n">s1</span><span class="p">])))</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;{0:&gt;s} {1:&gt;s} {2:&gt;s}</span><span class="se">\n</span><span class="s">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">statePP</span><span class="p">(</span><span class="n">aut</span><span class="o">.</span><span class="n">States</span><span class="p">[</span><span class="n">s</span><span class="p">]),</span> <span class="nb">str</span><span class="p">(</span><span class="n">a</span><span class="p">),</span>
+                                                                <span class="n">statePP</span><span class="p">(</span><span class="n">aut</span><span class="o">.</span><span class="n">States</span><span class="p">[</span><span class="n">aut</span><span class="o">.</span><span class="n">delta</span><span class="p">[</span><span class="n">s</span><span class="p">][</span><span class="n">a</span><span class="p">]])))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;{0:&gt;s} </span><span class="se">\n</span><span class="s">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">statePP</span><span class="p">(</span><span class="n">aut</span><span class="o">.</span><span class="n">States</span><span class="p">[</span><span class="n">s</span><span class="p">])))</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">FileName</span><span class="p">,</span> <span class="n">mode</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">DFAerror</span><span class="p">()</span>
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">fa</span><span class="p">)</span> <span class="o">==</span> <span class="nb">list</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">fa</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">Transducer</span><span class="p">):</span>
+                <span class="n">_save_SFTransducer</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">_saveFA</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">fa</span><span class="p">,</span> <span class="n">Transducer</span><span class="p">):</span>
+            <span class="n">_save_SFTransducer</span><span class="p">(</span><span class="n">fa</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">_saveFA</span><span class="p">(</span><span class="n">fa</span><span class="p">)</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+</div>
+<span class="k">def</span> <span class="nf">_exportToTeX</span><span class="p">(</span><span class="n">FileName</span><span class="p">,</span> <span class="n">fa</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Saves a finite automatom definition to a latex tabular. Saves a finite automata definition to a file using</span>
+<span class="sd">    the input format</span>
+
+<span class="sd">    .. versionchanged:: 0.9.4</span>
+
+<span class="sd">    :param FileName: file name</span>
+<span class="sd">    :type FileName: str</span>
+<span class="sd">    :param fa: the FA</span>
+<span class="sd">    :type fa: FA</span>
+<span class="sd">    :raises DFAerror: if a file error occurs&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">FileName</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">DFAerror</span><span class="p">()</span>
+        <span class="c">#initial is the first one</span>
+    <span class="k">if</span> <span class="n">fa</span><span class="o">.</span><span class="n">Initial</span><span class="p">:</span>
+        <span class="n">foo</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="n">fa</span><span class="o">.</span><span class="n">Initial</span><span class="p">,</span> <span class="n">fa</span><span class="o">.</span><span class="n">Initial</span><span class="p">:</span> <span class="mi">0</span><span class="p">}</span>
+        <span class="n">fa</span><span class="o">.</span><span class="n">reorder</span><span class="p">(</span><span class="n">foo</span><span class="p">)</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;$$</span><span class="se">\\</span><span class="s">begin{array}{r|&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">fa</span><span class="o">.</span><span class="n">Sigma</span><span class="p">)):</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;|c&quot;</span><span class="p">)</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;}</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">fa</span><span class="o">.</span><span class="n">Sigma</span><span class="p">:</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;&amp;{0:&gt;s}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">c</span><span class="p">)))</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot; </span><span class="se">\\\\</span><span class="s">\hline</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">fa</span><span class="o">.</span><span class="n">States</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">fa</span><span class="o">.</span><span class="n">delta</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">fa</span><span class="o">.</span><span class="n">Initial</span> <span class="o">==</span> <span class="n">s</span><span class="p">:</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\\</span><span class="s">rightarrow&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">fa</span><span class="o">.</span><span class="n">Final</span><span class="p">:</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\\</span><span class="s">star&quot;</span><span class="p">)</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;{0:&gt;s}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">s</span><span class="p">)))</span>
+            <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">fa</span><span class="o">.</span><span class="n">delta</span><span class="p">[</span><span class="n">s</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">fa</span><span class="o">.</span><span class="n">delta</span><span class="p">[</span><span class="n">s</span><span class="p">][</span><span class="n">a</span><span class="p">],</span> <span class="nb">set</span><span class="p">):</span>
+                    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;&amp;\{&quot;</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">s1</span> <span class="ow">in</span> <span class="n">fa</span><span class="o">.</span><span class="n">delta</span><span class="p">[</span><span class="n">s</span><span class="p">][</span><span class="n">a</span><span class="p">]:</span>
+                        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;{0:&gt;s} &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">s1</span><span class="p">)))</span>
+                    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;\}&quot;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">s1</span> <span class="o">=</span> <span class="n">fa</span><span class="o">.</span><span class="n">delta</span><span class="p">[</span><span class="n">s</span><span class="p">][</span><span class="n">a</span><span class="p">]</span>
+                    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;&amp;{0:&gt;s}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">s1</span><span class="p">)))</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\\\\\n</span><span class="s">&quot;</span><span class="p">)</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;\end{array}$$&quot;</span><span class="p">)</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">FAdo 1.2 documentation</a> &raquo;</li>
+          <li><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 1999-2014, Rogério Reis &amp; Nelma Moreira.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

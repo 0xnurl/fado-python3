@@ -1,0 +1,7 @@
+<map id="inheritance8687bef198" name="inheritance8687bef198">
+<area shape="rect" id="node1" href="#codes.CodeProperty" title=":var Sigma: the alphabet" alt="" coords="5,31,145,56"/>
+<area shape="rect" id="node4" href="#codes.IPTProp" title="Input Preserving Transducer Property" alt="" coords="200,5,307,31"/>
+<area shape="rect" id="node5" title="Abstract class for fixed properties" alt="" coords="193,55,313,80"/>
+<area shape="rect" id="node2" href="#codes.ErrCorrectProp" title="Error Correcting Property" alt="" coords="552,31,699,56"/>
+<area shape="rect" id="node3" href="#codes.ErrDetectProp" title="Error Detecting Property" alt="" coords="361,31,504,56"/>
+</map>

@@ -1,0 +1,274 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>A small tutorial for FAdo &mdash; FAdo 1.2 documentation</title>
+    
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="FAdo 1.2 documentation" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="index.html">FAdo 1.2 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/tutorial.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="a-small-tutorial-for-fado">
+<h1>A small tutorial for FAdo<a class="headerlink" href="#a-small-tutorial-for-fado" title="Permalink to this headline">¶</a></h1>
+<p>FAdo system is a set  tools for regular languages manipulation.</p>
+<p>Regular languages can be represented by regular expressions (regexp) or finite automata, among other formalisms. Finite automata may be deterministic (DFA) or non-deterministic (NFA). In FAdo these representations are implemented as Python classes. A full documentation of all classes and methods is here.</p>
+<p>To work with FAdo, after installation, import the following modules on a Python interpreter:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">FAdo.fa</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">FAdo.reex</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">FAdo.fio</span> <span class="kn">import</span> <span class="o">*</span>
+</pre></div>
+</div>
+<p>The module fa implements the classes for finite automata and the module reex the classes for regular expressions. The module fio implements methods for IO of automata and related models.</p>
+<p>General conventions</p>
+<p>Methods which name ends in P test if the object verifies a given property and return True or False.</p>
+<p>Finite Automata</p>
+<p>The top class for finite automata is the class FA,which has two main subclasses: OFA for one way finite automata and the class TFA for two-way finite automata.
+The class OFA implements the basic structure of a finite automaton shared by DFAs and NFAs. This class defines the following attributes:</p>
+<blockquote>
+<div><p>Sigma: the input alphabet (set)</p>
+<p>States: the list of states.  It is a list such that each state is referred by its index whenever it is used (transitions, Final, etc).</p>
+<p>Initial:the initial state (or a set of initial states for NFA).  It is an index or list of indexes.</p>
+<p>Final: the set of final states. It is a list of indexes.</p>
+</div></blockquote>
+<p>In general, one should not create instances (objects) of class OFA. The class DFA and NFA implement DFAs and NFAs, respectively.  The class GFA implements generalized NFAs that are used in the conversion between finite automata and regular expressions. All three classes inherit from class OFA.</p>
+<p>For each class there are special methods for add/delete/modify alphabet symbols, states and transitions.</p>
+<p>DFAs</p>
+<p>The following example shows how to build a DFA that accepts the words of {0,1}* that are multiples of 3.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">m3</span><span class="o">=</span> <span class="n">DFA</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">m3</span><span class="o">.</span><span class="n">setSigma</span><span class="p">([</span><span class="s">&#39;0&#39;</span><span class="p">,</span><span class="s">&#39;1&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">m3</span><span class="o">.</span><span class="n">addState</span><span class="p">(</span><span class="s">&#39;s1&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">m3</span><span class="o">.</span><span class="n">addState</span><span class="p">(</span><span class="s">&#39;s2&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">m3</span><span class="o">.</span><span class="n">addState</span><span class="p">(</span><span class="s">&#39;s3&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">m3</span><span class="o">.</span><span class="n">setInitial</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">m3</span><span class="o">.</span><span class="n">addFinal</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">m3</span><span class="o">.</span><span class="n">addTransition</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s">&#39;0&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">m3</span><span class="o">.</span><span class="n">addTransition</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s">&#39;1&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">m3</span><span class="o">.</span><span class="n">addTransition</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s">&#39;0&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">m3</span><span class="o">.</span><span class="n">addTransition</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s">&#39;1&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">m3</span><span class="o">.</span><span class="n">addTransition</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="s">&#39;0&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">m3</span><span class="o">.</span><span class="n">addTransition</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="s">&#39;1&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>It is now possible, for instance, to see the structure of the automaton or to test if a word is accepted by it.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">m3</span>
+<span class="go">DFA(([&#39;s1&#39;, &#39;s2&#39;, &#39;s3&#39;], [&#39;1&#39;, &#39;0&#39;], &#39;s1&#39;, [&#39;s1&#39;], &quot;[(&#39;s1&#39;, &#39;1&#39;, &#39;s2&#39;), (&#39;s1&#39;, &#39;0&#39;, &#39;s1&#39;), (&#39;s2&#39;, &#39;1&#39;, &#39;s1&#39;), (&#39;s2&#39;, &#39;0&#39;, &#39;s3&#39;), (&#39;s3&#39;, &#39;1&#39;, &#39;s3&#39;), (&#39;s3&#39;, &#39;0&#39;, &#39;s2&#39;)]&quot;))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">m3</span><span class="o">.</span><span class="n">evalWordP</span><span class="p">(</span><span class="s">&quot;011&quot;</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">m3</span><span class="o">.</span><span class="n">evalWordP</span><span class="p">(</span><span class="s">&quot;1011&quot;</span><span class="p">)</span>
+<span class="go">False</span>
+<span class="go">&gt;&gt;&gt;</span>
+</pre></div>
+</div>
+<p>If graphviz is installed it is also possible to display the diagram of an automaton
+as follows:</p>
+<p>&gt;&gt;&gt;m3.display()</p>
+<p>Instead of constructing the DFA directly we can load (and save) it in a simple text format. For the previous automaton the description will be:</p>
+<div class="line-block">
+<div class="line">&#64;DFA 0</div>
+<div class="line">0 1 1</div>
+<div class="line">0 0 0</div>
+<div class="line">1 1 0</div>
+<div class="line">1 0 2</div>
+<div class="line">2 1 2</div>
+<div class="line">2 0 1</div>
+</div>
+<p>Then, if this description is saved in file mul3.fa, we have</p>
+<div class="highlight-python"><div class="highlight"><pre>&gt;&gt;&gt; m3=readFromFile(“mul3.fa”)[0]
+</pre></div>
+</div>
+<p>As the set of states is represented by a Python list , the list method len can be used to determine the number of states of a FA:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">m3</span><span class="o">.</span><span class="n">States</span><span class="p">)</span>
+<span class="go">3</span>
+</pre></div>
+</div>
+<p>For the number of Transitions the countTransitions() method must be used</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">m3</span><span class="o">.</span><span class="n">countTransitions</span><span class="p">()</span>
+<span class="go">6</span>
+</pre></div>
+</div>
+<p>To minimize a DFA any of the minimization algorithms implemented can be used:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="nb">min</span><span class="o">=</span><span class="n">m3</span><span class="o">.</span><span class="n">minimalHopcroft</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>In this case, the DFA was already minimal so min has the same number of states as m3.</p>
+<p>Several (regularity preserving) operations of DFAs are implemented in FAdo:  boolean (union (| or __or__), intersection (&amp; or __and__) and complementation (~ or __invert__)),  concatenation (concat), reversal  (reversal) and star (star).</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">u</span> <span class="o">=</span> <span class="n">m3</span> <span class="o">|</span> <span class="o">~</span><span class="n">m3</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span>
+<span class="go">DFA(([(1, 1), (0, 0), (2, 2)], set([&#39;1&#39;, &#39;0&#39;]), 0,set([0, 1, 2]), {0: {&#39;1&#39;: 1, &#39;0&#39;: 0}, 1: {&#39;1&#39;: 0, &#39;0&#39;: 2}, 2:{&#39;1&#39;: 2, &#39;0&#39;: 1}}))</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">m</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">minimal</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">m</span>
+<span class="go">DFA(([&#39;(1, 1)&#39;], [&#39;1&#39;, &#39;0&#39;], &#39;(1, 1)&#39;, [&#39;(1, 1)&#39;], &quot;[(&#39;(1, 1)&#39;, &#39;1&#39;, &#39;(1, 1)&#39;), (&#39;(1, 1)&#39;, &#39;0&#39;, &#39;(1, 1)&#39;)]&quot;))</span>
+</pre></div>
+</div>
+<p>State names can be renamed in-place using:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">m</span><span class="o">.</span><span class="n">renameStates</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">m</span><span class="p">)))</span>
+</pre></div>
+</div>
+<p>DFA(([&#8216;0&#8217;], [&#8216;1&#8217;, &#8216;0&#8217;], &#8216;0&#8217;, [&#8216;0&#8217;], &#8220;[(0, &#8216;1&#8217;, 0), (0, &#8216;0&#8217;, 0)]&#8221;))</p>
+<p>Notice that m recognize all words over the alphabet {0.1}.</p>
+<blockquote>
+<div>It is possible to generate a word recognisable by an automata (witness)</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">u</span><span class="o">.</span><span class="n">witness</span><span class="p">()</span>
+<span class="go">&#39;@epsilon&#39;</span>
+</pre></div>
+</div>
+<p>In this case this allows to ensure that u recognizes the empty word.</p>
+<p>This method is also useful for obtain a witness for the difference of two DFAs (witnessDiff).</p>
+<p>To test if two DFAs  are equivalent the the operator == (equivalenceP) can be used.</p>
+<p>NFAs</p>
+<p>NFAs can be built and manipulated in a  similar way.  There is no distinction between NFAs with and without epsilon-transitions. But it is possible to test if a NFA has epsilon-transitions and convert between a NFA with epsilon-transitions to a (equivalent) NFA without them.</p>
+<p>Converting between NFAs and DFAs</p>
+<p>The method toDFA allows to convert a NFA to an equivalent DFA by the subset construction method. The method toNFA  migrates trivially a DFA to a NFA.</p>
+<p>Regular Expressions</p>
+<p>A regular expression can be a symbol of the alphabet, the empty set (&#64;epmtyset), the empty word (&#64;epsilon) or the concatenation or the union (+) or the Kleene star (*) of a regular expression. Examples of regular expressions are a+b, (a+ba)*, and (&#64;epsilon+ a)(<a class="reference external" href="mailto:ba+ab+&#37;&#52;&#48;emptyset">ba+ab+<span>&#64;</span>emptyset</a>).</p>
+<p>The class regexp is the base class for regular expressions and is used to represent an alphabet symbol.  The classes epsilon and emptyset are the subclasses used for the empty set and empty word, respectively. Complex regular expressions are concat,  disj, and star.</p>
+<p>As for DFAs (and NFAs) we can build directly a regular expressions as a Python class:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">r</span> <span class="o">=</span> <span class="n">star</span><span class="p">(</span><span class="n">disj</span><span class="p">(</span><span class="n">regexp</span><span class="p">(</span><span class="s">&quot;a&quot;</span><span class="p">),</span><span class="n">concat</span><span class="p">(</span><span class="n">regexp</span><span class="p">(</span><span class="s">&quot;b&quot;</span><span class="p">),</span><span class="n">regexp</span><span class="p">(</span><span class="s">&quot;a&quot;</span><span class="p">))))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">r</span>
+<span class="go">(a + (b a))*</span>
+</pre></div>
+</div>
+<p>But we can convert a string to a regexp class or subclass, using the method str2regexp.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">r</span> <span class="o">=</span> <span class="n">str2regexp</span><span class="p">(</span><span class="s">&quot;(a+ba)*&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">r</span>
+<span class="go">(a + (b a))*</span>
+</pre></div>
+</div>
+<p>For regular expressions there are several measures available: alphabetic size, (parse) tree size, string length, number of epsilons and star height. It is also possible to explicitly associate an alphabet to regular expression (even if some symbols do not appear in it) (setSigma)</p>
+<p>There are several algebraic properties that can be used to obtain equivalent regular expressions of a smaller size. The method reduced transforms a regular expression into one equivalent without some obvious unnecessary epsilons, emptysets or stars.</p>
+<p>Several methods that allows the manipulation of derivatives  (or partial derivatives) by a symbol or by a word are implemented. However, the class regexp does not deal with regular expressions module ACI properties (associativity, commutativity and idempotence of the union) (see class xre) , a so it is not possible to obtain all  word derivatives of a given regular expression. This is not the case for partial derivatives.</p>
+<p>To test if two regular expressions are equivalent the method compare can be used.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">r</span><span class="o">.</span><span class="n">compare</span><span class="p">(</span><span class="n">str2regexp</span><span class="p">(</span>\<span class="s">&quot;(a*(ba)*a*)*</span><span class="se">\&quot;</span><span class="s">))</span>
+<span class="go">True</span>
+<span class="go">&gt;&gt;&gt;</span>
+</pre></div>
+</div>
+<p>Converting Finite Automata to Regular Expressions</p>
+<p>For pedagogical purposes, it is implemented a recursive method that constructs a regular expression equivalent to a given DFA (regexp).</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">m3</span><span class="o">.</span><span class="n">regexp</span><span class="p">()</span>
+<span class="go">((0 + ((@epsilon + 0) (0* (@epsilon + 0)))) + ((1 +((@epsilon + 0) (0* 1))) ((1 (0* 1))* (1 + (1 (0*(@epsilon + 0))))))) + (((1 + ((@epsilon + 0) (0* 1)))((1 (0* 1))* 0)) ((1 + (0 ((1 (0* 1))* 0)))* (0 ((1(0* 1))* (1 + (1 (0* (@epsilon + 0))))))))</span>
+</pre></div>
+</div>
+<p>Methods based on state elimination techniques are usually more efficient, and produces much smaller regular expressions. We have implemented several heuristics for the elimination order.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">m3</span><span class="o">.</span><span class="n">reCG</span><span class="p">()</span>
+<span class="go">((0 + (1 1)) + (((1 0) (1 + (0 0))*) (0 1)))*</span>
+</pre></div>
+</div>
+<p>Converting Regular Expressions to Finite Automata</p>
+<p>Several methods to convert between regular expressions and NFAs are implemented.  With the Thompson construction a NFA with epsilon transitions is obtained (nfaThompson). Epsilon free NFAs can be obtained by the Glushkov method (Position automata) (nfaPosition,) the partial derivatives method (nfaPD) or by the follow method (nfaFollow). The two last methods usually  allows to obtain smaller NFAs.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span> <span class="n">r</span><span class="o">.</span><span class="n">nfaThompson</span><span class="p">()</span>
+<span class="go">NFA(([&#39;&#39;, &#39;&#39;, &#39;&#39;, &#39;&#39;, &#39;0&#39;, &#39;1&#39;, &#39;2&#39;, &#39;3&#39;, &#39;8&#39;, &#39;9&#39;], [&#39;a&#39;, &#39;b&#39;], [&#39;8&#39;], [&#39;9&#39;], &quot;[(&#39;&#39;, &#39;@epsilon&#39;, &#39;&#39;), (&#39;&#39;, &#39;@epsilon&#39;, 0), (&#39;&#39;, &#39;@epsilon&#39;, &#39;9&#39;), (&#39;&#39;, &#39;a&#39;, &#39;&#39;), (&#39;&#39;, &#39;@epsilon&#39;, &#39;&#39;), (0, &#39;b&#39;, 1), (1, &#39;@epsilon&#39;, 2), (2, &#39;a&#39;, 3), (3, &#39;@epsilon&#39;, &#39;&#39;), (&#39;8&#39;, &#39;@epsilon&#39;, &#39;&#39;), (&#39;8&#39;, &#39;@epsilon&#39;, &#39;9&#39;), (&#39;9&#39;, &#39;@epsilon&#39;, &#39;8&#39;)]&quot;))</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">r</span><span class="o">.</span><span class="n">nfaPosition</span><span class="p">()</span>
+<span class="go">NFA(([&#39;Initial&#39;, &quot;(&#39;a&#39;, 1)&quot;, &quot;(&#39;b&#39;, 2)&quot;, &quot;(&#39;a&#39;, 3)&quot;], [&#39;a&#39;, &#39;b&#39;], [&#39;Initial&#39;], [&#39;Initial&#39;, &quot;(&#39;a&#39;, 1)&quot;, &quot;(&#39;a&#39;, 3)&quot;], &#39;[(\&#39;Initial\&#39;, \&#39;a\&#39;, &quot;(\&#39;a\&#39;, 1)&quot;), (\&#39;Initial\&#39;, \&#39;b\&#39;, &quot;(\&#39;b\&#39;, 2)&quot;), (&quot;(\&#39;a\&#39;, 1)&quot;, \&#39;a\&#39;, &quot;(\&#39;a\&#39;, 1)&quot;), (&quot;(\&#39;a\&#39;, 1)&quot;, \&#39;b\&#39;, &quot;(\&#39;b\&#39;, 2)&quot;), (&quot;(\&#39;b\&#39;, 2)&quot;, \&#39;a\&#39;, &quot;(\&#39;a\&#39;, 3)&quot;), (&quot;(\&#39;a\&#39;, 3)&quot;, \&#39;a\&#39;, &quot;(\&#39;a\&#39;, 1)&quot;), (&quot;(\&#39;a\&#39;, 3)&quot;, \&#39;b\&#39;, &quot;(\&#39;b\&#39;, 2)&quot;)]&#39;))</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">r</span><span class="o">.</span><span class="n">nfaPD</span><span class="p">()</span>
+<span class="go">NFA(([&#39;(a + (b a))*&#39;, &#39;a (a + (b a))*&#39;], [&#39;a&#39;, &#39;b&#39;], [&#39;(a + (b a))*&#39;], [&#39;(a + (b a))*&#39;], &quot;[(star(disj(regexp(a),concat(regexp(b),regexp(a)))), &#39;a&#39;, star(disj(regexp(a),concat(regexp(b),regexp(a))))), (star(disj(regexp(a),concat(regexp(b),regexp(a)))), &#39;b&#39;, concat(regexp(a),star(disj(regexp(a),concat(regexp(b),regexp(a)))))), (concat(regexp(a),star(disj(regexp(a),concat(regexp(b),regexp(a))))), &#39;a&#39;, star(disj(regexp(a),concat(regexp(b),regexp(a)))))]&quot;))</span>
+</pre></div>
+</div>
+<p>General Example</p>
+<p>Considering the several methods described before it is possible to convert between the different equivalent representations of regular languages, as well to perform several regularity preserving operations.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">r</span><span class="o">.</span><span class="n">nfaPosition</span><span class="p">()</span><span class="o">.</span><span class="n">toDFA</span><span class="p">()</span><span class="o">.</span><span class="n">minimal</span><span class="p">(</span><span class="n">complete</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<span class="go">DFA(([&#39;0&#39;, &#39;2&#39;], [&#39;a&#39;, &#39;b&#39;], &#39;0&#39;, [&#39;0&#39;], &quot;[(&#39;0&#39;, &#39;a&#39;, &#39;0&#39;), (&#39;0&#39;, &#39;b&#39;, &#39;2&#39;), (&#39;2&#39;, &#39;a&#39;, &#39;0&#39;)]&quot;))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">m3</span> <span class="o">==</span> <span class="n">m3</span><span class="o">.</span><span class="n">reCG</span><span class="p">()</span><span class="o">.</span><span class="n">nfaPD</span><span class="p">()</span><span class="o">.</span><span class="n">toDFA</span><span class="p">()</span><span class="o">.</span><span class="n">minimal</span><span class="p">()</span>
+<span class="go">True</span>
+<span class="go">&gt;&gt;&gt;</span>
+</pre></div>
+</div>
+<p>More classes and modules</p>
+<p>Several other classes and modules are also available, including:</p>
+<p>class ICDFArnd (module rndfa.py): Random DFA generation</p>
+<p>class FL (module fl.py): special methods for finite languages</p>
+<p>class xre (module xre.py): extended regular expressions</p>
+<p>module comboperations.py:  implementation of several algorithms for several combined operations with DFAs and NFAs</p>
+<p>module grail.py: compatibility with GRAIL</p>
+<p>module transducers.py: several classes and methods for transducers</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="index.html">FAdo 1.2 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 1999-2014, Rogério Reis &amp; Nelma Moreira.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

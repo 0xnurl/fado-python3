@@ -1,0 +1,5 @@
+<map id="inheritancee7a01cbf1d" name="inheritancee7a01cbf1d">
+<area shape="rect" id="node1" href="#reex.epsilon" title="Class that represents the empty word." alt="" coords="336,5,428,31"/>
+<area shape="rect" id="node2" href="#reex.specialConstant" title="Base class for Epsilon and EmptySet" alt="" coords="144,5,288,31"/>
+<area shape="rect" id="node3" href="#reex.regexp" title="Base class for regular expressions." alt="" coords="5,5,96,31"/>
+</map>

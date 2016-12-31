@@ -1,0 +1,438 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>verso &mdash; FAdo 1.2 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="FAdo 1.2 documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">FAdo 1.2 documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for verso</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;**FAdo interface language and slave manager**</span>
+
+<span class="sd">.. *Authors:* Rogério Reis &amp; Nelma Moreira</span>
+
+<span class="sd">.. This is part of U{FAdo project &lt;http://www.ncc.up.pt/FAdo&gt;}.</span>
+
+<span class="sd">.. *Copyright:* 1999-2011 Rogério Reis &amp; Nelma Moreira {rvr,nam}@dcc.fc.up.pt</span>
+
+<span class="sd">.. This program is free software; you can redistribute it and/or modify</span>
+<span class="sd">   it under the terms of the GNU General Public License as published by</span>
+<span class="sd">   the Free Software Foundation; either version 2 of the License, or</span>
+<span class="sd">   (at your option) any later version.</span>
+
+<span class="sd">   This program is distributed in the hope that it will be useful,</span>
+<span class="sd">   but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="sd">   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="sd">   GNU General Public License for more details.</span>
+
+<span class="sd">   You should have received a copy of the GNU General Public License</span>
+<span class="sd">   along with this program; if not, write to the Free Software</span>
+<span class="sd">   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.</span>
+
+<span class="sd">Applications that want to use FAdo as a slave, just to process it objects should use</span>
+<span class="sd">this language to interface with it.</span>
+
+<span class="sd">.. note::</span>
+<span class="sd">  Every object that is supposed to be available through this language, should be defined</span>
+<span class="sd">  in objects and should have a method ``vDescription``, returning the following list</span>
+
+<span class="sd">  0. A pair of descriptions, short and long, of the object</span>
+
+<span class="sd">  1. A list of pairs</span>
+
+<span class="sd">  1.0. A name of a format *(names should be unique)*</span>
+
+<span class="sd">  1.1. The function that returns the string representation of the object in that format</span>
+
+<span class="sd">  2. A tuple for each method provided</span>
+
+<span class="sd">  2.0. Name of the command in verso</span>
+
+<span class="sd">  2.1. A pair, short/long, descriptions of the method</span>
+
+<span class="sd">  2.2. Number (n) of arguments of the method</span>
+
+<span class="sd">  2.2+i. The type of the ith argument</span>
+
+<span class="sd">  2.1+n. The return type ``None`` if does not return (in place transformation)</span>
+
+<span class="sd">  2.2+n. The function implementing the method having a list as arguments</span>
+
+<span class="sd">  3. and so on...</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">sys</span>
+
+<span class="kn">from</span> <span class="nn">fa</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">common</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">yappy_parser</span> <span class="kn">import</span> <span class="n">grules</span>
+<span class="kn">from</span> <span class="nn">yappy_parser</span> <span class="kn">import</span> <span class="n">Yappy</span>
+
+<span class="c">#from yappy.parser import LR1table</span>
+<span class="kn">from</span> <span class="nn">fio</span> <span class="kn">import</span> <span class="n">ParserFAdo</span>
+
+
+<div class="viewcode-block" id="ParserVerso"><a class="viewcode-back" href="../index.html#verso.ParserVerso">[docs]</a><span class="k">class</span> <span class="nc">ParserVerso</span><span class="p">(</span><span class="n">Yappy</span><span class="p">):</span>
+  <span class="sd">&quot;&quot;&quot;A parser for FAdo standard automata descriptions</span>
+
+<span class="sd">  :var vi: virtual interaction session that knows how to communicate with the client</span>
+<span class="sd">  :var objects: the list of objects known</span>
+<span class="sd">  :var info: dictionary object -&gt; (longdescription, [list of commands])</span>
+<span class="sd">  :var fun: dictionary command -&gt; (arity, return type, function)</span>
+<span class="sd">  :var format: dictionary formatName -&gt; function</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vsession</span><span class="p">,</span> <span class="n">objects</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">no_table</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="s">&quot;.tableVerso&quot;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    :param no_table: ignore the table if it exists</span>
+<span class="sd">    :param table: name of the table</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">vi</span> <span class="o">=</span> <span class="n">vsession</span>
+    <span class="k">if</span> <span class="n">objects</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">objects</span> <span class="o">=</span> <span class="p">[</span><span class="n">DFA</span><span class="p">,</span><span class="n">NFA</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">objects</span> <span class="o">=</span> <span class="n">objects</span>
+    <span class="n">tokenizer</span> <span class="o">=</span> <span class="p">[</span>
+      <span class="p">(</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">+&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="s">&quot;EOL&quot;</span><span class="p">,</span> <span class="s">&quot;EOL&quot;</span><span class="p">)),</span>
+      <span class="p">(</span><span class="s">&quot;#.*&quot;</span><span class="p">,</span> <span class="s">&quot;&quot;</span><span class="p">),</span>
+      <span class="p">(</span><span class="s">&quot;\s+&quot;</span><span class="p">,</span> <span class="s">&quot;&quot;</span><span class="p">),</span>
+      <span class="p">(</span><span class="s">&quot;@epsilon&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="s">&quot;ids&quot;</span><span class="p">,</span> <span class="s">&quot;@epsilon&quot;</span><span class="p">)),</span>
+      <span class="p">(</span><span class="s">&quot;info&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="s">&quot;info&quot;</span><span class="p">,</span><span class="s">&quot;info&quot;</span><span class="p">)),</span>
+      <span class="p">(</span><span class="s">&quot;new&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="s">&quot;new&quot;</span><span class="p">,</span><span class="s">&quot;new&quot;</span><span class="p">)),</span>
+      <span class="p">(</span><span class="s">&quot;from&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="s">&quot;from&quot;</span><span class="p">,</span> <span class="s">&quot;from&quot;</span><span class="p">)),</span>
+      <span class="p">(</span><span class="s">&quot;format&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="s">&quot;format&quot;</span><span class="p">,</span><span class="s">&quot;format&quot;</span><span class="p">)),</span>
+      <span class="p">(</span><span class="s">&quot;show&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="s">&quot;show&quot;</span><span class="p">,</span><span class="s">&quot;show&quot;</span><span class="p">)),</span>
+      <span class="p">(</span><span class="s">&quot;as&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="s">&quot;as&quot;</span><span class="p">,</span><span class="s">&quot;as&quot;</span><span class="p">)),</span>
+      <span class="p">(</span><span class="s">&quot;pop&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="s">&quot;pop&quot;</span><span class="p">,</span><span class="s">&quot;pop&quot;</span><span class="p">)),</span>
+      <span class="p">(</span><span class="s">&quot;swap&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="s">&quot;swap&quot;</span><span class="p">,</span> <span class="s">&quot;swap&quot;</span><span class="p">)),</span>
+      <span class="p">(</span><span class="s">&quot;reset&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="s">&quot;reset&quot;</span><span class="p">,</span><span class="s">&quot;reset&quot;</span><span class="p">)),</span>
+      <span class="p">(</span><span class="s">&quot;halt&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="s">&quot;halt&quot;</span><span class="p">,</span> <span class="s">&quot;halt&quot;</span><span class="p">)),</span>
+      <span class="p">(</span><span class="s">&quot;def&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="s">&quot;def&quot;</span><span class="p">,</span><span class="s">&quot;def&quot;</span><span class="p">)),</span>
+      <span class="p">(</span><span class="s">&quot;@DFA&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="s">&quot;str&quot;</span><span class="p">,</span><span class="n">x</span><span class="p">)),</span>
+      <span class="p">(</span><span class="s">&quot;@NFA&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="s">&quot;str&quot;</span><span class="p">,</span><span class="n">x</span><span class="p">)),</span>
+      <span class="p">(</span><span class="s">&quot;\$&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="s">&quot;DOLLAR&quot;</span><span class="p">,</span> <span class="s">&quot;DOLLAR&quot;</span><span class="p">)),</span>
+      <span class="p">(</span><span class="s">&quot;\*&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="s">&quot;SEP&quot;</span><span class="p">,</span> <span class="s">&quot;SEP&quot;</span><span class="p">)),</span>
+      <span class="p">(</span><span class="s">&quot;[A-Za-z&amp;]+[0-9]*&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="s">&quot;str&quot;</span><span class="p">,</span> <span class="n">x</span><span class="p">)),</span>
+      <span class="p">(</span><span class="s">&quot;[0-9]+&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="s">&quot;int&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">)))</span>
+    <span class="p">]</span>
+    <span class="n">rules</span> <span class="o">=</span> <span class="p">[</span>
+      <span class="p">(</span><span class="s">&quot;s -&gt; l EOL&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">defaultSemRule</span><span class="p">),</span>
+      <span class="p">(</span><span class="s">&quot;l -&gt; info&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">infoShow</span><span class="p">),</span>
+      <span class="p">(</span><span class="s">&quot;l -&gt; info command&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">infoShowCommand</span><span class="p">),</span>
+      <span class="p">(</span><span class="s">&quot;l -&gt; new obid&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">newObjRule</span><span class="p">),</span>
+      <span class="p">(</span><span class="s">&quot;l -&gt; new obid def idl&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">newObjCRep</span><span class="p">),</span>
+      <span class="c"># TODO: implement reading from file</span>
+      <span class="p">(</span><span class="s">&quot;l -&gt; new obid from filename format id&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">defaultSemRule</span><span class="p">),</span>
+      <span class="p">(</span><span class="s">&quot;l -&gt; show as str&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">showObjectAsStr</span><span class="p">),</span>
+      <span class="p">(</span><span class="s">&quot;l -&gt; show as format&quot;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">showObject</span><span class="p">),</span>
+      <span class="p">(</span><span class="s">&quot;l -&gt; pop&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">popRule</span><span class="p">),</span>
+      <span class="p">(</span><span class="s">&quot;l -&gt; swap int int&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">swapRule</span><span class="p">),</span>
+      <span class="p">(</span><span class="s">&quot;l -&gt; swap&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">swapRuleDflt</span><span class="p">),</span>
+      <span class="p">(</span><span class="s">&quot;l -&gt; reset&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">resetRule</span><span class="p">),</span>
+      <span class="p">(</span><span class="s">&quot;l -&gt; command&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">doCommand</span><span class="p">),</span>
+      <span class="p">(</span><span class="s">&quot;l -&gt; command idl&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">doCommand</span><span class="p">),</span>
+      <span class="p">(</span><span class="s">&quot;l -&gt; halt&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">haltRule</span><span class="p">),</span>
+      <span class="p">(</span><span class="s">&quot;idl -&gt; id idl&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">listRule</span><span class="p">),</span>
+      <span class="p">(</span><span class="s">&quot;idl -&gt; id&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">listRule</span><span class="p">),</span>
+      <span class="p">(</span><span class="s">&quot;id -&gt; str&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">defaultSemRule</span><span class="p">),</span>
+      <span class="p">(</span><span class="s">&quot;id -&gt; int&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">defaultSemRule</span><span class="p">),</span>
+      <span class="p">(</span><span class="s">&quot;id -&gt; ids&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">defaultSemRule</span><span class="p">),</span>
+      <span class="p">(</span><span class="s">&quot;id -&gt; SEP&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">defaultSemRule</span><span class="p">),</span>
+      <span class="p">(</span><span class="s">&quot;id -&gt; DOLLAR&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">defaultSemRule</span><span class="p">)</span>
+    <span class="p">]</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">info</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="c"># class -&gt; (infoLong,[list of (format,description)],[list of commands])</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">fun</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="c"># command -&gt; (arity, return type, lambda code)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">show</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="c"># format -&gt; lambda code</span>
+    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">objects</span><span class="p">:</span>
+      <span class="n">x</span> <span class="o">=</span> <span class="n">c</span><span class="p">()</span><span class="o">.</span><span class="n">vDescription</span><span class="p">()</span>
+      <span class="n">tokenizer</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="o">-</span><span class="mi">3</span><span class="p">,(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">],(</span><span class="k">lambda</span> <span class="n">z</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">y</span><span class="p">:</span> <span class="p">(</span><span class="s">&quot;obid&quot;</span><span class="p">,</span><span class="n">z</span><span class="p">))(</span><span class="n">c</span><span class="p">)))</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">],[],[])</span>
+      <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]][</span><span class="mi">1</span><span class="p">]</span>
+      <span class="k">for</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="n">rfun</span><span class="p">,</span><span class="n">desc</span><span class="p">)</span> <span class="ow">in</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+        <span class="n">tokenizer</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="o">-</span><span class="mi">3</span><span class="p">,(</span><span class="n">name</span><span class="p">,(</span><span class="k">lambda</span> <span class="n">z</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">y</span><span class="p">:</span> <span class="p">(</span><span class="s">&quot;format&quot;</span><span class="p">,</span><span class="n">z</span><span class="p">))(</span><span class="n">name</span><span class="p">)))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">show</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">rfun</span>
+        <span class="n">d</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">name</span><span class="p">,</span><span class="n">desc</span><span class="p">))</span>
+      <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]][</span><span class="mi">2</span><span class="p">]</span>
+      <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">x</span><span class="p">[</span><span class="mi">2</span><span class="p">:]:</span>
+        <span class="n">d</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">f</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">f</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+        <span class="n">num</span> <span class="o">=</span> <span class="n">f</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fun</span><span class="p">[</span><span class="n">f</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span>  <span class="p">(</span><span class="n">num</span><span class="p">,</span><span class="n">f</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span><span class="n">f</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span><span class="n">f</span><span class="p">[</span><span class="mi">3</span><span class="p">:</span><span class="mi">4</span><span class="o">+</span><span class="n">num</span><span class="p">],</span><span class="n">f</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">],</span><span class="n">f</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">tokenizer</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">3</span><span class="p">,(</span><span class="n">f</span><span class="p">[</span><span class="mi">0</span><span class="p">],(</span><span class="k">lambda</span> <span class="n">z</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">y</span><span class="p">:</span> <span class="p">(</span><span class="s">&quot;command&quot;</span><span class="p">,</span><span class="n">z</span><span class="p">))(</span><span class="n">f</span><span class="p">[</span><span class="mi">0</span><span class="p">])))</span>
+    <span class="n">foo</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="p">[</span><span class="mi">3</span><span class="p">:</span><span class="o">-</span><span class="mi">3</span><span class="p">]</span>
+    <span class="n">foo</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+    <span class="n">foo</span><span class="o">.</span><span class="n">reverse</span><span class="p">()</span>
+    <span class="n">tokenizer</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span> <span class="o">+</span> <span class="n">foo</span> <span class="o">+</span> <span class="n">tokenizer</span><span class="p">[</span><span class="o">-</span><span class="mi">3</span><span class="p">:]</span>
+    <span class="n">grammar</span> <span class="o">=</span> <span class="n">grules</span><span class="p">(</span><span class="n">rules</span><span class="p">)</span>
+    <span class="n">Yappy</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tokenizer</span><span class="p">,</span> <span class="n">grammar</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="n">no_table</span><span class="p">)</span>
+
+  <span class="k">def</span> <span class="nf">defaultSemRule</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lst</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Default dummy rule&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">lst</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+  <span class="k">def</span> <span class="nf">newObjCRep</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">lst</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="n">foo</span> <span class="o">=</span> <span class="s">&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">lst</span><span class="p">[</span><span class="mi">3</span><span class="p">]:</span>
+      <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="s">&quot;&quot;</span><span class="p">):</span>
+        <span class="n">foo</span> <span class="o">+=</span> <span class="n">s</span> <span class="o">+</span> <span class="s">&quot; &quot;</span>
+      <span class="k">else</span><span class="p">:</span>
+        <span class="n">foo</span> <span class="o">+=</span> <span class="s">&quot;</span><span class="si">%d</span><span class="s">&quot;</span><span class="o">%</span><span class="n">s</span> <span class="o">+</span> <span class="s">&quot; &quot;</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">ParserFAdo</span><span class="p">()</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">input</span><span class="p">(</span><span class="n">foo</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&quot;&amp;&quot;</span><span class="p">,</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">))</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">result</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">lst</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+      <span class="k">raise</span> <span class="n">VersoError</span><span class="p">(</span><span class="s">&quot;Object type mismatch&quot;</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">vi</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">vi</span><span class="o">.</span><span class="n">out</span><span class="p">()</span>
+
+  <span class="k">def</span> <span class="nf">listRule</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">lst</span><span class="p">,</span><span class="n">context</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">lst</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+      <span class="k">return</span> <span class="n">lst</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">lst</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>  <span class="o">!=</span> <span class="nb">type</span><span class="p">([]):</span>
+      <span class="k">return</span> <span class="n">lst</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="k">return</span> <span class="p">[</span><span class="n">lst</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">+</span><span class="n">lst</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+  <span class="k">def</span> <span class="nf">showObjectAsStr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">lst</span><span class="p">,</span><span class="n">context</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Show top of the stack&quot;&quot;&quot;</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">vi</span><span class="o">.</span><span class="n">out</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vi</span><span class="o">.</span><span class="n">stack</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">dump</span><span class="p">()</span><span class="o">.</span><span class="n">__str__</span><span class="p">())</span>
+
+  <span class="k">def</span> <span class="nf">resetRule</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">lst</span><span class="p">,</span><span class="n">context</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Reset interaction rule&quot;&quot;&quot;</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">vi</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">vi</span><span class="o">.</span><span class="n">out</span><span class="p">()</span>
+
+  <span class="k">def</span> <span class="nf">popRule</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">lst</span><span class="p">,</span><span class="n">context</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;pop rule&quot;&quot;&quot;</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">vi</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">vi</span><span class="o">.</span><span class="n">out</span><span class="p">()</span>
+
+  <span class="k">def</span> <span class="nf">haltRule</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">lst</span><span class="p">,</span><span class="n">context</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;halt of the process&quot;&quot;&quot;</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+  <span class="k">def</span> <span class="nf">swapRule</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">lst</span><span class="p">,</span><span class="n">context</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Swaps two items in stack&quot;&quot;&quot;</span>
+    <span class="n">x</span><span class="p">,</span><span class="n">y</span> <span class="o">=</span> <span class="n">lst</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">lst</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">l</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vi</span><span class="o">.</span><span class="n">stack</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">y</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">x</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">x</span> <span class="o">&gt;</span> <span class="n">l</span> <span class="ow">or</span> <span class="n">y</span> <span class="o">&gt;</span> <span class="n">l</span><span class="p">:</span>
+      <span class="k">raise</span> <span class="n">VersoError</span><span class="p">(</span><span class="s">&quot;Indexes out of range&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">vi</span><span class="o">.</span><span class="n">stack</span><span class="p">[</span><span class="o">-</span><span class="n">x</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">vi</span><span class="o">.</span><span class="n">stack</span><span class="p">[</span><span class="o">-</span><span class="n">y</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">vi</span><span class="o">.</span><span class="n">stack</span><span class="p">[</span><span class="o">-</span><span class="n">y</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">vi</span><span class="o">.</span><span class="n">stack</span><span class="p">[</span><span class="o">-</span><span class="n">x</span><span class="p">]</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">vi</span><span class="o">.</span><span class="n">out</span><span class="p">()</span>
+
+  <span class="k">def</span> <span class="nf">swapRuleDflt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">lst</span><span class="p">,</span><span class="n">context</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Default swap on the top of stack&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vi</span><span class="o">.</span><span class="n">stack</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+      <span class="k">raise</span> <span class="n">VersoError</span><span class="p">(</span><span class="s">&quot;Stack too short&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">vi</span><span class="o">.</span><span class="n">stack</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">vi</span><span class="o">.</span><span class="n">stack</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">vi</span><span class="o">.</span><span class="n">stack</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">vi</span><span class="o">.</span><span class="n">stack</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">vi</span><span class="o">.</span><span class="n">out</span><span class="p">()</span>
+
+  <span class="k">def</span> <span class="nf">infoShow</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">lst</span><span class="p">,</span><span class="n">context</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Show general info on Verso&quot;&quot;&quot;</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="s">&quot;[&quot;</span>
+    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+      <span class="n">s</span> <span class="o">+=</span> <span class="s">&quot;(&#39;&quot;</span><span class="o">+</span> <span class="n">c</span> <span class="o">+</span> <span class="s">&quot;&#39;,[&quot;</span>
+      <span class="k">for</span> <span class="n">name</span><span class="p">,</span><span class="n">desc</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="n">c</span><span class="p">][</span><span class="mi">1</span><span class="p">]:</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="s">&quot;(&#39;&quot;</span> <span class="o">+</span> <span class="n">name</span> <span class="o">+</span> <span class="s">&quot;&#39;,&#39;&quot;</span> <span class="o">+</span> <span class="n">desc</span> <span class="o">+</span> <span class="s">&quot;&#39;),&quot;</span>
+      <span class="n">s</span> <span class="o">=</span> <span class="n">s</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span>  <span class="s">&quot;],[&quot;</span>
+      <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="n">c</span><span class="p">][</span><span class="mi">2</span><span class="p">]:</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="p">(</span><span class="s">&quot;&#39;&quot;</span> <span class="o">+</span> <span class="n">f</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s">&quot;&#39;&quot;</span> <span class="o">+</span> <span class="s">&quot;,&quot;</span><span class="p">)</span>
+      <span class="n">s</span> <span class="o">=</span> <span class="n">s</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="s">&quot;]),&quot;</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="n">s</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">s</span> <span class="o">+=</span> <span class="s">&quot;]&quot;</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">vi</span><span class="o">.</span><span class="n">out</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+
+  <span class="k">def</span> <span class="nf">infoShowCommand</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">lst</span><span class="p">,</span><span class="n">context</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Show information about a command&quot;&quot;&quot;</span>
+    <span class="n">cmd</span> <span class="o">=</span> <span class="n">lst</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="s">&quot;(&#39;&quot;</span> <span class="o">+</span> <span class="n">cmd</span> <span class="o">+</span> <span class="s">&quot;&#39;, (&#39;&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">fun</span><span class="p">[</span><span class="n">cmd</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="s">&quot;&#39;, &#39;&quot;</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">fun</span><span class="p">[</span><span class="n">cmd</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span><span class="o">+</span><span class="s">&quot;&#39;), &quot;</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">fun</span><span class="p">[</span><span class="n">cmd</span><span class="p">][</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">__str__</span><span class="p">()</span> <span class="o">+</span> <span class="s">&quot;)&quot;</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">vi</span><span class="o">.</span><span class="n">out</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+
+  <span class="k">def</span> <span class="nf">emptySemRule</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lst</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Empty rule&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">[]</span>
+
+  <span class="k">def</span> <span class="nf">newObjRule</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">lst</span><span class="p">,</span><span class="n">context</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;New object rule&quot;&quot;&quot;</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">vi</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">lst</span><span class="p">[</span><span class="mi">1</span><span class="p">]())</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">vi</span><span class="o">.</span><span class="n">out</span><span class="p">()</span>
+
+  <span class="k">def</span> <span class="nf">showObject</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">lst</span><span class="p">,</span><span class="n">context</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Show as format - implementation&quot;&quot;&quot;</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">vi</span><span class="o">.</span><span class="n">out</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">show</span><span class="p">[</span><span class="n">lst</span><span class="p">[</span><span class="mi">2</span><span class="p">]](</span><span class="bp">self</span><span class="o">.</span><span class="n">vi</span><span class="o">.</span><span class="n">stack</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
+
+  <span class="k">def</span> <span class="nf">doCommand</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lst</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Command execution&quot;&quot;&quot;</span>
+    <span class="n">ob</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">vi</span><span class="o">.</span><span class="n">stack</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">argtl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fun</span><span class="p">[</span><span class="n">lst</span><span class="p">[</span><span class="mi">0</span><span class="p">]][</span><span class="o">-</span><span class="mi">3</span><span class="p">]</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">lst</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="nb">type</span><span class="p">(</span><span class="n">lst</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">==</span> <span class="nb">type</span><span class="p">([]):</span>
+      <span class="n">ll</span> <span class="o">=</span> <span class="n">lst</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="n">ll</span> <span class="o">=</span> <span class="n">lst</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">argtl</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">3</span> <span class="ow">and</span> <span class="n">argtl</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s">&quot;int&quot;</span><span class="p">,</span><span class="s">&quot;str&quot;</span><span class="p">]:</span>
+      <span class="n">ob1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">vi</span><span class="o">.</span><span class="n">stack</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+      <span class="n">r</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fun</span><span class="p">[</span><span class="n">lst</span><span class="p">[</span><span class="mi">0</span><span class="p">]][</span><span class="o">-</span><span class="mi">1</span><span class="p">](</span><span class="n">ob</span><span class="p">,</span><span class="n">ob1</span><span class="p">,</span><span class="o">*</span><span class="n">ll</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="n">r</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fun</span><span class="p">[</span><span class="n">lst</span><span class="p">[</span><span class="mi">0</span><span class="p">]][</span><span class="o">-</span><span class="mi">1</span><span class="p">](</span><span class="n">ob</span><span class="p">,</span><span class="o">*</span><span class="n">ll</span><span class="p">)</span>
+    <span class="n">rtype</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fun</span><span class="p">[</span><span class="n">lst</span><span class="p">[</span><span class="mi">0</span><span class="p">]][</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">rtype</span> <span class="ow">in</span> <span class="p">[</span><span class="s">&quot;int&quot;</span><span class="p">,</span><span class="s">&quot;Bool&quot;</span><span class="p">]:</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">vi</span><span class="o">.</span><span class="n">out</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">__str__</span><span class="p">())</span>
+    <span class="k">elif</span> <span class="n">rtype</span> <span class="o">==</span> <span class="s">&quot;str&quot;</span><span class="p">:</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">vi</span><span class="o">.</span><span class="n">out</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">rtype</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">vi</span><span class="o">.</span><span class="n">out</span><span class="p">(</span><span class="s">&quot;&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">vi</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">vi</span><span class="o">.</span><span class="n">out</span><span class="p">()</span>
+</div>
+<span class="k">class</span> <span class="nc">interaction</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+  <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">inName</span><span class="p">,</span><span class="n">outName</span><span class="p">):</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">inName</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">outName</span> <span class="o">=</span> <span class="n">inName</span><span class="p">,</span> <span class="n">outName</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">stack</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">DEBUG</span><span class="p">:</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">reopen</span><span class="p">()</span>
+
+  <span class="k">def</span> <span class="nf">reopen</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">DEBUG</span><span class="p">:</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">inCh</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">inName</span><span class="p">,</span><span class="s">&quot;r&quot;</span><span class="p">)</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">outCh</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">outName</span><span class="p">,</span><span class="s">&quot;w&quot;</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+
+  <span class="k">def</span> <span class="nf">out</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">output</span><span class="o">=</span><span class="s">&quot;&quot;</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">DEBUG</span><span class="p">:</span>
+      <span class="k">print</span> <span class="n">output</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">outCh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">outCh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">outCh</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+
+  <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">stack</span> <span class="o">=</span> <span class="p">[]</span>
+
+  <span class="k">def</span> <span class="nf">push</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">v</span><span class="p">):</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+
+  <span class="k">def</span> <span class="nf">pop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+
+<span class="n">DEBUG</span> <span class="o">=</span><span class="bp">False</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+  <span class="k">if</span> <span class="n">DEBUG</span> <span class="ow">is</span> <span class="bp">True</span><span class="p">:</span>
+    <span class="n">vi</span> <span class="o">=</span> <span class="n">interaction</span><span class="p">(</span><span class="s">&quot;xx1&quot;</span><span class="p">,</span><span class="s">&quot;xx2&quot;</span><span class="p">)</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">ParserVerso</span><span class="p">(</span><span class="n">vi</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">input</span><span class="p">(</span><span class="s">&quot;new DFA def @DFA s0 &amp; s0 t0 s1 &amp; </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">input</span><span class="p">(</span><span class="s">&quot;new DFA def @DFA 0 &amp; 0 a 0 &amp; 0 b 1 &amp; 1 a 0 &amp; 1 b 0 &amp; </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">input</span><span class="p">(</span><span class="s">&quot;new DFA def @DFA 0 &amp; 0 a 0 &amp; 0 b 1 &amp; 1 a 0 &amp; 1 b 0 &amp; </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">input</span><span class="p">(</span><span class="s">&quot;show as DFAFAdo </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">input</span><span class="p">(</span><span class="s">&quot;show as DFAdot </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">input</span><span class="p">(</span><span class="s">&quot;DFA-conjunction </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">input</span><span class="p">(</span><span class="s">&quot;show as DFAdot </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">input</span><span class="p">(</span><span class="s">&quot;show as DFAFAdo </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
+<span class="c">#    parser.input(&quot;info\n&quot;)</span>
+<span class="c">#    parser.input(&quot;DFA-add-state a\n&quot;)</span>
+<span class="c">#    parser.input(&quot;info DFA-setInitial\n&quot;)</span>
+<span class="c">#    parser.input(&quot;DFA-add-final 0\n&quot;)</span>
+<span class="c">#    parser.input(&quot;DFA-add-final 0\n&quot;)</span>
+<span class="c">#    parser.input(&quot;DFA-add-transition 0 a 0\n&quot;)</span>
+<span class="c">#    parser.input(&quot;DFA-add-state b\n&quot;)</span>
+<span class="c">#    parser.input(&quot;DFA-add-transition 0 b 1\n&quot;)</span>
+<span class="c">#    parser.input(&quot;DFA-add-transition 1 b 1\n&quot;)</span>
+<span class="c">#    parser.input(&quot;DFA-add-transition 1 a 0\n&quot;)</span>
+<span class="c">#    parser.input(&quot;DFA-dump\n&quot;)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">input</span><span class="p">(</span><span class="s">&quot;info</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
+<span class="c">#    parser.input(&quot;show as DFAFAdo\n&quot;)</span>
+  <span class="k">else</span><span class="p">:</span>
+    <span class="n">vi</span> <span class="o">=</span> <span class="n">interaction</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">ParserVerso</span><span class="p">(</span><span class="n">vi</span><span class="p">)</span>
+    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+      <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">vi</span><span class="o">.</span><span class="n">inCh</span><span class="p">:</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">input</span><span class="p">(</span><span class="n">l</span><span class="p">)</span>
+      <span class="n">vi</span><span class="o">.</span><span class="n">reopen</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">FAdo 1.2 documentation</a> &raquo;</li>
+          <li><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 1999-2014, Rogério Reis &amp; Nelma Moreira.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

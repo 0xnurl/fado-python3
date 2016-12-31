@@ -1,0 +1,7 @@
+<map id="inheritancedca1fc6baa" name="inheritancedca1fc6baa">
+<area shape="rect" id="node1" href="#codes.CodeProperty" title=":var Sigma: the alphabet" alt="" coords="5,29,145,55"/>
+<area shape="rect" id="node2" title="Abstract class for fixed properties" alt="" coords="348,5,468,31"/>
+<area shape="rect" id="node4" href="#codes.IPTProp" title="Input Preserving Transducer Property" alt="" coords="193,55,300,80"/>
+<area shape="rect" id="node5" href="#codes.PrefixProp" title="Prefix Property" alt="" coords="516,31,637,56"/>
+<area shape="rect" id="node3" href="#codes.IATProp" title="Input Altering Trnaducer Property" alt="" coords="355,55,461,80"/>
+</map>

@@ -1,0 +1,4 @@
+<map id="inheritance79c874b7ba" name="inheritance79c874b7ba">
+<area shape="rect" id="node1" href="#reex.regexp" title="Base class for regular expressions." alt="" coords="5,5,96,31"/>
+<area shape="rect" id="node2" href="#reex.star" title="Class for iteration operation (aka Kleene star, or Kleene closure) on regular expressions." alt="" coords="144,5,217,31"/>
+</map>

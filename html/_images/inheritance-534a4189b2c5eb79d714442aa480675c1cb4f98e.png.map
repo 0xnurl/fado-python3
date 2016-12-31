@@ -1,0 +1,5 @@
+<map id="inheritance8c374f0fd3" name="inheritance8c374f0fd3">
+<area shape="rect" id="node1" href="#reex.concat" title="Class for catenation operation on regular expressions." alt="" coords="304,5,395,31"/>
+<area shape="rect" id="node2" href="#reex.connective" title="Base class for concatenation, and disjunction operations." alt="" coords="144,5,256,31"/>
+<area shape="rect" id="node3" href="#reex.regexp" title="Base class for regular expressions." alt="" coords="5,5,96,31"/>
+</map>

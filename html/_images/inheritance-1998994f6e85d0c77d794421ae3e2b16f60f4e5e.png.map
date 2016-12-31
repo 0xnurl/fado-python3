@@ -1,0 +1,6 @@
+<map id="inheritance88ce569e1e" name="inheritance88ce569e1e">
+<area shape="rect" id="node1" title="Any FAdo object that is drawable" alt="" coords="5,5,135,31"/>
+<area shape="rect" id="node2" href="#fa.FA" title="Base class for Finite Automata." alt="" coords="183,5,255,31"/>
+<area shape="rect" id="node4" href="#fa.OFA" title="Base class for one&#45;way automata" alt="" coords="303,5,375,31"/>
+<area shape="rect" id="node3" href="#fa.GFA" title="Class for Generalized Finite Automata: NFA with a unique initial state and transitions are labeled with regexp." alt="" coords="423,5,495,31"/>
+</map>

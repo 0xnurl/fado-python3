@@ -1,0 +1,8 @@
+<map id="inheritancedca1fc6baa" name="inheritancedca1fc6baa">
+<area shape="rect" id="node1" href="#codes.CodeProperty" title=".. seealso:: K. Dudzinski and S. Konstantinidis: Formal descriptions of code properties: decidability, complexity," alt="" coords="5,29,141,53"/>
+<area shape="rect" id="node2" title="Abstract class for fixed properties" alt="" coords="335,5,451,29"/>
+<area shape="rect" id="node4" href="#codes.IPTProp" title="Input Preserving Transducer Property" alt="" coords="186,53,290,77"/>
+<area shape="rect" id="node5" href="#codes.PrefixProp" title="Prefix Property" alt="" coords="646,29,763,53"/>
+<area shape="rect" id="node3" href="#codes.IATProp" title="Input Altering Transducer Property" alt="" coords="341,53,445,77"/>
+<area shape="rect" id="node6" href="#codes.TrajProp" title="Class of trajectoty properties" alt="" coords="496,53,601,77"/>
+</map>

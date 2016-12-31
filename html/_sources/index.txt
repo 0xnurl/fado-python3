@@ -1,0 +1,541 @@
+.. FAdo documentation master file, created by
+   sphinx-quickstart on Wed Jul 20 10:07:20 2011.
+   You can adapt this file completely to your liking, but it should at least
+   contain the root `toctree` directive.
+
+Welcome to FAdo's documentation
+================================
+
+.. toctree::
+   :maxdepth: 2
+
+**FAdo: Tools for Language Models Manipulation**
+
+*Authors:* Rogério Reis & Nelma Moreira
+
+The support of transducers and all its operations, is a
+collaborativejoint work with *Stavros Konstantinidis* (St. Mary's University, Halifax, NS, Canada) (http://cs.smu.ca/~stavros/).
+
+
+Contributions by
+
+.. hlist::
+
+  * Marco Almeida
+  * Ivone Amorim
+  * Rafaela Bastos
+  * Hugo Gouveia
+  * Rizó Isrof
+  * Eva Maia
+  * Casey Meijer
+  * Davide Nabais
+  * Meng Yang
+  * Joshua Young
+
+
+*Page of the project:*   http://fado.dcc.fc.up.pt.
+
+*Version:* |release|
+
+*Copyright:* 1999-2014 Rogério Reis & Nelma Moreira {rvr,nam}@dcc.fc.up.pt
+
+*Faculdade de Ciências da Universidade do Porto*
+
+*Centro de Matemática da Universidade do Porto*
+
+**Licence:**
+
+This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with this program; if not, write to the Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+
+.. include:: ../README.rst
+
+
+================================
+Module: Finite Automata (``fa``)
+================================
+
+.. automodule:: fa
+   :no-members:
+
+---------------------------------------------
+Class FA (abstract class for Finite Automata)
+---------------------------------------------
+
+.. autoclass:: FA
+
+-----------------------------------
+Class SemiDFA (Semi-Automata class)
+-----------------------------------
+
+.. autoclass:: SemiDFA
+
+-----------------------------------------
+Class OFA (one-way finite automata class)
+-----------------------------------------
+
+.. autoclass:: OFA
+
+-----------------------------------------
+Class DFA (Deterministic Finite Automata)
+-----------------------------------------
+
+.. autoclass:: DFA
+
+--------------------------------------------
+Class NFA (Nondeterministic Finite Automata)
+--------------------------------------------
+
+.. autoclass:: NFA
+
+----------------------------------------------------------------------
+Class NFAr (Nondeterministic Finite Automata w/ reverse transition f.)
+----------------------------------------------------------------------
+
+.. autoclass:: NFAr
+
+---------------------------------------
+Class GFA (Generalized Finite Automata)
+---------------------------------------
+
+.. autoclass:: GFA
+
+--------------------------------------
+Class SSemiGroup (Syntactic SemiGroup)
+--------------------------------------
+
+.. autoclass:: SSemiGroup
+
+----------------------------------
+Class EnumL (Language Enumeration)
+----------------------------------
+
+.. autoclass:: EnumL
+
+---------
+Functions
+---------
+
+.. autofunction:: saveToString
+.. autofunction:: stringToDFA
+
+=======================================
+Module: Common Definitions ("common")
+=======================================
+
+.. automodule:: common
+   :no-members:
+
+----------	 
+Class Word
+----------
+
+.. autoclass:: Word
+   :no-members:
+	 
+=================================
+Module: FAdo IO Functions ("fio")
+=================================
+
+.. automodule:: fio
+   :no-members:
+
+-------------------------------------------------
+Class ParserFAdo (Yappy parser for FAdo FA files)
+-------------------------------------------------
+
+.. autoclass:: ParserFAdo
+   :no-members:
+
+---------
+Functions
+---------
+
+.. autofunction:: readFromFile
+.. autofunction:: saveToFile
+
+======================================
+Module: Regular Expressions (``reex``)
+======================================
+
+.. automodule:: reex
+   :no-members:
+
+---------------------------------
+Class regexp (regular expression)
+---------------------------------
+
+.. autoclass:: regexp
+
+---------------------
+Class specialConstant
+---------------------
+
+.. autoclass:: specialConstant
+
+-------------
+Class epsilon
+-------------
+
+.. autoclass:: epsilon
+
+--------------
+Class emptyset
+--------------
+
+.. autoclass:: emptyset
+
+----------------
+Class connective
+----------------
+
+.. autoclass:: connective
+
+----------
+Class star
+----------
+
+.. autoclass:: star
+
+------------
+Class concat
+------------
+
+.. autoclass:: concat
+
+----------
+Class disj
+----------
+
+.. autoclass:: disj
+
+--------------
+Class position
+--------------
+
+.. autoclass:: position
+
+--------------
+Class ParseReg
+--------------
+
+.. autoclass:: ParseReg
+
+---------
+Functions
+---------
+
+.. autofunction:: str2regexp
+.. autofunction:: rpn2regexp
+
+==============================================
+Module: Extended Regular Expressions (``xre``)
+==============================================
+
+.. automodule:: xre
+   :no-members:
+
+---------------------------------------
+Class xre (extended regular expression)
+---------------------------------------
+
+.. autoclass:: xre
+
+---------
+Functions
+---------
+
+.. autofunction:: to_x
+
+=====================================
+Module: Transducers (``transducers``)
+=====================================
+
+.. automodule:: transducers
+   :no-members:
+
+----------------
+Class Transducer
+---------------- 
+
+.. autoclass:: Transducer
+
+-------------------------------------
+Class SFT (Standard Form Transducers)
+-------------------------------------
+
+.. autoclass:: SFT
+
+---------
+Functions
+---------
+
+=================================
+Module: Finite Languages (``fl``)
+=================================
+
+.. automodule:: fl
+   :no-members:
+
+--------------------------
+Class FL (Finite Language)
+--------------------------
+
+.. autoclass:: FL
+
+------------------------------------------------
+Class DCFA (Deterministic Cover Finite Automata)
+------------------------------------------------
+
+.. autoclass:: DCFA
+
+-----------------------------------
+Class AFA (Acyclic Finite Automata)
+-----------------------------------
+
+.. autoclass:: AFA
+
+--------------------------------------------------
+Class ADFA (Acyclic Deterministic Finite Automata)
+--------------------------------------------------
+
+.. autoclass:: ADFA
+
+------------------------------------------------------
+Class ANFA (Acyclic Non-deterministic Finite Automata)
+------------------------------------------------------
+
+.. autoclass:: ANFA
+
+-------------------------------------	       
+Class RndWGen (Random Word Generator)
+-------------------------------------
+
+.. autoclass:: RndWGen
+	       
+---------
+Functions
+---------
+
+.. autofunction:: sigmaInitialSegment
+.. autofunction:: genRndTrieBalanced
+.. autofunction:: genRndTrieUnbalanced
+.. autofunction:: genRandomTrie
+.. autofunction:: genRndTriePrefix
+.. autofunction:: DFAtoADFA
+.. autofunction:: stringToADFA
+
+
+================================================
+Module: graphs (graph creation and manipulation)
+================================================
+
+.. automodule:: graphs
+    :no-members:
+
+.. autoclass:: Graph
+
+.. autoclass:: DiGraph
+
+.. autoclass:: DiGraphVm
+
+====================================================
+Module: Context Free Grammars Manipulation (``cfg``)
+====================================================
+
+.. automodule:: cfg
+   :no-members:
+
+--------------------------------------
+Class CFGrammar (Context Free Grammar)
+--------------------------------------
+
+.. autoclass:: CFGrammar
+
+---------
+Class CNF
+---------
+
+.. autoclass:: CNF
+
+------------------
+Class cfgGenerator
+------------------
+
+.. autoclass:: cfgGenerator
+
+--------------------------------------------
+Class reStringRGenerator (Reg Exp Generator)
+--------------------------------------------
+
+.. autoclass:: reStringRGenerator
+
+---------
+Functions
+---------
+
+.. autofunction:: gRules
+.. autofunction:: smallAlphabet
+
+========================================
+Module: Random DFA Generator (``rndfa``)
+========================================
+
+.. automodule:: rndfa
+   :no-members:
+
+-------------------------------------
+Class ICDFArgen (Generator container)
+-------------------------------------
+
+.. autoclass:: ICDFArgen
+
+------------------------------------------------
+Class ICDFArnd (Complete ICDFA random generator)
+------------------------------------------------
+
+.. autoclass:: ICDFArnd
+
+---------------------------------------------------
+Class ICDFArndIncomple (Incomplete ICDFA generator)
+---------------------------------------------------
+
+.. autoclass:: ICDFArndIncomplete
+
+=============================================
+Module: Combo Operations (``comboperations``)
+=============================================
+
+.. automodule:: comboperations
+   :no-members:
+
+.. autofunction:: starConcat
+.. autofunction:: concatWStar
+.. autofunction:: starWConcat
+.. autofunction:: starDisj
+.. autofunction:: starInter0
+.. autofunction:: starInter
+.. autofunction:: disjWStar
+.. autofunction:: interWStar
+
+=========================
+Module: Codes (``codes``)
+=========================
+
+.. automodule:: codes
+   :no-members:
+
+------------------
+Class CodeProperty
+------------------
+
+.. autoclass:: CodeProperty
+    :no-members:
+
+--------------
+Class TrajProp
+--------------
+
+.. autoclass:: TrajProp
+
+-------------
+Class IPTProp
+-------------
+
+.. autoclass:: IPTProp
+
+-------------
+Class IATProp
+-------------
+
+.. autoclass:: IATProp
+
+----------------
+Class PrefixProp
+----------------
+
+.. autoclass:: PrefixProp
+
+-------------------
+Class ErrDetectProp
+-------------------
+
+.. autoclass:: ErrDetectProp
+
+--------------------
+Class ErrCorrectProp
+--------------------
+
+.. autoclass:: ErrCorrectProp
+
+---------
+Functions
+---------
+
+.. autofunction:: buildTrajPropS
+.. autofunction:: buildIATPropF
+.. autofunction:: buildIPTPropF
+.. autofunction:: buildIATPropS
+.. autofunction:: buildIPTPropS
+.. autofunction:: buildErrorDetectPropF
+.. autofunction:: buildErrorCorrectPropF
+.. autofunction:: buildErrorDetectPropS
+.. autofunction:: buildErrorCorrectPropS
+.. autofunction:: buildPrefixProperty
+.. autofunction:: buildTrajPropS
+.. autofunction:: editDistanceW
+.. autofunction:: exponentialDensityP
+.. autofunction:: createInputAlteringSIDTrans
+
+=======================================
+Module: Grail Compatibility (``grail``)
+=======================================
+
+.. automodule:: grail
+   :no-members:
+
+-----------------
+Class ParserGrail
+-----------------
+
+.. autoclass:: ParserGrail
+  :no-members:
+
+-----------
+Class Grail
+-----------
+
+.. autoclass:: Grail
+
+---------
+Functions
+---------
+
+.. autofunction:: exportToGrail
+.. autofunction:: FAToGrail
+.. autofunction:: importFromGrailFile
+.. autofunction:: FAFromGrail
+
+==================================
+Module: Verso Language (``verso``)
+==================================
+
+.. automodule:: verso
+  :no-members:
+
+.. autoclass:: ParserVerso
+  :no-members:
+
+.. include:: tutorial.rst
+
+==================
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
+

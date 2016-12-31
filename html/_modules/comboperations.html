@@ -1,0 +1,665 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>comboperations &mdash; FAdo 1.2 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="FAdo 1.2 documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">FAdo 1.2 documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for comboperations</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;**Several combined operations for DFAs**</span>
+
+<span class="sd">Deterministic and non-deterministic automata manipulation, conversion and evaluation.</span>
+
+<span class="sd">*Authors:* Rogério Reis &amp; Nelma Moreira</span>
+
+<span class="sd">*This is part of FAdo project*   http://fado.dcc.fc.up.pt</span>
+
+<span class="sd">*Version:* 0.9.5</span>
+
+<span class="sd">.. versionadded: 0.9.4</span>
+
+<span class="sd">*Copyright:* 1999-2012 Rogério Reis &amp; Nelma Moreira {rvr,nam}@dcc.fc.up.pt</span>
+
+
+<span class="sd">.. This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public</span>
+<span class="sd">   License as published by the Free Software Foundation; either version 2 of the License,</span>
+<span class="sd">   or (at your option) any later version.</span>
+
+<span class="sd">   This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied</span>
+<span class="sd">    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more</span>
+<span class="sd">    details.</span>
+
+<span class="sd">   You should have received a copy of the GNU General Public License along with this program; if not,</span>
+<span class="sd">   write to the Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">fa</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">common</span> <span class="kn">import</span> <span class="o">*</span>
+
+
+<div class="viewcode-block" id="starConcat"><a class="viewcode-back" href="../index.html#comboperations.starConcat">[docs]</a><span class="k">def</span> <span class="nf">starConcat</span><span class="p">(</span><span class="n">fa1</span><span class="p">,</span> <span class="n">fa2</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Star of concatenation of two languages: (L1.L2)*</span>
+
+<span class="sd">    :param fa1: first automaton</span>
+<span class="sd">    :param fa2: second automaton</span>
+<span class="sd">    :param strict: should the alphabets be necessary equal?</span>
+<span class="sd">    :type strict: Boolean</span>
+<span class="sd">    :type fa1: DFA</span>
+<span class="sd">    :type fa2: DFA</span>
+<span class="sd">    :rtype: DFA</span>
+
+<span class="sd">    .. seealso::</span>
+<span class="sd">       Yuan Gao, Kai Salomaa, and Sheng Yu. &#39;The state complexity of two combined operations: Star of catenation and</span>
+<span class="sd">       star of reversal&#39;. Fundamenta Informaticae, 83:75–89, Jan 2008.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">strict</span> <span class="ow">and</span> <span class="n">fa1</span><span class="o">.</span><span class="n">Sigma</span> <span class="o">!=</span> <span class="n">fa2</span><span class="o">.</span><span class="n">Sigma</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">DFAdifferentSigma</span>
+    <span class="n">NSigma</span> <span class="o">=</span> <span class="n">fa1</span><span class="o">.</span><span class="n">Sigma</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="n">fa2</span><span class="o">.</span><span class="n">Sigma</span><span class="p">)</span>
+    <span class="n">d1</span><span class="p">,</span> <span class="n">d2</span> <span class="o">=</span> <span class="n">fa1</span><span class="o">.</span><span class="n">dup</span><span class="p">(),</span> <span class="n">fa2</span><span class="o">.</span><span class="n">dup</span><span class="p">()</span>
+    <span class="n">d1</span><span class="o">.</span><span class="n">setSigma</span><span class="p">(</span><span class="n">NSigma</span><span class="p">)</span>
+    <span class="n">d2</span><span class="o">.</span><span class="n">setSigma</span><span class="p">(</span><span class="n">NSigma</span><span class="p">)</span>
+    <span class="n">d1</span><span class="o">.</span><span class="n">complete</span><span class="p">()</span>
+    <span class="n">d2</span><span class="o">.</span><span class="n">complete</span><span class="p">()</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">d1</span><span class="o">.</span><span class="n">States</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">d2</span><span class="o">.</span><span class="n">States</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">d2</span><span class="o">.</span><span class="n">finalP</span><span class="p">(</span><span class="n">d2</span><span class="o">.</span><span class="n">Initial</span><span class="p">):</span>
+            <span class="n">new</span> <span class="o">=</span> <span class="n">d1</span><span class="o">.</span><span class="n">addState</span><span class="p">()</span>
+            <span class="n">iold</span> <span class="o">=</span> <span class="n">d1</span><span class="o">.</span><span class="n">Initial</span>
+            <span class="n">d1</span><span class="o">.</span><span class="n">setInitial</span><span class="p">(</span><span class="n">new</span><span class="p">)</span>
+            <span class="n">d1</span><span class="o">.</span><span class="n">addFinal</span><span class="p">(</span><span class="n">new</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">sym</span> <span class="ow">in</span> <span class="n">d1</span><span class="o">.</span><span class="n">Sigma</span><span class="p">:</span>
+                <span class="n">d1</span><span class="o">.</span><span class="n">addTransition</span><span class="p">(</span><span class="n">new</span><span class="p">,</span> <span class="n">sym</span><span class="p">,</span> <span class="n">d1</span><span class="o">.</span><span class="n">delta</span><span class="p">[</span><span class="n">iold</span><span class="p">][</span><span class="n">sym</span><span class="p">])</span>
+                <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">d1</span><span class="o">.</span><span class="n">Final</span><span class="p">:</span>
+                    <span class="n">d1</span><span class="o">.</span><span class="n">delta</span><span class="p">[</span><span class="n">s</span><span class="p">][</span><span class="n">sym</span><span class="p">]</span> <span class="o">=</span> <span class="n">s</span>
+            <span class="k">return</span> <span class="n">d1</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="n">DFA</span><span class="p">()</span>
+        <span class="n">c</span><span class="o">.</span><span class="n">setSigma</span><span class="p">(</span><span class="n">d1</span><span class="o">.</span><span class="n">Sigma</span><span class="p">)</span>
+        <span class="n">s0</span><span class="p">,</span> <span class="n">s1</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">addState</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">c</span><span class="o">.</span><span class="n">addState</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">c</span><span class="o">.</span><span class="n">setInitial</span><span class="p">(</span><span class="n">s0</span><span class="p">)</span>
+        <span class="n">c</span><span class="o">.</span><span class="n">addFinal</span><span class="p">(</span><span class="n">s0</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">sym</span> <span class="ow">in</span> <span class="n">c</span><span class="o">.</span><span class="n">Sigma</span><span class="p">:</span>
+            <span class="n">c</span><span class="o">.</span><span class="n">addTransition</span><span class="p">(</span><span class="n">s0</span><span class="p">,</span> <span class="n">sym</span><span class="p">,</span> <span class="n">s1</span><span class="p">)</span>
+            <span class="n">c</span><span class="o">.</span><span class="n">addTransition</span><span class="p">(</span><span class="n">s1</span><span class="p">,</span> <span class="n">sym</span><span class="p">,</span> <span class="n">s1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">c</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">d2</span><span class="o">.</span><span class="n">States</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">d1</span><span class="o">.</span><span class="n">States</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">d1</span><span class="o">.</span><span class="n">finalP</span><span class="p">(</span><span class="n">d1</span><span class="o">.</span><span class="n">Initial</span><span class="p">):</span>
+            <span class="n">c</span> <span class="o">=</span> <span class="n">NFA</span><span class="p">()</span>
+            <span class="n">c</span><span class="o">.</span><span class="n">setSigma</span><span class="p">(</span><span class="n">d2</span><span class="o">.</span><span class="n">Sigma</span><span class="p">)</span>
+            <span class="n">c</span><span class="o">.</span><span class="n">States</span> <span class="o">=</span> <span class="n">d2</span><span class="o">.</span><span class="n">States</span><span class="p">[:]</span>
+            <span class="n">p1</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">addState</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">p2</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">addState</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">c</span><span class="o">.</span><span class="n">addInitial</span><span class="p">(</span><span class="n">p1</span><span class="p">)</span>
+            <span class="n">c</span><span class="o">.</span><span class="n">setFinal</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">d2</span><span class="o">.</span><span class="n">Final</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">sym</span> <span class="ow">in</span> <span class="n">c</span><span class="o">.</span><span class="n">Sigma</span><span class="p">:</span>
+                <span class="n">c</span><span class="o">.</span><span class="n">addTransition</span><span class="p">(</span><span class="n">p1</span><span class="p">,</span> <span class="n">sym</span><span class="p">,</span> <span class="n">d2</span><span class="o">.</span><span class="n">delta</span><span class="p">[</span><span class="n">d2</span><span class="o">.</span><span class="n">Initial</span><span class="p">][</span><span class="n">sym</span><span class="p">])</span>
+                <span class="n">c</span><span class="o">.</span><span class="n">addTransition</span><span class="p">(</span><span class="n">p1</span><span class="p">,</span> <span class="n">sym</span><span class="p">,</span> <span class="n">p2</span><span class="p">)</span>
+                <span class="n">c</span><span class="o">.</span><span class="n">addTransition</span><span class="p">(</span><span class="n">p2</span><span class="p">,</span> <span class="n">sym</span><span class="p">,</span> <span class="n">d2</span><span class="o">.</span><span class="n">delta</span><span class="p">[</span><span class="n">d2</span><span class="o">.</span><span class="n">Initial</span><span class="p">][</span><span class="n">sym</span><span class="p">])</span>
+                <span class="n">c</span><span class="o">.</span><span class="n">addTransition</span><span class="p">(</span><span class="n">p2</span><span class="p">,</span> <span class="n">sym</span><span class="p">,</span> <span class="n">p2</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">d2</span><span class="o">.</span><span class="n">States</span><span class="p">:</span>
+                    <span class="n">c</span><span class="o">.</span><span class="n">addTransition</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">sym</span><span class="p">,</span> <span class="n">d2</span><span class="o">.</span><span class="n">delta</span><span class="p">[</span><span class="n">s</span><span class="p">][</span><span class="n">sym</span><span class="p">])</span>
+            <span class="k">return</span> <span class="n">c</span><span class="o">.</span><span class="n">toDFA</span><span class="p">()</span>
+            <span class="c"># Epsilon automaton</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="n">DFA</span><span class="p">()</span>
+        <span class="n">c</span><span class="o">.</span><span class="n">setSigma</span><span class="p">(</span><span class="n">d1</span><span class="o">.</span><span class="n">Sigma</span><span class="p">)</span>
+        <span class="n">s0</span><span class="p">,</span> <span class="n">s1</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">addState</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">c</span><span class="o">.</span><span class="n">addState</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">c</span><span class="o">.</span><span class="n">setInitial</span><span class="p">(</span><span class="n">s0</span><span class="p">)</span>
+        <span class="n">c</span><span class="o">.</span><span class="n">addFinal</span><span class="p">(</span><span class="n">s0</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">sym</span> <span class="ow">in</span> <span class="n">c</span><span class="o">.</span><span class="n">Sigma</span><span class="p">:</span>
+            <span class="n">c</span><span class="o">.</span><span class="n">addTransition</span><span class="p">(</span><span class="n">s0</span><span class="p">,</span> <span class="n">sym</span><span class="p">,</span> <span class="n">s1</span><span class="p">)</span>
+            <span class="n">c</span><span class="o">.</span><span class="n">addTransition</span><span class="p">(</span><span class="n">s1</span><span class="p">,</span> <span class="n">sym</span><span class="p">,</span> <span class="n">s1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">c</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">DFA</span><span class="p">()</span>
+    <span class="n">c</span><span class="o">.</span><span class="n">setSigma</span><span class="p">(</span><span class="n">d1</span><span class="o">.</span><span class="n">Sigma</span><span class="p">)</span>
+    <span class="n">lStates</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">addState</span><span class="p">(</span><span class="s">&quot;initial&quot;</span><span class="p">)</span>
+    <span class="n">c</span><span class="o">.</span><span class="n">setInitial</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+    <span class="n">c</span><span class="o">.</span><span class="n">addFinal</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+    <span class="n">lStates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">sym</span> <span class="ow">in</span> <span class="n">c</span><span class="o">.</span><span class="n">Sigma</span><span class="p">:</span>
+        <span class="n">s1</span> <span class="o">=</span> <span class="p">{</span><span class="n">d1</span><span class="o">.</span><span class="n">evalSymbol</span><span class="p">(</span><span class="n">d1</span><span class="o">.</span><span class="n">Initial</span><span class="p">,</span> <span class="n">sym</span><span class="p">)}</span>
+        <span class="n">s2</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([])</span>
+        <span class="c">#Z1</span>
+        <span class="k">if</span> <span class="n">s1</span> <span class="o">&amp;</span> <span class="n">d1</span><span class="o">.</span><span class="n">Final</span> <span class="o">!=</span> <span class="nb">set</span><span class="p">([]):</span>
+            <span class="n">s2</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">d2</span><span class="o">.</span><span class="n">Initial</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">d2</span><span class="o">.</span><span class="n">finalP</span><span class="p">(</span><span class="n">d2</span><span class="o">.</span><span class="n">Initial</span><span class="p">):</span>
+                <span class="n">s1</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">d1</span><span class="o">.</span><span class="n">Initial</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">d1</span><span class="o">.</span><span class="n">finalP</span><span class="p">(</span><span class="n">d1</span><span class="o">.</span><span class="n">Initial</span><span class="p">):</span>
+            <span class="n">s2</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">d2</span><span class="o">.</span><span class="n">evalSymbol</span><span class="p">(</span><span class="n">d2</span><span class="o">.</span><span class="n">Initial</span><span class="p">,</span> <span class="n">sym</span><span class="p">))</span>
+            <span class="c">#Z2</span>
+            <span class="k">if</span> <span class="n">s2</span> <span class="o">&amp;</span> <span class="n">d2</span><span class="o">.</span><span class="n">Final</span> <span class="o">!=</span> <span class="nb">set</span><span class="p">([]):</span>
+                <span class="n">s1</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">d1</span><span class="o">.</span><span class="n">Initial</span><span class="p">)</span>
+                <span class="n">s2</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">d2</span><span class="o">.</span><span class="n">Initial</span><span class="p">)</span>
+        <span class="n">stn</span> <span class="o">=</span> <span class="p">(</span><span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">stn</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">lStates</span><span class="p">:</span>
+            <span class="n">lStates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stn</span><span class="p">)</span>
+            <span class="n">new</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">addState</span><span class="p">(</span><span class="n">stn</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">stn</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&amp;</span> <span class="n">d2</span><span class="o">.</span><span class="n">Final</span> <span class="o">!=</span> <span class="nb">set</span><span class="p">([]):</span>
+                <span class="n">c</span><span class="o">.</span><span class="n">addFinal</span><span class="p">(</span><span class="n">new</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">new</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">stateIndex</span><span class="p">(</span><span class="n">stn</span><span class="p">)</span>
+        <span class="n">c</span><span class="o">.</span><span class="n">addTransition</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">sym</span><span class="p">,</span> <span class="n">new</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">States</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">c</span>
+    <span class="n">j</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+        <span class="n">stu</span> <span class="o">=</span> <span class="n">lStates</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">stateIndex</span><span class="p">(</span><span class="n">stu</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">sym</span> <span class="ow">in</span> <span class="n">c</span><span class="o">.</span><span class="n">Sigma</span><span class="p">:</span>
+            <span class="n">stn</span> <span class="o">=</span> <span class="p">(</span><span class="n">d1</span><span class="o">.</span><span class="n">evalSymbolL</span><span class="p">(</span><span class="n">stu</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">sym</span><span class="p">),</span>
+                   <span class="n">d2</span><span class="o">.</span><span class="n">evalSymbolL</span><span class="p">(</span><span class="n">stu</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">sym</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">stn</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&amp;</span> <span class="n">d1</span><span class="o">.</span><span class="n">Final</span> <span class="o">!=</span> <span class="nb">set</span><span class="p">([]):</span>
+                <span class="n">stn</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">d2</span><span class="o">.</span><span class="n">Initial</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">d2</span><span class="o">.</span><span class="n">finalP</span><span class="p">(</span><span class="n">d2</span><span class="o">.</span><span class="n">Initial</span><span class="p">):</span>
+                    <span class="n">stn</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">d1</span><span class="o">.</span><span class="n">Initial</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">stn</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&amp;</span> <span class="n">d2</span><span class="o">.</span><span class="n">Final</span> <span class="o">!=</span> <span class="nb">set</span><span class="p">([]):</span>
+                <span class="n">stn</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">d1</span><span class="o">.</span><span class="n">Initial</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">d1</span><span class="o">.</span><span class="n">finalP</span><span class="p">(</span><span class="n">d1</span><span class="o">.</span><span class="n">Initial</span><span class="p">):</span>
+                    <span class="n">stn</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">d2</span><span class="o">.</span><span class="n">Initial</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">stn</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">lStates</span><span class="p">:</span>
+                <span class="n">lStates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stn</span><span class="p">)</span>
+                <span class="n">new</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">addState</span><span class="p">(</span><span class="n">stn</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">stn</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&amp;</span> <span class="n">d2</span><span class="o">.</span><span class="n">Final</span> <span class="o">!=</span> <span class="nb">set</span><span class="p">([]):</span>
+                    <span class="n">c</span><span class="o">.</span><span class="n">addFinal</span><span class="p">(</span><span class="n">new</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">new</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">stateIndex</span><span class="p">(</span><span class="n">stn</span><span class="p">)</span>
+            <span class="n">c</span><span class="o">.</span><span class="n">addTransition</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">sym</span><span class="p">,</span> <span class="n">new</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">j</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">lStates</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">break</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">j</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">c</span>
+
+</div>
+<div class="viewcode-block" id="concatWStar"><a class="viewcode-back" href="../index.html#comboperations.concatWStar">[docs]</a><span class="k">def</span> <span class="nf">concatWStar</span><span class="p">(</span><span class="n">fa1</span><span class="p">,</span> <span class="n">fa2</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Concatenation combined with star: (L1.L2*)</span>
+
+<span class="sd">    :param fa1: first automaton</span>
+<span class="sd">    :param fa2: second automaton</span>
+<span class="sd">    :param strict: should the alphabets be necessary equal?</span>
+<span class="sd">    :type strict: bool</span>
+<span class="sd">    :type fa1: DFA</span>
+<span class="sd">    :type fa2: DFA</span>
+<span class="sd">    :rtype: DFA</span>
+
+<span class="sd">    .. seealso::</span>
+<span class="sd">       Bo Cui, Yuan Gao, Lila Kari, and Sheng Yu. &#39;State complexity of two combined operations: Reversal-catenation</span>
+<span class="sd">       and star-catenation&#39;. CoRR, abs/1006.4646, 2010.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">fa1</span><span class="o">.</span><span class="n">States</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">fa1</span><span class="o">.</span><span class="n">Final</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">fa2</span><span class="o">.</span><span class="n">States</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">fa2</span><span class="o">.</span><span class="n">Final</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> \
+       <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">fa1</span><span class="o">.</span><span class="n">States</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">fa2</span><span class="o">.</span><span class="n">States</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">fa1</span>
+    <span class="k">if</span> <span class="n">strict</span> <span class="ow">and</span> <span class="n">fa1</span><span class="o">.</span><span class="n">Sigma</span> <span class="o">!=</span> <span class="n">fa2</span><span class="o">.</span><span class="n">Sigma</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">DFAdifferentSigma</span>
+    <span class="n">NSigma</span> <span class="o">=</span> <span class="n">fa1</span><span class="o">.</span><span class="n">Sigma</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="n">fa2</span><span class="o">.</span><span class="n">Sigma</span><span class="p">)</span>
+    <span class="n">d1</span><span class="p">,</span> <span class="n">d2</span> <span class="o">=</span> <span class="n">fa1</span><span class="o">.</span><span class="n">dup</span><span class="p">(),</span> <span class="n">fa2</span><span class="o">.</span><span class="n">dup</span><span class="p">()</span>
+    <span class="n">d1</span><span class="o">.</span><span class="n">setSigma</span><span class="p">(</span><span class="n">NSigma</span><span class="p">)</span>
+    <span class="n">d2</span><span class="o">.</span><span class="n">setSigma</span><span class="p">(</span><span class="n">NSigma</span><span class="p">)</span>
+    <span class="n">d1</span><span class="o">.</span><span class="n">complete</span><span class="p">()</span>
+    <span class="n">d2</span><span class="o">.</span><span class="n">complete</span><span class="p">()</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">d2</span><span class="o">.</span><span class="n">Final</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">d2</span><span class="o">.</span><span class="n">finalP</span><span class="p">(</span><span class="n">d2</span><span class="o">.</span><span class="n">Initial</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">d1</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">d2</span><span class="p">)</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">DFA</span><span class="p">()</span>
+    <span class="n">c</span><span class="o">.</span><span class="n">setSigma</span><span class="p">(</span><span class="n">d1</span><span class="o">.</span><span class="n">Sigma</span><span class="p">)</span>
+    <span class="n">lStates</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">d1</span><span class="o">.</span><span class="n">finalP</span><span class="p">(</span><span class="n">d1</span><span class="o">.</span><span class="n">Initial</span><span class="p">):</span>
+        <span class="n">s2</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">s2</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="p">(</span><span class="n">d1</span><span class="o">.</span><span class="n">Initial</span><span class="p">,</span> <span class="n">s2</span><span class="p">,</span> <span class="nb">set</span><span class="p">([]))</span>
+    <span class="n">lStates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+    <span class="n">j</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">addState</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+    <span class="n">c</span><span class="o">.</span><span class="n">setInitial</span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">s2</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">c</span><span class="o">.</span><span class="n">addFinal</span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
+    <span class="n">F0</span> <span class="o">=</span> <span class="n">d2</span><span class="o">.</span><span class="n">Final</span> <span class="o">-</span> <span class="p">{</span><span class="n">d2</span><span class="o">.</span><span class="n">Initial</span><span class="p">}</span>
+    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+        <span class="n">stu</span> <span class="o">=</span> <span class="n">lStates</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">stateIndex</span><span class="p">(</span><span class="n">stu</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">sym</span> <span class="ow">in</span> <span class="n">c</span><span class="o">.</span><span class="n">Sigma</span><span class="p">:</span>
+            <span class="n">s1</span> <span class="o">=</span> <span class="n">d1</span><span class="o">.</span><span class="n">evalSymbol</span><span class="p">(</span><span class="n">stu</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">sym</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">d1</span><span class="o">.</span><span class="n">finalP</span><span class="p">(</span><span class="n">s1</span><span class="p">):</span>
+                <span class="n">s2</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">s2</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">if</span> <span class="n">stu</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">s3</span> <span class="o">=</span> <span class="p">{</span><span class="n">d2</span><span class="o">.</span><span class="n">evalSymbol</span><span class="p">(</span><span class="n">d2</span><span class="o">.</span><span class="n">Initial</span><span class="p">,</span> <span class="n">sym</span><span class="p">)}</span>
+                <span class="c"># correction</span>
+                <span class="k">if</span> <span class="n">s3</span> <span class="o">&amp;</span> <span class="n">F0</span> <span class="o">!=</span> <span class="nb">set</span><span class="p">([]):</span>
+                    <span class="n">s3</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">d2</span><span class="o">.</span><span class="n">Initial</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">s3</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([])</span>
+            <span class="n">s4</span> <span class="o">=</span> <span class="n">d2</span><span class="o">.</span><span class="n">evalSymbolL</span><span class="p">(</span><span class="n">stu</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">sym</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">s4</span> <span class="o">&amp;</span> <span class="n">F0</span> <span class="o">!=</span> <span class="nb">set</span><span class="p">([]):</span>
+                <span class="n">s4</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">d2</span><span class="o">.</span><span class="n">Initial</span><span class="p">)</span>
+            <span class="n">stn</span> <span class="o">=</span> <span class="p">(</span><span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">,</span> <span class="n">s3</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="n">s4</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">stn</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">lStates</span><span class="p">:</span>
+                <span class="n">lStates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stn</span><span class="p">)</span>
+                <span class="n">new</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">addState</span><span class="p">(</span><span class="n">stn</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">stn</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">or</span> <span class="p">(</span><span class="n">d2</span><span class="o">.</span><span class="n">Final</span> <span class="o">&amp;</span> <span class="n">stn</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">!=</span> <span class="nb">set</span><span class="p">([])):</span>
+                    <span class="n">c</span><span class="o">.</span><span class="n">addFinal</span><span class="p">(</span><span class="n">new</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">new</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">stateIndex</span><span class="p">(</span><span class="n">stn</span><span class="p">)</span>
+            <span class="n">c</span><span class="o">.</span><span class="n">addTransition</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">sym</span><span class="p">,</span> <span class="n">new</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">j</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">lStates</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">break</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">j</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">c</span>
+
+</div>
+<div class="viewcode-block" id="starWConcat"><a class="viewcode-back" href="../index.html#comboperations.starWConcat">[docs]</a><span class="k">def</span> <span class="nf">starWConcat</span><span class="p">(</span><span class="n">fa1</span><span class="p">,</span> <span class="n">fa2</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Star combined with concatenation: (L1*.L2)</span>
+
+<span class="sd">    :param fa1: first automaton</span>
+<span class="sd">    :param fa2: second automaton</span>
+<span class="sd">    :param strict: should the alphabets be necessary equal?</span>
+<span class="sd">    :type strict: Boolean</span>
+<span class="sd">    :type fa1: DFA</span>
+<span class="sd">    :type fa2: DFA</span>
+<span class="sd">    :rtype: DFA</span>
+
+<span class="sd">    .. seealso::</span>
+<span class="sd">       Bo Cui, Yuan Gao, Lila Kari, and Sheng Yu. &#39;State complexity of catenation combined with star and reversal&#39;.</span>
+<span class="sd">       CoRR, abs/1008.1648, 2010&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">fa1</span><span class="o">.</span><span class="n">States</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">fa1</span><span class="o">.</span><span class="n">Final</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">fa2</span><span class="o">.</span><span class="n">States</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">fa2</span><span class="o">.</span><span class="n">Final</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> \
+       <span class="ow">or</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">fa2</span><span class="o">.</span><span class="n">States</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">fa1</span><span class="o">.</span><span class="n">States</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">fa2</span>
+    <span class="k">if</span> <span class="n">strict</span> <span class="ow">and</span> <span class="n">fa1</span><span class="o">.</span><span class="n">Sigma</span> <span class="o">!=</span> <span class="n">fa2</span><span class="o">.</span><span class="n">Sigma</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">DFAdifferentSigma</span>
+    <span class="n">NSigma</span> <span class="o">=</span> <span class="n">fa1</span><span class="o">.</span><span class="n">Sigma</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="n">fa2</span><span class="o">.</span><span class="n">Sigma</span><span class="p">)</span>
+    <span class="n">d1</span><span class="p">,</span> <span class="n">d2</span> <span class="o">=</span> <span class="n">fa1</span><span class="o">.</span><span class="n">dup</span><span class="p">(),</span> <span class="n">fa2</span><span class="o">.</span><span class="n">dup</span><span class="p">()</span>
+    <span class="n">d1</span><span class="o">.</span><span class="n">setSigma</span><span class="p">(</span><span class="n">NSigma</span><span class="p">)</span>
+    <span class="n">d2</span><span class="o">.</span><span class="n">setSigma</span><span class="p">(</span><span class="n">NSigma</span><span class="p">)</span>
+    <span class="n">d1</span><span class="o">.</span><span class="n">complete</span><span class="p">()</span>
+    <span class="n">d2</span><span class="o">.</span><span class="n">complete</span><span class="p">()</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">DFA</span><span class="p">()</span>
+    <span class="n">c</span><span class="o">.</span><span class="n">setSigma</span><span class="p">(</span><span class="n">d1</span><span class="o">.</span><span class="n">Sigma</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">d1</span><span class="o">.</span><span class="n">Final</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">d1</span><span class="o">.</span><span class="n">finalP</span><span class="p">(</span><span class="n">d1</span><span class="o">.</span><span class="n">Initial</span><span class="p">):</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="p">(</span><span class="n">d1</span><span class="o">.</span><span class="n">Initial</span><span class="p">,</span> <span class="p">{</span><span class="n">d2</span><span class="o">.</span><span class="n">Initial</span><span class="p">})</span>
+        <span class="n">j</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">addState</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+        <span class="n">c</span><span class="o">.</span><span class="n">setInitial</span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">i</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&amp;</span> <span class="n">d2</span><span class="o">.</span><span class="n">Final</span> <span class="o">!=</span> <span class="nb">set</span><span class="p">([]):</span>
+            <span class="n">c</span><span class="o">.</span><span class="n">addFinal</span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
+        <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">States</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">sym</span> <span class="ow">in</span> <span class="n">c</span><span class="o">.</span><span class="n">Sigma</span><span class="p">:</span>
+                <span class="n">stn</span> <span class="o">=</span> <span class="p">(</span><span class="n">d1</span><span class="o">.</span><span class="n">evalSymbol</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">sym</span><span class="p">),</span> <span class="n">d2</span><span class="o">.</span><span class="n">evalSymbolL</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">sym</span><span class="p">))</span>
+                <span class="k">if</span> <span class="n">d1</span><span class="o">.</span><span class="n">initialP</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+                    <span class="n">stn</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">d2</span><span class="o">.</span><span class="n">Initial</span><span class="p">)</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">new</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">addState</span><span class="p">(</span><span class="n">stn</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">stn</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&amp;</span> <span class="n">d2</span><span class="o">.</span><span class="n">Final</span> <span class="o">!=</span> <span class="nb">set</span><span class="p">([]):</span>
+                        <span class="n">c</span><span class="o">.</span><span class="n">addFinal</span><span class="p">(</span><span class="n">new</span><span class="p">)</span>
+                <span class="k">except</span> <span class="n">DuplicateName</span><span class="p">:</span>
+                    <span class="n">new</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">stateIndex</span><span class="p">(</span><span class="n">stn</span><span class="p">)</span>
+                <span class="n">c</span><span class="o">.</span><span class="n">addTransition</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">sym</span><span class="p">,</span> <span class="n">new</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">j</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">States</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">break</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">j</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="n">c</span>
+        <span class="c">#  |Final1|&gt;1</span>
+    <span class="n">j</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">addState</span><span class="p">(({</span><span class="n">d1</span><span class="o">.</span><span class="n">Initial</span><span class="p">},</span> <span class="p">{</span><span class="n">d2</span><span class="o">.</span><span class="n">Initial</span><span class="p">}))</span>
+    <span class="n">c</span><span class="o">.</span><span class="n">setInitial</span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">d2</span><span class="o">.</span><span class="n">finalP</span><span class="p">(</span><span class="n">d2</span><span class="o">.</span><span class="n">Initial</span><span class="p">):</span>
+        <span class="n">c</span><span class="o">.</span><span class="n">addFinal</span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
+    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">States</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">sym</span> <span class="ow">in</span> <span class="n">c</span><span class="o">.</span><span class="n">Sigma</span><span class="p">:</span>
+            <span class="n">stn</span> <span class="o">=</span> <span class="p">(</span><span class="n">d1</span><span class="o">.</span><span class="n">evalSymbolL</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">sym</span><span class="p">),</span> <span class="n">d2</span><span class="o">.</span><span class="n">evalSymbolL</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">sym</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">stn</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&amp;</span> <span class="n">d1</span><span class="o">.</span><span class="n">Final</span> <span class="o">!=</span> <span class="nb">set</span><span class="p">([]):</span>
+                <span class="n">stn</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">d2</span><span class="o">.</span><span class="n">Initial</span><span class="p">)</span>
+                <span class="n">stn</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">d1</span><span class="o">.</span><span class="n">Initial</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">new</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">addState</span><span class="p">(</span><span class="n">stn</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">stn</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&amp;</span> <span class="n">d2</span><span class="o">.</span><span class="n">Final</span> <span class="o">!=</span> <span class="nb">set</span><span class="p">([]):</span>
+                    <span class="n">c</span><span class="o">.</span><span class="n">addFinal</span><span class="p">(</span><span class="n">new</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">DuplicateName</span><span class="p">:</span>
+                <span class="n">new</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">stateIndex</span><span class="p">(</span><span class="n">stn</span><span class="p">)</span>
+            <span class="n">c</span><span class="o">.</span><span class="n">addTransition</span><span class="p">(</span><span class="n">j</span><span class="p">,</span> <span class="n">sym</span><span class="p">,</span> <span class="n">new</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">j</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">States</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">break</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">j</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">c</span>
+
+</div>
+<div class="viewcode-block" id="starDisj"><a class="viewcode-back" href="../index.html#comboperations.starDisj">[docs]</a><span class="k">def</span> <span class="nf">starDisj</span><span class="p">(</span><span class="n">fa1</span><span class="p">,</span> <span class="n">fa2</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Star of Union of two DFAs: (L1 + L2)*</span>
+
+<span class="sd">    :param fa1: first automaton</span>
+<span class="sd">    :param fa2: second automaton</span>
+<span class="sd">    :param strict: should the alphabets be necessary equal?</span>
+<span class="sd">    :type strict: Boolean</span>
+<span class="sd">    :type fa1: DFA</span>
+<span class="sd">    :type fa2: DFA</span>
+<span class="sd">    :rtype: DFA</span>
+
+<span class="sd">    .. seealso::</span>
+<span class="sd">       Arto Salomaa, Kai Salomaa, and Sheng Yu. &#39;State complexity of combined operations&#39;. Theor. Comput. Sci.,</span>
+<span class="sd">       383(2-3):140–152, 2007.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">strict</span> <span class="ow">and</span> <span class="n">fa1</span><span class="o">.</span><span class="n">Sigma</span> <span class="o">!=</span> <span class="n">fa2</span><span class="o">.</span><span class="n">Sigma</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">DFAdifferentSigma</span>
+    <span class="n">NSigma</span> <span class="o">=</span> <span class="n">fa1</span><span class="o">.</span><span class="n">Sigma</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="n">fa2</span><span class="o">.</span><span class="n">Sigma</span><span class="p">)</span>
+    <span class="n">d1</span><span class="p">,</span> <span class="n">d2</span> <span class="o">=</span> <span class="n">fa1</span><span class="o">.</span><span class="n">dup</span><span class="p">(),</span> <span class="n">fa2</span><span class="o">.</span><span class="n">dup</span><span class="p">()</span>
+    <span class="n">d1</span><span class="o">.</span><span class="n">setSigma</span><span class="p">(</span><span class="n">NSigma</span><span class="p">)</span>
+    <span class="n">d2</span><span class="o">.</span><span class="n">setSigma</span><span class="p">(</span><span class="n">NSigma</span><span class="p">)</span>
+    <span class="n">d1</span><span class="o">.</span><span class="n">complete</span><span class="p">()</span>
+    <span class="n">d2</span><span class="o">.</span><span class="n">complete</span><span class="p">()</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">DFA</span><span class="p">()</span>
+    <span class="n">c</span><span class="o">.</span><span class="n">setSigma</span><span class="p">(</span><span class="n">NSigma</span><span class="p">)</span>
+    <span class="n">lStates</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">d1</span><span class="o">.</span><span class="n">Initial</span> <span class="ow">in</span> <span class="n">d1</span><span class="o">.</span><span class="n">Final</span> <span class="ow">or</span> <span class="n">d2</span><span class="o">.</span><span class="n">Initial</span> <span class="ow">in</span> <span class="n">d2</span><span class="o">.</span><span class="n">Final</span><span class="p">:</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="p">({</span><span class="n">d1</span><span class="o">.</span><span class="n">Initial</span><span class="p">},</span> <span class="p">{</span><span class="n">d2</span><span class="o">.</span><span class="n">Initial</span><span class="p">})</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="s">&quot;initial&quot;</span>
+    <span class="n">lStates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+    <span class="n">j</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">addState</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+    <span class="n">c</span><span class="o">.</span><span class="n">setInitial</span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
+    <span class="n">c</span><span class="o">.</span><span class="n">addFinal</span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">sym</span> <span class="ow">in</span> <span class="n">c</span><span class="o">.</span><span class="n">Sigma</span><span class="p">:</span>
+        <span class="n">stn</span> <span class="o">=</span> <span class="p">({</span><span class="n">d1</span><span class="o">.</span><span class="n">evalSymbol</span><span class="p">(</span><span class="n">d1</span><span class="o">.</span><span class="n">Initial</span><span class="p">,</span> <span class="n">sym</span><span class="p">)},</span> <span class="p">{</span><span class="n">d2</span><span class="o">.</span><span class="n">evalSymbol</span><span class="p">(</span><span class="n">d2</span><span class="o">.</span><span class="n">Initial</span><span class="p">,</span> <span class="n">sym</span><span class="p">)})</span>
+        <span class="k">if</span> <span class="n">stn</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&amp;</span> <span class="n">d1</span><span class="o">.</span><span class="n">Final</span> <span class="ow">or</span> <span class="n">stn</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&amp;</span> <span class="n">d2</span><span class="o">.</span><span class="n">Final</span><span class="p">:</span>
+            <span class="n">stn</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">d1</span><span class="o">.</span><span class="n">Initial</span><span class="p">)</span>
+            <span class="n">stn</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">d2</span><span class="o">.</span><span class="n">Initial</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">stn</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">lStates</span><span class="p">:</span>
+            <span class="n">lStates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stn</span><span class="p">)</span>
+            <span class="n">new</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">addState</span><span class="p">(</span><span class="n">stn</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">stn</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&amp;</span> <span class="n">d1</span><span class="o">.</span><span class="n">Final</span> <span class="ow">or</span> <span class="n">stn</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&amp;</span> <span class="n">d2</span><span class="o">.</span><span class="n">Final</span><span class="p">:</span>
+                <span class="n">c</span><span class="o">.</span><span class="n">addFinal</span><span class="p">(</span><span class="n">new</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">new</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">stateIndex</span><span class="p">(</span><span class="n">stn</span><span class="p">)</span>
+        <span class="n">c</span><span class="o">.</span><span class="n">addTransition</span><span class="p">(</span><span class="n">j</span><span class="p">,</span> <span class="n">sym</span><span class="p">,</span> <span class="n">new</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">lStates</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">c</span>
+    <span class="n">j</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+        <span class="n">stu</span> <span class="o">=</span> <span class="n">lStates</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">stateIndex</span><span class="p">(</span><span class="n">stu</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">sym</span> <span class="ow">in</span> <span class="n">c</span><span class="o">.</span><span class="n">Sigma</span><span class="p">:</span>
+            <span class="n">stn</span> <span class="o">=</span> <span class="p">(</span><span class="n">d1</span><span class="o">.</span><span class="n">evalSymbolL</span><span class="p">(</span><span class="n">stu</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">sym</span><span class="p">),</span> <span class="n">d2</span><span class="o">.</span><span class="n">evalSymbolL</span><span class="p">(</span><span class="n">stu</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">sym</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">stn</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&amp;</span> <span class="n">d1</span><span class="o">.</span><span class="n">Final</span> <span class="ow">or</span> <span class="n">stn</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&amp;</span> <span class="n">d2</span><span class="o">.</span><span class="n">Final</span><span class="p">:</span>
+                <span class="n">stn</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">d1</span><span class="o">.</span><span class="n">Initial</span><span class="p">)</span>
+                <span class="n">stn</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">d2</span><span class="o">.</span><span class="n">Initial</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">stn</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">lStates</span><span class="p">:</span>
+                <span class="n">lStates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stn</span><span class="p">)</span>
+                <span class="n">new</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">addState</span><span class="p">(</span><span class="n">stn</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">stn</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&amp;</span> <span class="n">d1</span><span class="o">.</span><span class="n">Final</span> <span class="ow">or</span> <span class="n">stn</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&amp;</span> <span class="n">d2</span><span class="o">.</span><span class="n">Final</span><span class="p">:</span>
+                    <span class="n">c</span><span class="o">.</span><span class="n">addFinal</span><span class="p">(</span><span class="n">new</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">new</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">stateIndex</span><span class="p">(</span><span class="n">stn</span><span class="p">)</span>
+            <span class="n">c</span><span class="o">.</span><span class="n">addTransition</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">sym</span><span class="p">,</span> <span class="n">new</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">j</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">lStates</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">break</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">j</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">c</span>
+
+</div>
+<div class="viewcode-block" id="starInter0"><a class="viewcode-back" href="../index.html#comboperations.starInter0">[docs]</a><span class="k">def</span> <span class="nf">starInter0</span><span class="p">(</span><span class="n">fa1</span><span class="p">,</span> <span class="n">fa2</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Star of Intersection  of two DFAs: (L1 &amp; L2)*</span>
+
+<span class="sd">    :param fa1: first automaton</span>
+<span class="sd">    :param fa2: second automaton</span>
+<span class="sd">    :param strict: should the alphabets be necessary equal?</span>
+<span class="sd">    :type strict: Boolean</span>
+<span class="sd">    :type fa1: DFA</span>
+<span class="sd">    :type fa2: DFA</span>
+<span class="sd">    :rtype: DFA</span>
+
+<span class="sd">    .. seealso::</span>
+<span class="sd">       Arto Salomaa, Kai Salomaa, and Sheng Yu. &#39;State complexity of combined operations&#39;. Theor. Comput. Sci.,</span>
+<span class="sd">       383(2-3):140–152, 2007.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">strict</span> <span class="ow">and</span> <span class="n">fa1</span><span class="o">.</span><span class="n">Sigma</span> <span class="o">!=</span> <span class="n">fa2</span><span class="o">.</span><span class="n">Sigma</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">DFAdifferentSigma</span>
+    <span class="n">NSigma</span> <span class="o">=</span> <span class="n">fa1</span><span class="o">.</span><span class="n">Sigma</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="n">fa2</span><span class="o">.</span><span class="n">Sigma</span><span class="p">)</span>
+    <span class="n">d1</span><span class="p">,</span> <span class="n">d2</span> <span class="o">=</span> <span class="n">fa1</span><span class="o">.</span><span class="n">dup</span><span class="p">(),</span> <span class="n">fa2</span><span class="o">.</span><span class="n">dup</span><span class="p">()</span>
+    <span class="n">d1</span><span class="o">.</span><span class="n">setSigma</span><span class="p">(</span><span class="n">NSigma</span><span class="p">)</span>
+    <span class="n">d2</span><span class="o">.</span><span class="n">setSigma</span><span class="p">(</span><span class="n">NSigma</span><span class="p">)</span>
+    <span class="n">d1</span><span class="o">.</span><span class="n">complete</span><span class="p">()</span>
+    <span class="n">d2</span><span class="o">.</span><span class="n">complete</span><span class="p">()</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">DFA</span><span class="p">()</span>
+    <span class="n">c</span><span class="o">.</span><span class="n">setSigma</span><span class="p">(</span><span class="n">NSigma</span><span class="p">)</span>
+    <span class="n">lStates</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">d1</span><span class="o">.</span><span class="n">finalP</span><span class="p">(</span><span class="n">d1</span><span class="o">.</span><span class="n">Initial</span><span class="p">)</span> <span class="ow">and</span> <span class="n">d2</span><span class="o">.</span><span class="n">finalP</span><span class="p">(</span><span class="n">d2</span><span class="o">.</span><span class="n">Initial</span><span class="p">):</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="p">({</span><span class="n">d1</span><span class="o">.</span><span class="n">Initial</span><span class="p">},</span> <span class="p">{</span><span class="n">d2</span><span class="o">.</span><span class="n">Initial</span><span class="p">})</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="s">&quot;initial&quot;</span>
+    <span class="n">lStates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+    <span class="n">j</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">addState</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+    <span class="n">c</span><span class="o">.</span><span class="n">setInitial</span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
+    <span class="n">c</span><span class="o">.</span><span class="n">addFinal</span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">sym</span> <span class="ow">in</span> <span class="n">c</span><span class="o">.</span><span class="n">Sigma</span><span class="p">:</span>
+        <span class="n">stn</span> <span class="o">=</span> <span class="p">({</span><span class="n">d1</span><span class="o">.</span><span class="n">evalSymbol</span><span class="p">(</span><span class="n">d1</span><span class="o">.</span><span class="n">Initial</span><span class="p">,</span> <span class="n">sym</span><span class="p">)},</span> <span class="p">{</span><span class="n">d2</span><span class="o">.</span><span class="n">evalSymbol</span><span class="p">(</span><span class="n">d2</span><span class="o">.</span><span class="n">Initial</span><span class="p">,</span> <span class="n">sym</span><span class="p">)})</span>
+        <span class="k">if</span> <span class="n">stn</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&amp;</span> <span class="n">d1</span><span class="o">.</span><span class="n">Final</span> <span class="ow">and</span> <span class="n">stn</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&amp;</span> <span class="n">d2</span><span class="o">.</span><span class="n">Final</span><span class="p">:</span>
+            <span class="n">stn</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">d1</span><span class="o">.</span><span class="n">Initial</span><span class="p">)</span>
+            <span class="n">stn</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">d2</span><span class="o">.</span><span class="n">Initial</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">stn</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">lStates</span><span class="p">:</span>
+            <span class="n">lStates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stn</span><span class="p">)</span>
+            <span class="n">new</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">addState</span><span class="p">(</span><span class="n">stn</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">stn</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&amp;</span> <span class="n">d1</span><span class="o">.</span><span class="n">Final</span> <span class="ow">and</span> <span class="n">stn</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&amp;</span> <span class="n">d2</span><span class="o">.</span><span class="n">Final</span><span class="p">:</span>
+                <span class="n">c</span><span class="o">.</span><span class="n">addFinal</span><span class="p">(</span><span class="n">new</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">new</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">stateIndex</span><span class="p">(</span><span class="n">stn</span><span class="p">)</span>
+        <span class="n">c</span><span class="o">.</span><span class="n">addTransition</span><span class="p">(</span><span class="n">j</span><span class="p">,</span> <span class="n">sym</span><span class="p">,</span> <span class="n">new</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">lStates</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">c</span>
+    <span class="n">j</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+        <span class="n">stu</span> <span class="o">=</span> <span class="n">lStates</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">stateIndex</span><span class="p">(</span><span class="n">stu</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">sym</span> <span class="ow">in</span> <span class="n">c</span><span class="o">.</span><span class="n">Sigma</span><span class="p">:</span>
+            <span class="n">stn</span> <span class="o">=</span> <span class="p">(</span><span class="n">d1</span><span class="o">.</span><span class="n">evalSymbolL</span><span class="p">(</span><span class="n">stu</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">sym</span><span class="p">),</span> <span class="n">d2</span><span class="o">.</span><span class="n">evalSymbolL</span><span class="p">(</span><span class="n">stu</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">sym</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">stn</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&amp;</span> <span class="n">d1</span><span class="o">.</span><span class="n">Final</span> <span class="ow">and</span> <span class="n">stn</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&amp;</span> <span class="n">d2</span><span class="o">.</span><span class="n">Final</span><span class="p">:</span>
+                <span class="n">stn</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">d1</span><span class="o">.</span><span class="n">Initial</span><span class="p">)</span>
+                <span class="n">stn</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">d2</span><span class="o">.</span><span class="n">Initial</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">stn</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">lStates</span><span class="p">:</span>
+                <span class="n">lStates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stn</span><span class="p">)</span>
+                <span class="n">new</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">addState</span><span class="p">(</span><span class="n">stn</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">stn</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&amp;</span> <span class="n">d1</span><span class="o">.</span><span class="n">Final</span> <span class="ow">and</span> <span class="n">stn</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&amp;</span> <span class="n">d2</span><span class="o">.</span><span class="n">Final</span><span class="p">:</span>
+                    <span class="n">c</span><span class="o">.</span><span class="n">addFinal</span><span class="p">(</span><span class="n">new</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">new</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">stateIndex</span><span class="p">(</span><span class="n">stn</span><span class="p">)</span>
+            <span class="n">c</span><span class="o">.</span><span class="n">addTransition</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">sym</span><span class="p">,</span> <span class="n">new</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">j</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">lStates</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">break</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">j</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">c</span>
+
+</div>
+<div class="viewcode-block" id="starInter"><a class="viewcode-back" href="../index.html#comboperations.starInter">[docs]</a><span class="k">def</span> <span class="nf">starInter</span><span class="p">(</span><span class="n">fa1</span><span class="p">,</span> <span class="n">fa2</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Star of Intersection  of two DFAs: (L1 &amp; L2)*</span>
+
+<span class="sd">    :param fa1: first automaton</span>
+<span class="sd">    :param fa2: second automaton</span>
+<span class="sd">    :param strict: should the alphabets be necessary equal?</span>
+<span class="sd">    :type strict: Boolean</span>
+<span class="sd">    :type fa1: DFA</span>
+<span class="sd">    :type fa2: DFA</span>
+<span class="sd">    :rtype: DFA &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">strict</span> <span class="ow">and</span> <span class="n">fa1</span><span class="o">.</span><span class="n">Sigma</span> <span class="o">!=</span> <span class="n">fa2</span><span class="o">.</span><span class="n">Sigma</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">DFAdifferentSigma</span>
+    <span class="n">NSigma</span> <span class="o">=</span> <span class="n">fa1</span><span class="o">.</span><span class="n">Sigma</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="n">fa2</span><span class="o">.</span><span class="n">Sigma</span><span class="p">)</span>
+    <span class="n">d1</span><span class="p">,</span> <span class="n">d2</span> <span class="o">=</span> <span class="n">fa1</span><span class="o">.</span><span class="n">dup</span><span class="p">(),</span> <span class="n">fa2</span><span class="o">.</span><span class="n">dup</span><span class="p">()</span>
+    <span class="n">d1</span><span class="o">.</span><span class="n">setSigma</span><span class="p">(</span><span class="n">NSigma</span><span class="p">)</span>
+    <span class="n">d2</span><span class="o">.</span><span class="n">setSigma</span><span class="p">(</span><span class="n">NSigma</span><span class="p">)</span>
+    <span class="n">d1</span><span class="o">.</span><span class="n">complete</span><span class="p">()</span>
+    <span class="n">d2</span><span class="o">.</span><span class="n">complete</span><span class="p">()</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">DFA</span><span class="p">()</span>
+    <span class="n">c</span><span class="o">.</span><span class="n">setSigma</span><span class="p">(</span><span class="n">NSigma</span><span class="p">)</span>
+    <span class="n">lStates</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">d1</span><span class="o">.</span><span class="n">finalP</span><span class="p">(</span><span class="n">d1</span><span class="o">.</span><span class="n">Initial</span><span class="p">)</span> <span class="ow">and</span> <span class="n">d2</span><span class="o">.</span><span class="n">finalP</span><span class="p">(</span><span class="n">d2</span><span class="o">.</span><span class="n">Initial</span><span class="p">):</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="p">{(</span><span class="n">d1</span><span class="o">.</span><span class="n">Initial</span><span class="p">,</span> <span class="n">d2</span><span class="o">.</span><span class="n">Initial</span><span class="p">)}</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="s">&quot;initial&quot;</span>
+    <span class="n">lStates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+    <span class="n">j</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">addState</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+    <span class="n">c</span><span class="o">.</span><span class="n">setInitial</span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
+    <span class="n">c</span><span class="o">.</span><span class="n">addFinal</span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">sym</span> <span class="ow">in</span> <span class="n">c</span><span class="o">.</span><span class="n">Sigma</span><span class="p">:</span>
+        <span class="n">stn</span> <span class="o">=</span> <span class="p">{(</span><span class="n">d1</span><span class="o">.</span><span class="n">evalSymbol</span><span class="p">(</span><span class="n">d1</span><span class="o">.</span><span class="n">Initial</span><span class="p">,</span> <span class="n">sym</span><span class="p">),</span> <span class="n">d2</span><span class="o">.</span><span class="n">evalSymbol</span><span class="p">(</span><span class="n">d2</span><span class="o">.</span><span class="n">Initial</span><span class="p">,</span> <span class="n">sym</span><span class="p">))}</span>
+        <span class="k">for</span> <span class="n">sub</span> <span class="ow">in</span> <span class="n">stn</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">d1</span><span class="o">.</span><span class="n">finalP</span><span class="p">(</span><span class="n">sub</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="ow">and</span> <span class="n">d2</span><span class="o">.</span><span class="n">finalP</span><span class="p">(</span><span class="n">sub</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+                <span class="n">stn</span><span class="o">.</span><span class="n">add</span><span class="p">((</span><span class="n">d1</span><span class="o">.</span><span class="n">Initial</span><span class="p">,</span> <span class="n">d2</span><span class="o">.</span><span class="n">Initial</span><span class="p">))</span>
+                <span class="k">break</span>
+        <span class="k">if</span> <span class="n">stn</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">lStates</span><span class="p">:</span>
+            <span class="n">lStates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stn</span><span class="p">)</span>
+            <span class="n">new</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">addState</span><span class="p">(</span><span class="n">stn</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">sub</span> <span class="ow">in</span> <span class="n">stn</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">d1</span><span class="o">.</span><span class="n">finalP</span><span class="p">(</span><span class="n">sub</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="ow">and</span> <span class="n">d2</span><span class="o">.</span><span class="n">finalP</span><span class="p">(</span><span class="n">sub</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+                    <span class="n">c</span><span class="o">.</span><span class="n">addFinal</span><span class="p">(</span><span class="n">new</span><span class="p">)</span>
+                    <span class="k">break</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">new</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">stateIndex</span><span class="p">(</span><span class="n">stn</span><span class="p">)</span>
+        <span class="n">c</span><span class="o">.</span><span class="n">addTransition</span><span class="p">(</span><span class="n">j</span><span class="p">,</span> <span class="n">sym</span><span class="p">,</span> <span class="n">new</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">lStates</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">c</span>
+    <span class="n">j</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+        <span class="n">stu</span> <span class="o">=</span> <span class="n">lStates</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">stateIndex</span><span class="p">(</span><span class="n">stu</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">sym</span> <span class="ow">in</span> <span class="n">c</span><span class="o">.</span><span class="n">Sigma</span><span class="p">:</span>
+            <span class="n">stn</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([])</span>
+            <span class="n">flag</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="k">for</span> <span class="n">sub</span> <span class="ow">in</span> <span class="n">stu</span><span class="p">:</span>
+                <span class="n">one</span> <span class="o">=</span> <span class="p">(</span><span class="n">d1</span><span class="o">.</span><span class="n">evalSymbol</span><span class="p">(</span><span class="n">sub</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">sym</span><span class="p">),</span> <span class="n">d2</span><span class="o">.</span><span class="n">evalSymbol</span><span class="p">(</span><span class="n">sub</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">sym</span><span class="p">))</span>
+                <span class="n">stn</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">one</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">flag</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">d1</span><span class="o">.</span><span class="n">finalP</span><span class="p">(</span><span class="n">one</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="ow">and</span> <span class="n">d2</span><span class="o">.</span><span class="n">finalP</span><span class="p">(</span><span class="n">one</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+                    <span class="n">stn</span><span class="o">.</span><span class="n">add</span><span class="p">((</span><span class="n">d1</span><span class="o">.</span><span class="n">Initial</span><span class="p">,</span> <span class="n">d2</span><span class="o">.</span><span class="n">Initial</span><span class="p">))</span>
+                    <span class="n">flag</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">if</span> <span class="n">stn</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">lStates</span><span class="p">:</span>
+                <span class="n">lStates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stn</span><span class="p">)</span>
+                <span class="n">new</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">addState</span><span class="p">(</span><span class="n">stn</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">sub</span> <span class="ow">in</span> <span class="n">stn</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">d1</span><span class="o">.</span><span class="n">finalP</span><span class="p">(</span><span class="n">sub</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="ow">and</span> <span class="n">d2</span><span class="o">.</span><span class="n">finalP</span><span class="p">(</span><span class="n">sub</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+                        <span class="n">c</span><span class="o">.</span><span class="n">addFinal</span><span class="p">(</span><span class="n">new</span><span class="p">)</span>
+                        <span class="k">break</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">new</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">stateIndex</span><span class="p">(</span><span class="n">stn</span><span class="p">)</span>
+            <span class="n">c</span><span class="o">.</span><span class="n">addTransition</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">sym</span><span class="p">,</span> <span class="n">new</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">j</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">lStates</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">break</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">j</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">c</span>
+
+</div>
+<div class="viewcode-block" id="disjWStar"><a class="viewcode-back" href="../index.html#comboperations.disjWStar">[docs]</a><span class="k">def</span> <span class="nf">disjWStar</span><span class="p">(</span><span class="n">f1</span><span class="p">,</span> <span class="n">f2</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Union with star: (L1 + L2*)</span>
+
+<span class="sd">    :param f1: first automaton</span>
+<span class="sd">    :param f2: second automaton</span>
+<span class="sd">    :param strict: should the alphabets be necessary equal?</span>
+<span class="sd">    :type strict: Boolean</span>
+<span class="sd">    :type f1: DFA</span>
+<span class="sd">    :type f2: DFA</span>
+<span class="sd">    :rtype: DFA</span>
+
+<span class="sd">    .. seealso::</span>
+<span class="sd">       Yuan Gao and Sheng Yu. &#39;State complexity of union and intersection combined with star and reversal&#39;. CoRR,</span>
+<span class="sd">       abs/1006.3755, 2010.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">strict</span> <span class="ow">and</span> <span class="n">f1</span><span class="o">.</span><span class="n">Sigma</span> <span class="o">!=</span> <span class="n">f2</span><span class="o">.</span><span class="n">Sigma</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">DFAdifferentSigma</span>
+    <span class="k">return</span> <span class="n">f1</span><span class="o">.</span><span class="n">star</span><span class="p">()</span> <span class="o">|</span> <span class="n">f2</span>
+
+</div>
+<div class="viewcode-block" id="interWStar"><a class="viewcode-back" href="../index.html#comboperations.interWStar">[docs]</a><span class="k">def</span> <span class="nf">interWStar</span><span class="p">(</span><span class="n">f1</span><span class="p">,</span> <span class="n">f2</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Intersection with star: (L1 &amp; L2*)</span>
+
+<span class="sd">    :param f1: first automaton</span>
+<span class="sd">    :param f2: second automaton</span>
+<span class="sd">    :param strict: should the alphabets be necessary equal?</span>
+<span class="sd">    :type strict: Boolean</span>
+<span class="sd">    :type f1: DFA</span>
+<span class="sd">    :type f2: DFA</span>
+<span class="sd">    :rtype: DFA</span>
+
+<span class="sd">    .. seealso::</span>
+<span class="sd">       Yuan Gao and Sheng Yu. &#39;State complexity of union and intersection combined with star and reversal&#39;. CoRR,</span>
+<span class="sd">       abs/1006.3755, 2010.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">strict</span> <span class="ow">and</span> <span class="n">f1</span><span class="o">.</span><span class="n">Sigma</span> <span class="o">!=</span> <span class="n">f2</span><span class="o">.</span><span class="n">Sigma</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">DFAdifferentSigma</span>
+    <span class="k">return</span> <span class="n">f1</span><span class="o">.</span><span class="n">star</span><span class="p">()</span> <span class="o">&amp;</span> <span class="n">f2</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">FAdo 1.2 documentation</a> &raquo;</li>
+          <li><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 1999-2014, Rogério Reis &amp; Nelma Moreira.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

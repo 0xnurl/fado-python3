@@ -1,0 +1,255 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>graphs &mdash; FAdo 1.2 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="FAdo 1.2 documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">FAdo 1.2 documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for graphs</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;**Graph support**</span>
+
+<span class="sd">Basic Graph object support and manipulation</span>
+
+<span class="sd">.. versionadded: 1.0</span>
+
+<span class="sd">.. *Authors:* Rogério Reis &amp; Nelma Moreira</span>
+
+<span class="sd">.. *This is part of FAdo project*   http://fado.dcc.fc.up.pt.</span>
+
+<span class="sd">.. *Copyright:* 2014 Rogério Reis &amp; Nelma Moreira {rvr,nam}@dcc.fc.up.pt</span>
+
+<span class="sd">.. This program is free software; you can redistribute it and/or</span>
+<span class="sd">   modify it under the terms of the GNU General Public License as published</span>
+<span class="sd">   by the Free Software Foundation; either version 2 of the License, or</span>
+<span class="sd">   (at your option) any later version.</span>
+
+<span class="sd">   This program is distributed in the hope that it will be useful,</span>
+<span class="sd">   but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY</span>
+<span class="sd">   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License</span>
+<span class="sd">   for more details.</span>
+
+<span class="sd">   You should have received a copy of the GNU General Public License along</span>
+<span class="sd">   with this program; if not, write to the Free Software Foundation, Inc.,</span>
+<span class="sd">   675 Mass Ave, Cambridge, MA 02139, USA.&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">copy</span>
+
+<span class="kn">import</span> <span class="nn">common</span>
+
+
+<div class="viewcode-block" id="Graph"><a class="viewcode-back" href="../index.html#graphs.Graph">[docs]</a><span class="k">class</span> <span class="nc">Graph</span><span class="p">(</span><span class="n">common</span><span class="o">.</span><span class="n">Drawable</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Graph base class</span>
+
+<span class="sd">    :var list Vertices: Vertices&#39; names</span>
+<span class="sd">    :var set Edges: set of pairs (always sorted)</span>
+
+<span class="sd">    .. inheritance-diagram:: Graph&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Vertices</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Edges</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+
+<div class="viewcode-block" id="Graph.addVertex"><a class="viewcode-back" href="../index.html#graphs.Graph.addVertex">[docs]</a>    <span class="k">def</span> <span class="nf">addVertex</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vname</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Adds a vertex (by name)</span>
+
+<span class="sd">        :param vname: vertex name</span>
+<span class="sd">        :return: vertex index</span>
+<span class="sd">        :rtype: int</span>
+
+<span class="sd">        :raises DuplicateName: if vname already exists&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">vname</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">Vertices</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">common</span><span class="o">.</span><span class="n">DuplicateName</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Vertices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vname</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Vertices</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+</div>
+<div class="viewcode-block" id="Graph.vertexIndex"><a class="viewcode-back" href="../index.html#graphs.Graph.vertexIndex">[docs]</a>    <span class="k">def</span> <span class="nf">vertexIndex</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vname</span><span class="p">,</span> <span class="n">autoCreate</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return vertex index</span>
+
+<span class="sd">        :param bool autoCreate: auto creation of non existing states</span>
+<span class="sd">        :param vname: vertex name</span>
+<span class="sd">        :rtype: int</span>
+
+<span class="sd">        :raises GraphError: if vname not found&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">vname</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">Vertices</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">autoCreate</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">common</span><span class="o">.</span><span class="n">GraphError</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">addVertex</span><span class="p">(</span><span class="n">vname</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">Vertices</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">vname</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Graph.addEdge"><a class="viewcode-back" href="../index.html#graphs.Graph.addEdge">[docs]</a>    <span class="k">def</span> <span class="nf">addEdge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v1</span><span class="p">,</span> <span class="n">v2</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Adds an edge</span>
+<span class="sd">        :param int v1: vertex 1 index</span>
+<span class="sd">        :param int v2: vertex 2 index</span>
+<span class="sd">        :raises GraphError: if edge is loop&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">v1</span> <span class="o">==</span> <span class="n">v2</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">common</span><span class="o">.</span><span class="n">GraphError</span>
+        <span class="k">if</span> <span class="n">v1</span> <span class="o">&lt;</span> <span class="n">v2</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Edges</span><span class="o">.</span><span class="n">add</span><span class="p">((</span><span class="n">v1</span><span class="p">,</span> <span class="n">v2</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Edges</span><span class="o">.</span><span class="n">add</span><span class="p">((</span><span class="n">v2</span><span class="p">,</span> <span class="n">v1</span><span class="p">))</span>
+
+</div></div>
+<div class="viewcode-block" id="DiGraph"><a class="viewcode-back" href="../index.html#graphs.DiGraph">[docs]</a><span class="k">class</span> <span class="nc">DiGraph</span><span class="p">(</span><span class="n">Graph</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Directed graph base class</span>
+
+<span class="sd">    .. inheritance-diagram:: DiGraph&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="DiGraph.addEdge"><a class="viewcode-back" href="../index.html#graphs.DiGraph.addEdge">[docs]</a>    <span class="k">def</span> <span class="nf">addEdge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v1</span><span class="p">,</span> <span class="n">v2</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Adds an edge</span>
+
+<span class="sd">        :param int v1: vertex 1 index</span>
+<span class="sd">        :param int v2: vertex 2 index&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Edges</span><span class="o">.</span><span class="n">add</span><span class="p">((</span><span class="n">v1</span><span class="p">,</span> <span class="n">v2</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="DiGraph.inverse"><a class="viewcode-back" href="../index.html#graphs.DiGraph.inverse">[docs]</a>    <span class="k">def</span> <span class="nf">inverse</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Inverse of a digraph&quot;&quot;&quot;</span>
+        <span class="n">new</span> <span class="o">=</span> <span class="n">DiGraph</span><span class="p">()</span>
+        <span class="n">new</span><span class="o">.</span><span class="n">Vertices</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Vertices</span><span class="p">)</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">Edges</span><span class="p">:</span>
+            <span class="n">new</span><span class="o">.</span><span class="n">addVertex</span><span class="p">(</span><span class="n">j</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">new</span>
+</div>
+<div class="viewcode-block" id="DiGraph.dotFormat"><a class="viewcode-back" href="../index.html#graphs.DiGraph.dotFormat">[docs]</a>    <span class="k">def</span> <span class="nf">dotFormat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="s">&quot;20,20&quot;</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="s">&quot;LR&quot;</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; A dot representation</span>
+
+<span class="sd">        :arg str direction: direction of drawing</span>
+<span class="sd">        :arg str size: size of image</span>
+<span class="sd">        :arg str sep: line separator</span>
+<span class="sd">        :return: the dot representation</span>
+<span class="sd">        :rtype: str</span>
+
+<span class="sd">        .. versionadded:: 0.9.6</span>
+
+<span class="sd">        .. versionchanged:: 0.9.8&quot;&quot;&quot;</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="s">&quot;digraph finite_state_machine {{{0:s}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">sep</span><span class="p">)</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="s">&quot;rankdir={0:s};{1:s}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">direction</span><span class="p">,</span> <span class="n">sep</span><span class="p">)</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="s">&quot;size=</span><span class="se">\&quot;</span><span class="s">{0:s}</span><span class="se">\&quot;</span><span class="s">;{1:s}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="n">sep</span><span class="p">)</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="s">&quot;node [shape = point]; dummy{0:s}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">sep</span><span class="p">)</span>
+        <span class="n">niStates</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">States</span><span class="p">))</span> <span class="k">if</span> <span class="n">i</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Initial</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">sti</span> <span class="ow">in</span> <span class="n">niStates</span><span class="p">:</span>
+            <span class="n">s</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dotDrawVertex</span><span class="p">(</span><span class="n">sti</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">s1</span><span class="p">,</span> <span class="n">s2</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">Edges</span><span class="p">:</span>
+            <span class="n">s</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dotDrawEdge</span><span class="p">(</span><span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">)</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="s">&quot;}}{0:s}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">sep</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">s</span>
+</div>
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="DiGraph.dotDrawEdge"><a class="viewcode-back" href="../index.html#graphs.DiGraph.dotDrawEdge">[docs]</a>    <span class="k">def</span> <span class="nf">dotDrawEdge</span><span class="p">(</span><span class="n">st1</span><span class="p">,</span> <span class="n">st2</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Draw a transition in Dot Format</span>
+
+<span class="sd">        :arg str st1: starting state</span>
+<span class="sd">        :arg str st2: ending state</span>
+<span class="sd">        :arg str sep: separator</span>
+<span class="sd">        :rtype: str&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s">&quot;</span><span class="se">\&quot;</span><span class="s">{0:s}</span><span class="se">\&quot;</span><span class="s"> -&gt; </span><span class="se">\&quot;</span><span class="s">{1:s}</span><span class="se">\&quot;</span><span class="s"> {3:s} &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">st1</span><span class="p">,</span> <span class="n">st2</span><span class="p">,</span> <span class="n">sep</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="DiGraph.dotDrawVertex"><a class="viewcode-back" href="../index.html#graphs.DiGraph.dotDrawVertex">[docs]</a>    <span class="k">def</span> <span class="nf">dotDrawVertex</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sti</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Draw a Vertex in Dot Format</span>
+
+<span class="sd">        :arg int sti: index of the state</span>
+<span class="sd">        :arg str sep: separator</span>
+<span class="sd">        :rtype: str &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s">&quot;node [shape = circle]; </span><span class="se">\&quot;</span><span class="s">{0:s}</span><span class="se">\&quot;</span><span class="s">;{1:s}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Vertices</span><span class="p">[</span><span class="n">sti</span><span class="p">]</span><span class="o">.</span><span class="n">__str__</span><span class="p">(),</span> <span class="n">sep</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="DiGraphVm"><a class="viewcode-back" href="../index.html#graphs.DiGraphVm">[docs]</a><span class="k">class</span> <span class="nc">DiGraphVm</span><span class="p">(</span><span class="n">DiGraph</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Directed graph with marked vertices</span>
+
+<span class="sd">    :var set MarkedV: set of marked vertices</span>
+
+<span class="sd">    .. inheritance-diagram:: DiGraphVm&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">DiGraphVm</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">MarkedV</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+
+<div class="viewcode-block" id="DiGraphVm.markVertex"><a class="viewcode-back" href="../index.html#graphs.DiGraphVm.markVertex">[docs]</a>    <span class="k">def</span> <span class="nf">markVertex</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Mark vertex v</span>
+
+<span class="sd">        :param int v: vertex&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">MarkedV</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">v</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">FAdo 1.2 documentation</a> &raquo;</li>
+          <li><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 1999-2014, Rogério Reis &amp; Nelma Moreira.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

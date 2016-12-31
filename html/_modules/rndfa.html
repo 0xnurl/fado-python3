@@ -1,0 +1,192 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>rndfa &mdash; FAdo 1.2 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="FAdo 1.2 documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">FAdo 1.2 documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for rndfa</h1><div class="highlight"><pre>
+    <span class="c"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;**Random DFA generation**</span>
+
+<span class="sd">ICDFA Random generation binding</span>
+
+<span class="sd">.. *Authors:* Rogério Reis &amp; Nelma Moreira</span>
+
+<span class="sd">.. *This is part of FAdo project*  http://fado.dcc.fc.up.pt</span>
+
+<span class="sd">.. *Version:* 0.9.8</span>
+
+<span class="sd">.. *Copyright:* 1999-2013 Rogério Reis &amp; Nelma Moreira {rvr,nam}@dcc.fc.up.pt</span>
+
+<span class="sd">.. versionchanged:: 0.9.4 Interface python to the C code</span>
+
+<span class="sd">.. versionchanged:: 0.9.6 Working with incomplete automata</span>
+
+<span class="sd">.. versionchanged:: 0.9.8 distinct classes for complete and incomplete ICDFA</span>
+
+<span class="sd">.. Contributions by</span>
+<span class="sd">  - Marco Almeida</span>
+
+<span class="sd">..  This program is free software; you can redistribute it and/or modify</span>
+<span class="sd">  it under the terms of the GNU General Public License as published by</span>
+<span class="sd">  the Free Software Foundation; either version 2 of the License, or</span>
+<span class="sd">  (at your option) any later version.</span>
+
+<span class="sd">  This program is distributed in the hope that it will be useful,</span>
+<span class="sd">  but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="sd">  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="sd">  GNU General Public License for more details.</span>
+
+<span class="sd">  You should have received a copy of the GNU General Public License</span>
+<span class="sd">  along with this program; if not, write to the Free Software</span>
+<span class="sd">  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">generator</span>
+<span class="kn">import</span> <span class="nn">fa</span>
+<span class="kn">from</span> <span class="nn">common</span> <span class="kn">import</span> <span class="o">*</span>
+
+
+<div class="viewcode-block" id="ICDFArgen"><a class="viewcode-back" href="../index.html#rndfa.ICDFArgen">[docs]</a><span class="k">class</span> <span class="nc">ICDFArgen</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Generic ICDFA random generator class</span>
+
+<span class="sd">    .. seealso:: Marco Almeida, Nelma Moreira, and Rogério Reis. Enumeration and generation with a string automata</span>
+<span class="sd">       representation. Theoretical Computer Science, 387(2):93-102, 2007&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="ICDFArgen.next"><a class="viewcode-back" href="../index.html#rndfa.ICDFArgen.next">[docs]</a>    <span class="k">def</span> <span class="nf">next</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the next generated DFA</span>
+
+<span class="sd">        :returns: a random generated ICDFA</span>
+<span class="sd">        :rtype: DFA&quot;&quot;&quot;</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gen</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">fa</span><span class="o">.</span><span class="n">stringToDFA</span><span class="p">(</span><span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">a</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">k</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="ICDFArnd"><a class="viewcode-back" href="../index.html#rndfa.ICDFArnd">[docs]</a><span class="k">class</span> <span class="nc">ICDFArnd</span><span class="p">(</span><span class="n">ICDFArgen</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Complete ICDFA random generator class</span>
+
+<span class="sd">    This is the class for the uniform random generator for Initially Connected DFAs</span>
+
+<span class="sd">    :var n: number of states</span>
+<span class="sd">    :type n: integer</span>
+<span class="sd">    :var k: size of the alphabet</span>
+<span class="sd">    :type k: integer</span>
+
+<span class="sd">    .. note::</span>
+<span class="sd">        This is an abstract class, not to be used directly&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gen</span> <span class="o">=</span> <span class="n">generator</span><span class="o">.</span><span class="n">icdfaRndGen</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">k</span> <span class="o">=</span> <span class="n">n</span><span class="p">,</span> <span class="n">k</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&quot;ICDFArnd </span><span class="si">%d</span><span class="s"> </span><span class="si">%d</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">k</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="ICDFArndIncomplete"><a class="viewcode-back" href="../index.html#rndfa.ICDFArndIncomplete">[docs]</a><span class="k">class</span> <span class="nc">ICDFArndIncomplete</span><span class="p">(</span><span class="n">ICDFArgen</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Incomplete ICDFA random generator class</span>
+
+<span class="sd">    :var n: number of states</span>
+<span class="sd">    :type n: integer</span>
+<span class="sd">    :var k: size of alphabet</span>
+<span class="sd">    :type k: integer</span>
+<span class="sd">    :var bias: how often must the gost sink state appear (default None)</span>
+<span class="sd">    :type bias: float</span>
+
+<span class="sd">    :raises IllegalBias: if a bias &gt;=1 or &lt;=0 is provided&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">bias</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gen</span> <span class="o">=</span> <span class="n">generator</span><span class="o">.</span><span class="n">icdfaRndGen</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">bias</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">bias</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">IllegalBias</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">m</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">bias</span> <span class="o">*</span> <span class="n">n</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">bias</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gen</span> <span class="o">=</span> <span class="n">generator</span><span class="o">.</span><span class="n">icdfaRndGen</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">m</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bias</span> <span class="o">=</span> <span class="n">n</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">bias</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&quot;ICDFArndIncomplete </span><span class="si">%d</span><span class="s"> </span><span class="si">%d</span><span class="s"> </span><span class="si">%d</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bias</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">FAdo 1.2 documentation</a> &raquo;</li>
+          <li><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 1999-2014, Rogério Reis &amp; Nelma Moreira.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>
