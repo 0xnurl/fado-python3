@@ -47,7 +47,7 @@ import string
 import os
 import os.path
 import shelve
-import whichdb
+import dbm as whichdb
 
 
 # set elements are mutable objects; we cannot use sets
