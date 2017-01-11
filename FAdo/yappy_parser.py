@@ -2129,6 +2129,9 @@ class Set(object):
                 continue
         return new
 
+    def __eq__(self, other):
+        return self.__repr__() == repr(other)
+
     def __cmp__(self, other):
         if len(self) == len(other):
             if not len(self - other):
