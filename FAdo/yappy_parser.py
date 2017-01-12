@@ -1627,7 +1627,7 @@ class LRparser(object):
                        rulesep='|',
                        ruleend=';')
         gr = []
-        rl = string.split(rulestr, sym['ruleend'])
+        rl = rulestr.split(sym['ruleend'])
         for l in rl:
             m = re.compile(sym['rulesym']).search(l)
             if not m:
@@ -1640,15 +1640,15 @@ class LRparser(object):
                 if m.end() == len(l):
                     raise GrammarError(l)
                 else:
-                    rhss = string.strip(l[m.end():])
+                    rhss = l[m.end():].strip()
                     if rhss == "[]":
                         rhs = []
                         sem = EmptySemRule
                         op = None
                     else:
-                        rhss = string.split(l[m.end():], sym['rulesep'])
+                        rhss = l[m.end():].split(sym['rulesep'])
                         for rest in rhss:
-                            rest = string.strip(rest)
+                            rest = rest.strip()
                             if rhss == "[]":
                                 rhs = []
                                 sem = EmptySemRule
@@ -1656,22 +1656,22 @@ class LRparser(object):
                             else:
                                 m = re.search(sym['semsym'] + '(?P<opsem>.*)' + sym['csemsym'], rest)
                                 if not m:
-                                    rhs = string.split(rest, None)
+                                    rhs = rest.split()
                                     sem = DefaultSemRule
                                     op = None
                                 else:
                                     if m.start() == 0:
                                         raise GrammarError(rest)
                                     else:
-                                        rhs = string.split(rest[0:m.start()].strip())
+                                        rhs = rest[0:m.start()].strip().split()
                                     if m.group('opsem'):
-                                        opsem = string.split(m.group('opsem'), sym['opsym'])
+                                        opsem = m.group('opsem').split(sym['opsym'])
                                         if len(opsem) == 1:
-                                            sem = string.strip(opsem[0])
+                                            sem = opsem[0].strip()
                                             op = None
                                         elif len(opsem) == 2:
-                                            sem = string.strip(opsem[0])
-                                            op = string.strip(opsem[1])
+                                            sem = opsem[0].strip()
+                                            op = opsem[1].strip()
                                         else:
                                             raise GrammarError(rest)
                                     else:
@@ -1766,11 +1766,11 @@ def grules(rules_list, rulesym="->", rhssep=None):
             if m.end() == len(rule):
                 raise GrammarError(rule)
             else:
-                rest = string.strip(rule[m.end():])
+                rest = rule[m.end():].strip()
                 if rest == "[]":
                     rhs = []
                 else:
-                    rhs = string.split(rest, rhssep)
+                    rhs = rest.split(rhssep)
         if type(r) is str:
             gr.append((lhs, rhs, DefaultSemRule))
         elif len(r) == 3:
@@ -1809,7 +1809,7 @@ class Yappy(LRparser):
         if type(grammar) is str:
             grammar = self.parse_grammar(grammar, {'locals': locals()}, args)
         if 'usrdir' in args and os.path.isdir(args['usrdir']):
-            table = string.rstrip(args['usrdir']) + '/' + table
+            table = args['usrdir'].rstrip() + '/' + table
         if   os.path.dirname(table) == "" or os.path.exists(os.path.dirname(table)):
             LRparser.__init__(self, grammar,table, no_table, tabletype, operators, noconflicts, expect, **args)
         else:
@@ -1925,7 +1925,7 @@ class Yappy_grammar(Yappy):
         ])
 
         tokenize = [
-            ("\{\{.*\}\}", lambda x: ("IDS", string.strip(x[2:-2]))),
+            ("\{\{.*\}\}", lambda x: ("IDS", x[2:-2].strip())),
             ("\s+", ""),
             ("->", lambda x: ("rulesym", x)),
             ("\|", lambda x: ("rulesep", x)),
@@ -1935,7 +1935,7 @@ class Yappy_grammar(Yappy):
             ("//", lambda x: ("opsym", x)),
             (".*", lambda x: ("ID", x))]
         if 'tmpdir' in args:
-            args1 = {'usrdir': string.rstrip(args['tmpdir'], '/')}
+            args1 = {'usrdir': args['tmpdir'].rstrip('/')}
         else:
             args1 = {}
         Yappy.__init__(self, tokenize, grammar, table, no_table, **args1)

@@ -91,7 +91,7 @@ class CFGrammar(object):
             lhs = self.Rules[n][0]
             rhs = self.Rules[n][1]
             if type(rhs) is not StringType and len(rhs) > 1:
-                rhs = string.join(rhs)
+                rhs = " ".join(rhs)
             s += "{0:s} | {1:s} -> {2:s} \n".format(n, lhs, rhs)
         return "Grammar Rules:\n\n%s" % s
 
@@ -406,16 +406,16 @@ def gRules(rules_list, rulesym="->", rhssep=None, rulesep='|'):
             if m.end() == len(rule):
                 raise common.CFGgrammarError(rule)
             else:
-                rest = string.strip(rule[m.end():])
+                rest = rule[m.end():].strip()
                 if rest == "[]":
                     rhs = []
                 else:
-                    multi = string.split(rest, rulesep)
+                    multi = rest.split(rulesep)
                     rhs = []
                     for i in multi:
-                        l = string.split(i, rhssep)
+                        l = i.split(rhssep)
                         if len(l) > 1:
-                            l = tuple(string.split(i, rhssep))
+                            l = tuple(i.split(rhssep))
                         else:
                             l = l[0]
                         gr.append((lhs, l))
