@@ -3,8 +3,8 @@
 
 * Used by [Morphophonology SPE Learner](https://bitbucket.org/taucompling/morphophonology_spe) - [Tel Aviv University Computational Linguistics Lab](http://www.tau.ac.il/~compling/site/)
 * Some features may not work. Regex module tested for Python 3, mainly `reex::str2regexp()`.
+* Feel free to open Pull Requests for more feature ports.
    
-
 #### Installation
 * Clone from source and run:
 `$ python setup.py install`
