@@ -11,6 +11,7 @@ if __name__ == '__main__':
           requires=["yappy"],
           provides=["FAdo"],
           ext_package="FAdo",
+          install_requires=["future"],
           author="Rogerio Reis and Nelma Moreira",
           author_email="{rvr,nam}@dcc.fc.up.pt",
           url="http://www.dcc.fc.up.pt/FAdo",
